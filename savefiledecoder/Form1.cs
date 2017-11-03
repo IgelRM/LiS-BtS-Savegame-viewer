@@ -255,7 +255,7 @@ namespace savefiledecoder
         private void button2_Click(object sender, EventArgs e)
         {
             //writes savegame variable names to file
-            using (StreamWriter file = new StreamWriter("savegamedata.txt"))
+            using (StreamWriter file = new StreamWriter("savegamedata_variables.txt"))
                 foreach (var entry in m_GameData.Variables.OrderBy((v) => v.Value.name))
                     file.WriteLine("[{0}]", entry.Value.name.ToUpper());
                     //file.WriteLine("[{0} {1}]", entry.Key, entry.Value.name.ToUpper());
@@ -265,6 +265,13 @@ namespace savefiledecoder
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     file.WriteLine("[{0}]", m_GameSave.Checkpoints[i].PointIdentifier);
+                }
+             
+             //writes objectives to file 
+            using (StreamWriter file = new StreamWriter("savegamedata_objectives.txt"))
+                for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
+                {
+                    file.WriteLine(("[{0}]", m_GameSave.Checkpoints[i].Objective);
                 }
         }
 
