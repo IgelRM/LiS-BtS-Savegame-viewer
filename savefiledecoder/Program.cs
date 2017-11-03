@@ -8,7 +8,6 @@ namespace savefiledecoder
 {
     static class Program
     {
-        /// Main
         [STAThread]
         static void Main()
         {

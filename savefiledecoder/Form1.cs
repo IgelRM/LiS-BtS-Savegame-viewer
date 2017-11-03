@@ -15,9 +15,6 @@ namespace savefiledecoder
         const string c_DataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
 
-        OpenFileDialog OpenFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-        OpenFileDialog OpenFileDialog2 = new System.Windows.Forms.OpenFileDialog();
-
         public Form1()
         {      
             InitializeComponent();
@@ -27,6 +24,7 @@ namespace savefiledecoder
         private void button1_Click(object sender, EventArgs e)
         {
             byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
+
             DecodeEncode.SetKey(key);
                 string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
             m_GameData.Read(initiDataPath);
@@ -38,7 +36,7 @@ namespace savefiledecoder
             UpdateEpsiodeBoxes();
             UpdateDataGrid();
 
-            textBoxRawJson.Text = m_GameSave.Raw.Replace("\n", Environment.NewLine);
+            //textBoxRawJson.Text = m_GameSave.Raw.Replace("\n", Environment.NewLine);
 
         }
 
@@ -134,6 +132,7 @@ namespace savefiledecoder
             }
             t.Rows.Add(row);
 
+
             // variables 
             foreach (var varType in m_GameData.Variables.OrderBy( (v)=>v.Value.name) )
             {
@@ -219,6 +218,7 @@ namespace savefiledecoder
             {
                 button1.Enabled = true;
                 button2.Enabled = true;
+                
             }
             else
             {
@@ -251,65 +251,67 @@ namespace savefiledecoder
         {
             ValidatePaths();
         }
-
+        //export
         private void button2_Click(object sender, EventArgs e)
         {
-            //writes savegame variable names to file
-            using (StreamWriter file = new StreamWriter("savegamedata.txt"))
-                foreach (var entry in m_GameData.Variables.OrderBy((v) => v.Value.name))
-                    file.WriteLine("[{0}]", entry.Value.name.ToUpper());
-                    //file.WriteLine("[{0} {1}]", entry.Key, entry.Value.name.ToUpper());
-
-            //writes savegame checkpoints to file
-            using (StreamWriter file = new StreamWriter("savegamedata_checkpoints.txt"))
+            using (StreamWriter file = new StreamWriter("objectives.txt"))
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
-                    file.WriteLine("[{0}]", m_GameSave.Checkpoints[i].PointIdentifier);
+                    file.WriteLine("\"{0}\"", m_GameSave.Checkpoints[i].Objective);
                 }
-        }
 
+            using (StreamWriter file = new StreamWriter("checkpoints.txt"))
+                for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
+                {
+                    file.WriteLine("\"{0}\"", m_GameSave.Checkpoints[i].Objective);
+                }
+
+            using (StreamWriter file = new StreamWriter("variables.txt"))
+                foreach (var entry in m_GameData.Variables.OrderBy((v) => v.Value.name))
+                {
+                    var checkpoint = m_GameSave.Checkpoints[m_GameSave.Checkpoints.Count - 1];
+                    VariableState state;
+                    bool found = checkpoint.Variables.TryGetValue(entry.Value.name, out state);
+                    file.WriteLine("\"{0}\", {1}", entry.Value.name.ToUpper(), state.Value);
+
+
+                }
+            System.Diagnostics.Process.Start("variables.txt"); //open the text file
+
+        }
+        //export checkpoints
         private void button3_Click(object sender, EventArgs e)
         {
-            DialogResult result = OpenFileDialog1.ShowDialog(); // Show the dialog.
-            if (result == DialogResult.OK) // Test result.
-            {
-                string file = OpenFileDialog1.FileName;
-                try
-                {
-                    //string text = File.ReadAllText(file);
-                    textBoxSavePath.Text = file;
-                }
-                catch (IOException)
-                {
-                }
-            }
+            
         }
-
+        //export variables
         private void button4_Click(object sender, EventArgs e)
         {
-            DialogResult result = OpenFileDialog2.ShowDialog(); // Show the dialog.
-            if (result == DialogResult.OK) // Test result.
+            
+        }
+
+        //browse for Data.Save
+        private void button5_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog1.ShowDialog();
+            if(result == DialogResult.OK)
             {
-                string file = OpenFileDialog2.FileName;
-                try
-                {
-                    //string text = File.ReadAllText(file);
-                    textBoxLisPath.Text = file;
-                }
-                catch (IOException)
-                {
-                }
+                textBoxSavePath.Text = openFileDialog1.FileName;
+            }
+        }
+        //browse for BTS install directory
+        private void button6_Click(object sender, EventArgs e)
+        {
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
             }
         }
 
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        private void button3_Click_1(object sender, EventArgs e)
         {
-
-        }
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
+            MessageBox.Show("Tool by /u/DanielWe\nModified by Ladosha2 and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
