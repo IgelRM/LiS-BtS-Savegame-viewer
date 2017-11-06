@@ -308,7 +308,7 @@
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "LiS BtS Savegame Viewer Version 0.2";
+            this.Text = "LiS BtS Savegame Viewer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tableLayoutPanelEpisodes.ResumeLayout(false);
             this.tableLayoutPanelEpisodes.PerformLayout();
