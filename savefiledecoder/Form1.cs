@@ -218,7 +218,7 @@ namespace savefiledecoder
             {
                 button1.Enabled = true;
                 button2.Enabled = true;
-                
+                SaveFileViewer.Properties.Settings.Default.Save();
             }
             else
             {
@@ -296,6 +296,7 @@ namespace savefiledecoder
             DialogResult result = openFileDialog1.ShowDialog();
             if(result == DialogResult.OK)
             {
+                SaveFileViewer.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
                 textBoxSavePath.Text = openFileDialog1.FileName;
             }
         }
@@ -305,6 +306,7 @@ namespace savefiledecoder
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
+                SaveFileViewer.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
                 textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
             }
         }
@@ -312,6 +314,13 @@ namespace savefiledecoder
         private void button3_Click_1(object sender, EventArgs e)
         {
             MessageBox.Show("Tool by /u/DanielWe\nModified by Ladosha2 and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBoxSavePath.Text = SaveFileViewer.Properties.Settings.Default.SavePath;
+            textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
+            folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
         }
     }
 }
