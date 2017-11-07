@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Web.Helpers;
+using System.Windows.Forms;
 
 namespace savefiledecoder
 {
@@ -57,7 +58,7 @@ namespace savefiledecoder
 
         public Dictionary<String, bool> EpisodePlayed { get; } = new Dictionary<String, bool>();
 
-        public List<Checkpoint>  Checkpoints { get; } = new List<Checkpoint>();
+        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
 
         public GameSave(GameData gameData)
         {
@@ -66,7 +67,7 @@ namespace savefiledecoder
 
         dynamic m_Data;
         public string Raw { get; private set; }
-
+        public static bool SaveEmpty {get; set;}
         public void Read(string path)
         {
             Checkpoints.Clear();
@@ -86,8 +87,18 @@ namespace savefiledecoder
             }
 
             // add currentcheckpoint (seems to be identical to latest checkpoint...)
-            var variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
-            Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckPoint, variables));
+            
+                Dictionary<string, VariableState> variables;
+                SaveEmpty = false;
+            try
+            {
+                variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
+                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckPoint, variables));
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                SaveEmpty = true;
+            }
 
             // add global variables as a last checkpoint.. // hack...
             variables = ReadVarsForCheckpoint(m_Data);

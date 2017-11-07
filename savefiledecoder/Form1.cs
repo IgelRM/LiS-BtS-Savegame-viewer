@@ -16,7 +16,7 @@ namespace savefiledecoder
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
 
         public Form1()
-        {      
+        {
             InitializeComponent();
             ValidatePaths();
         }
@@ -26,16 +26,21 @@ namespace savefiledecoder
             byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
 
             DecodeEncode.SetKey(key);
-                string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+            string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
             m_GameData.Read(initiDataPath);
             m_GameSave = new GameSave(m_GameData);
-
             m_GameSave.Read(textBoxSavePath.Text);
-
-
-            UpdateEpsiodeBoxes();
-            UpdateDataGrid();
-
+            if (!GameSave.SaveEmpty) //handles the "Just Started" state.
+            { 
+                UpdateEpsiodeBoxes();
+                UpdateDataGrid();
+                label4.Visible = false; //hide save file warning
+                button2.Enabled = true; //allow exporting
+            }
+            else
+            {
+                MessageBox.Show("Save file is empty or corrupt! Please specify a different one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             //textBoxRawJson.Text = m_GameSave.Raw.Replace("\n", Environment.NewLine);
 
         }
@@ -94,12 +99,12 @@ namespace savefiledecoder
             dataGridView1.Columns["Key"].Frozen = true;
             dataGridView1.Rows[0].Frozen = true;
             dataGridView1.Rows[1].Frozen = true;
-            foreach(var column in dataGridView1.Columns)
+            for (int i=0; i<dataGridView1.ColumnCount; i++)
             {
-                        
+                dataGridView1.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
             }
+            
         }
-
         private DataTable BuildDataTable()
         {
             DataTable t = new DataTable();
@@ -217,7 +222,8 @@ namespace savefiledecoder
             if(successDataPath&&successSavePath)
             {
                 button1.Enabled = true;
-                button2.Enabled = true;
+                button2.Enabled = false;
+                label4.Visible = true; //shows warning about save file
                 SaveFileViewer.Properties.Settings.Default.Save();
             }
             else
@@ -251,6 +257,7 @@ namespace savefiledecoder
         {
             ValidatePaths();
         }
+
         //export
         private void button2_Click(object sender, EventArgs e)
         {
@@ -271,25 +278,19 @@ namespace savefiledecoder
                 {
                     var checkpoint = m_GameSave.Checkpoints[m_GameSave.Checkpoints.Count - 1];
                     VariableState state;
-                    bool found = checkpoint.Variables.TryGetValue(entry.Value.name, out state);
-                    file.WriteLine("\"{0}\", {1}", entry.Value.name.ToUpper(), state.Value);
-
-
+                    bool valFound = checkpoint.Variables.TryGetValue(entry.Value.name, out state);
+                    if (valFound)
+                    {
+                        file.WriteLine("\"{0}\", {1}", entry.Value.name.ToUpper(), state.Value);
+                    }
+                    else if (Form.ModifierKeys == Keys.Control)
+                    {
+                       file.WriteLine("\"{0}\"", entry.Value.name.ToUpper());
+                    }
                 }
             System.Diagnostics.Process.Start("variables.txt"); //open the text file
 
         }
-        //export checkpoints
-        private void button3_Click(object sender, EventArgs e)
-        {
-            
-        }
-        //export variables
-        private void button4_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         //browse for Data.Save
         private void button5_Click(object sender, EventArgs e)
         {
@@ -313,7 +314,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.2.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.3\nTool by /u/DanielWe\nModified by Ladosha and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -321,6 +322,7 @@ namespace savefiledecoder
             textBoxSavePath.Text = SaveFileViewer.Properties.Settings.Default.SavePath;
             textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
             folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
+            label4.Visible = false;
         }
     }
 }
