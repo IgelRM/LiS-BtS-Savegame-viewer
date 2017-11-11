@@ -94,6 +94,7 @@ namespace savefiledecoder
         {
             if (m_GameSave == null)
                 return;
+            dataGridView1.Columns.Clear();
             DataTable table = BuildDataTable();
             dataGridView1.DataSource = table.DefaultView;
             dataGridView1.Columns["Key"].Frozen = true;
