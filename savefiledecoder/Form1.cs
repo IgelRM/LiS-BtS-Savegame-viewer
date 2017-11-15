@@ -57,8 +57,7 @@ namespace savefiledecoder
             }
             else
             {
-                checkBoxE1.Enabled = false;
-                checkBoxE1.Checked = false;
+                checkBoxE1.Enabled = false; 
             }
             // E2
             if (m_GameSave.EpisodePlayed["E2"])
@@ -68,7 +67,6 @@ namespace savefiledecoder
             else
             {
                 checkBoxE2.Enabled = false;
-                checkBoxE2.Checked = false;
             }
             // E3
             if (m_GameSave.EpisodePlayed["E3"])
@@ -78,7 +76,6 @@ namespace savefiledecoder
             else
             {
                 checkBoxE3.Enabled = false;
-                checkBoxE3.Checked = false;
             }
             // E4
             if (m_GameSave.EpisodePlayed["E4"])
@@ -88,14 +85,36 @@ namespace savefiledecoder
             else
             {
                 checkBoxE4.Enabled = false;
-                checkBoxE4.Checked = false;
             }
         }
 
+        int visible_row = 2, visible_column = 1;
         private void UpdateDataGrid()
         {
             if (m_GameSave == null)
                 return;
+
+            if (dataGridView1.FirstDisplayedScrollingRowIndex <= 2)
+            {
+                visible_row = 2;
+            }
+            else
+            {
+                visible_row = dataGridView1.FirstDisplayedScrollingRowIndex;
+            }
+            if (dataGridView1.FirstDisplayedScrollingColumnIndex <= 1)
+            {
+                visible_column = 1;
+            }
+            else if (dataGridView1.FirstDisplayedScrollingColumnHiddenWidth > 60 )
+            {
+                visible_column = dataGridView1.FirstDisplayedScrollingColumnIndex+1;
+            }
+            else
+            {
+                visible_column = dataGridView1.FirstDisplayedScrollingColumnIndex;
+            }
+
             dataGridView1.Columns.Clear();
             DataTable table = BuildDataTable();
             dataGridView1.DataSource = table.DefaultView;
@@ -132,8 +151,18 @@ namespace savefiledecoder
             {
                 dataGridView1.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
             }
+            try
+            {
+                dataGridView1.FirstDisplayedScrollingRowIndex = visible_row;
+                dataGridView1.FirstDisplayedScrollingColumnIndex = visible_column;
+            }
+            catch
+            {
+
+            }
 
         }
+
         private DataTable BuildDataTable()
         {
             DataTable t = new DataTable();
@@ -278,8 +307,10 @@ namespace savefiledecoder
         }
 
         private void checkBoxEpisodes_CheckedChanged(object sender, EventArgs e)
-        {
-            UpdateDataGrid();
+        { if (editModeActive==false)
+            {
+                UpdateDataGrid();
+            }
         }
 
         private void textBoxSavePath_TextChanged(object sender, EventArgs e)
@@ -405,10 +436,9 @@ namespace savefiledecoder
         {
             editModeActive = true;
             dataGridView1.ReadOnly = false;
-            //checkBoxE1.Checked = true;
-            //checkBoxE2.Checked = true;
-            //checkBoxE3.Checked = true;
-            //checkBoxE4.Checked = true;
+            button1.Enabled = false;
+            textBoxLisPath.Enabled = false;
+            textBoxSavePath.Enabled = false;
             checkBoxE1.Enabled = false;
             checkBoxE2.Enabled = false;
             checkBoxE3.Enabled = false;
@@ -420,10 +450,19 @@ namespace savefiledecoder
         private void disableEditMode()
         {
             editModeActive = false;
+            m_GameSave.editsSaved = true;
             dataGridView1.ReadOnly = true;
+            button1.Enabled = true;
+            textBoxLisPath.Enabled = true;
+            textBoxSavePath.Enabled = true;
             UpdateEpsiodeBoxes();
+            if (checkBoxE1.Enabled) checkBoxE1.Checked = true;
+            if (checkBoxE2.Enabled) checkBoxE2.Checked = true;
+            if (checkBoxE3.Enabled) checkBoxE3.Checked = true;
+            if (checkBoxE4.Enabled) checkBoxE4.Checked = true;
             buttonSaveEdits.Enabled = false;
             buttonExtras.Enabled = false;
+            label4.Visible = false;
             UpdateDataGrid();
         }
 

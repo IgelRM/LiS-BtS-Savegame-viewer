@@ -125,7 +125,7 @@ namespace savefiledecoder
         public bool editsSaved=true;
         public void Write (string path, dynamic json_data)
         {
-            Raw = Json.Encode(json_data); //Raw is a utf8 string. this function takes 8 seconds to execute.
+            Raw = Newtonsoft.Json.JsonConvert.SerializeObject(json_data, Newtonsoft.Json.Formatting.Indented); //Raw is a utf8 string.
             byte[] content = Encoding.UTF8.GetBytes(Raw); //dexored (for now) new content
             byte[] chash = contenthash.ComputeHash(content); //md5 hash of dexored new content
             byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encryptt and decrypt it.
