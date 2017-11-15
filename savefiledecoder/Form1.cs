@@ -284,7 +284,7 @@ namespace savefiledecoder
                 button1.Enabled = true;
                 button2.Enabled = false;
                 checkBoxEditMode.Enabled = false;
-                label4.Text = "Save file changed! Press Show Content to update.";
+                label4.Text = "Save file changed! Press 'Show Content' to update.";
                 label4.Visible = true; //shows warning about save file
                 SaveFileViewer.Properties.Settings.Default.Save();
             }
@@ -411,7 +411,7 @@ namespace savefiledecoder
         {
             if (!editModeIntroShown)
             {
-                MessageBox.Show("Note that the Edit Mode is highly experimental. It has not been extensively tested and might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nTo start editing a cell, double click on it, or select it with the mouse/arrow keys and press F2. Editing of gray-colored cells is not permitted.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Note that the 'Edit Mode' is highly experimental. It has not been extensively tested and might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nTo start editing a cell, double click on it, or select it with the mouse/arrow keys and press F2. Editing of gray-colored cells is not permitted.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 editModeIntroShown = true;
             }
 
@@ -423,7 +423,7 @@ namespace savefiledecoder
             {
                 if (!m_GameSave.editsSaved)
                 {
-                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit Edit Mode without saving?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
                     {
                         disableEditMode();
@@ -525,7 +525,7 @@ namespace savefiledecoder
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, newCellValue, cellType))
                 {
-                    label4.Text = "Press Save to write changes to the save file.";
+                    label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
             }

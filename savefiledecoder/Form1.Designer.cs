@@ -74,9 +74,9 @@
             this.label2.Location = new System.Drawing.Point(3, 29);
             this.label2.Name = "label2";
             this.label2.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
-            this.label2.Size = new System.Drawing.Size(140, 29);
+            this.label2.Size = new System.Drawing.Size(143, 29);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Path to LiS BtS";
+            this.label2.Text = "Path to LiS BtS:";
             // 
             // label1
             // 
@@ -87,20 +87,19 @@
             this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
             this.label1.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
-            this.label1.Size = new System.Drawing.Size(140, 29);
+            this.label1.Size = new System.Drawing.Size(143, 29);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Path to savefile (Data.Save)";
+            this.label1.Text = "Path to savefile (Data.Save):";
             // 
             // textBoxSavePath
             // 
             this.textBoxSavePath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxSavePath.Location = new System.Drawing.Point(148, 4);
+            this.textBoxSavePath.Location = new System.Drawing.Point(151, 4);
             this.textBoxSavePath.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSavePath.Name = "textBoxSavePath";
-            this.textBoxSavePath.Size = new System.Drawing.Size(715, 20);
+            this.textBoxSavePath.Size = new System.Drawing.Size(712, 20);
             this.textBoxSavePath.TabIndex = 0;
-            this.textBoxSavePath.Text = "C: \\Users\\[UserName]\\AppData\\LocalLow\\Square Enix\\Life is Strange_ Before the Sto" +
-    "rm\\Saves\\[id]\\SLOT_00\\Data.Save";
+            this.textBoxSavePath.Text = "C: \\Users\\[UserName]\\AppData\\LocalLow\\Square Enix\\Life is Strange_ Before the Storm\\Saves\\[id]\\SLOT_00\\Data.Save";
             this.textBoxSavePath.TextChanged += new System.EventHandler(this.textBoxSavePath_TextChanged);
             // 
             // label3
@@ -112,16 +111,16 @@
             this.label3.Location = new System.Drawing.Point(3, 58);
             this.label3.Name = "label3";
             this.label3.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
-            this.label3.Size = new System.Drawing.Size(140, 35);
+            this.label3.Size = new System.Drawing.Size(143, 35);
             this.label3.TabIndex = 1;
             this.label3.Text = "Show variables from:";
             // 
             // textBoxLisPath
             // 
             this.textBoxLisPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxLisPath.Location = new System.Drawing.Point(149, 33);
+            this.textBoxLisPath.Location = new System.Drawing.Point(152, 33);
             this.textBoxLisPath.Name = "textBoxLisPath";
-            this.textBoxLisPath.Size = new System.Drawing.Size(713, 20);
+            this.textBoxLisPath.Size = new System.Drawing.Size(710, 20);
             this.textBoxLisPath.TabIndex = 2;
             this.textBoxLisPath.Text = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Life is Strange - Before the Storm";
             this.textBoxLisPath.TextChanged += new System.EventHandler(this.textBoxLisPath_TextChanged);
@@ -141,11 +140,11 @@
             this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE4, 3, 0);
             this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxEditMode, 4, 0);
             this.tableLayoutPanelEpisodes.Controls.Add(this.label4, 5, 0);
-            this.tableLayoutPanelEpisodes.Location = new System.Drawing.Point(149, 61);
+            this.tableLayoutPanelEpisodes.Location = new System.Drawing.Point(152, 61);
             this.tableLayoutPanelEpisodes.Name = "tableLayoutPanelEpisodes";
             this.tableLayoutPanelEpisodes.RowCount = 1;
             this.tableLayoutPanelEpisodes.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelEpisodes.Size = new System.Drawing.Size(713, 29);
+            this.tableLayoutPanelEpisodes.Size = new System.Drawing.Size(710, 29);
             this.tableLayoutPanelEpisodes.TabIndex = 1;
             // 
             // checkBoxE1
@@ -225,7 +224,7 @@
             this.label4.ForeColor = System.Drawing.Color.Red;
             this.label4.Location = new System.Drawing.Point(423, 8);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(287, 13);
+            this.label4.Size = new System.Drawing.Size(284, 13);
             this.label4.TabIndex = 8;
             this.label4.Text = "Save file changed! Press Show Content to update.";
             this.label4.Visible = false;

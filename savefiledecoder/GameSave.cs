@@ -122,7 +122,7 @@ namespace savefiledecoder
             }
 
         }
-        public bool editsSaved=true;
+        public bool editsSaved = true;
         public void Write (string path, dynamic json_data)
         {
             Raw = Newtonsoft.Json.JsonConvert.SerializeObject(json_data, Newtonsoft.Json.Formatting.Indented); //Raw is a utf8 string.
@@ -155,7 +155,7 @@ namespace savefiledecoder
                 File.Copy(path, path + @".bkp", false);
             }
             
-            File.WriteAllBytes(path, modded_file); //write chanegs to Data.Save
+            File.WriteAllBytes(path, modded_file); //write changes to Data.Save
             editsSaved = true;
         }
 
