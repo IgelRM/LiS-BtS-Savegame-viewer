@@ -392,8 +392,6 @@ namespace savefiledecoder
             ToolTip toolTip = new ToolTip();
             toolTip.BackColor = System.Drawing.SystemColors.InfoText;
             toolTip.IsBalloon = true;
-            toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            toolTip.ToolTipTitle = "Info";
             toolTip.SetToolTip(button2, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
         }
 

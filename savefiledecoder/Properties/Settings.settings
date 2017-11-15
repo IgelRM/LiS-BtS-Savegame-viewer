@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="BTSpath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C:\\Program Files (x86)\\Steam\\steamapps\\common\\Life is Strange - Before the Storm</Value>
     </Setting>
     <Setting Name="SavePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C: \\Users\\[UserName]\\AppData\\LocalLow\\Square Enix\\Life is Strange_ Before the Storm\\Saves\\[id]\\SLOT_00\\Data.Save</Value>
     </Setting>
   </Settings>
 </SettingsFile>
