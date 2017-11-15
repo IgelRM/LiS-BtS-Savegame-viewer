@@ -388,6 +388,13 @@ namespace savefiledecoder
             textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
             folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
             label4.Visible = false;
+
+            ToolTip toolTip = new ToolTip();
+            toolTip.BackColor = System.Drawing.SystemColors.InfoText;
+            toolTip.IsBalloon = true;
+            toolTip.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            toolTip.ToolTipTitle = "Info";
+            toolTip.SetToolTip(button2, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
         }
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
