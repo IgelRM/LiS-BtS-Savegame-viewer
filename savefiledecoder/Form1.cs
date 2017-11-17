@@ -5,6 +5,7 @@ using System.IO;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Win32;
 
 namespace savefiledecoder
 {
@@ -20,6 +21,14 @@ namespace savefiledecoder
         {
             InitializeComponent();
             ValidatePaths();
+
+            RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
+            localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
+            if (localKey != null)
+            {
+                textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
+                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
+            }
         }
          
         private void button1_Click(object sender, EventArgs e)
@@ -373,7 +382,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.4.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.4.2\nTool by /u/DanielWe\nModified by Ladosha and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
