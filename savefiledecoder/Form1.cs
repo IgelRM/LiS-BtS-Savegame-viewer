@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Win32;
+using System.Collections.Generic;
 
 namespace savefiledecoder
 {
@@ -16,19 +17,14 @@ namespace savefiledecoder
         const string c_DataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
         string point_id = "", var_name = "";
+        List<string> SteamIDFolders;
+        DateTime lastModified0, lastModified1, lastModified2;
+        int savenumber;
 
         public Form1()
         {
             InitializeComponent();
             ValidatePaths();
-
-            RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
-            localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
-            if (localKey != null)
-            {
-                textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
-                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
-            }
         }
          
         private void button1_Click(object sender, EventArgs e)
@@ -396,6 +392,36 @@ namespace savefiledecoder
             toolTip.BackColor = System.Drawing.SystemColors.InfoText;
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(button2, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
+            //Detects the BtS install path in the registry
+            RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64); //https://social.msdn.microsoft.com/Forums/vstudio/en-US/ef0de98a-18db-43e1-b9b9-b52c3b5f3d4c/registry-issue-getting-install-location-and-saving-its-path-c?forum=csharpgeneral
+            localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
+            if (localKey != null)
+            {
+                textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
+                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
+            }
+            //Savefile detector
+            List<string> SteamIDFolders = new List<string>(Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves"));
+            //Select a save file automatically if there is only one SteamID
+            if (SteamIDFolders.Count <= 2)
+            {
+                //Check in which folders the Data.Save file exist and select first or if possible most recently changed one.
+                if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_00\Data.Save"))
+                {
+                    savenumber = 0;
+                    //Console.WriteLine(SteamIDFolders[0].ToString() + @"\SLOT_00\Data.Save");
+                }
+                if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_01\Data.Save"))
+                {
+                    savenumber = 1;
+                }
+                if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_02\Data.Save"))
+                {
+                    savenumber = 2;
+                }
+
+                textBoxSavePath.Text = SteamIDFolders[0].ToString() + @"\SLOT_0" + savenumber.ToString() + @"\Data.Save";
+            }
         }
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
