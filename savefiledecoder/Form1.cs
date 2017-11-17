@@ -31,6 +31,7 @@ namespace savefiledecoder
             m_GameData.Read(initiDataPath);
             m_GameSave = new GameSave(m_GameData);
             m_GameSave.Read(textBoxSavePath.Text);
+            //File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.Raw);
             if (!GameSave.SaveEmpty) //handles the "Just Started" state.
             {
                 UpdateEpsiodeBoxes();
@@ -43,8 +44,7 @@ namespace savefiledecoder
             {
                 MessageBox.Show("Save file is empty or corrupt! Please specify a different one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            //textBoxRawJson.Text = m_GameSave.Raw.Replace("\n", Environment.NewLine);
-
+            
         }
 
         // only enable boxes for episodes the player has already finished or is currently playing
@@ -126,15 +126,10 @@ namespace savefiledecoder
             dataGridView1.Rows[1].ReadOnly = true;
             dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
 
-            //temporary code
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
-                for (int j = 0; j < dataGridView1.ColumnCount; j++) //do two things in 1 cycle - set the non-variable cells to read only and set all read only cells to gray color
-                {
-                    if (dataGridView1.Rows[i].Cells[j].Value.ToString() == String.Empty)
-                    {
-                        dataGridView1.Rows[i].Cells[j].ReadOnly = true;
-                    }
+                for (int j = 0; j < dataGridView1.ColumnCount; j++)
+                { 
                     if (dataGridView1.Rows[i].Cells[j].ReadOnly && editModeActive)
                     {
                         dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
@@ -145,8 +140,7 @@ namespace savefiledecoder
                     }
                 }
             }
-            //end temporary
-
+            
             for (int i = 0; i < dataGridView1.ColumnCount; i++)
             {
                 dataGridView1.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -399,7 +393,7 @@ namespace savefiledecoder
         {
             m_GameSave.Write(textBoxSavePath.Text, m_GameSave.m_Data);
             if (m_GameSave.editsSaved) MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            label4.Visible = false;  
+            label4.Visible = false;
         }
 
         public int? origCellValue, newCellValue;
@@ -468,6 +462,7 @@ namespace savefiledecoder
             buttonSaveEdits.Enabled = false;
             buttonExtras.Enabled = false;
             label4.Visible = false;
+            m_GameSave.Read(textBoxSavePath.Text);
             UpdateDataGrid();
         }
 
@@ -523,11 +518,12 @@ namespace savefiledecoder
                 var_name = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newCellValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, newCellValue, cellType))
+                if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, cellType))
                 {
                     label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
+                else dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origCellValue;
             }
         }
 

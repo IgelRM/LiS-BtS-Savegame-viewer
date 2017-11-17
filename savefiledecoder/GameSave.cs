@@ -178,7 +178,7 @@ namespace savefiledecoder
             return variablesInPoint;
         }
         
-        public bool FindAndUpdateVarValue (string checkpoint_id, string var_name, int? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
+        public bool FindAndUpdateVarValue (string checkpoint_id, string var_name, int? orig_value, int? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
         {
             dynamic goodpoint;
             string var_id = m_GameData.GetVariableID(var_name);
@@ -205,18 +205,59 @@ namespace savefiledecoder
                     {
                         goodpoint = checkpoint;
                         pointFound = true;
+                        break;
                     }
                 }
             }
 
             if (pointFound)
             {
-                foreach (var variable in goodpoint.variables)
+                if (orig_value == null) //add new variable
                 {
-                    if (variable.storyVariable == var_id)
+                    string guid = Guid.NewGuid().ToString();
+                    Dictionary<string, object> var_body = new Dictionary<string, object>()
                     {
-                        variable.currentValue = new_value;
-                        success = true;
+                        {"uniqueId", guid},
+                        {"storyVariable", var_id},
+                        {"currentValue", new_value},
+                        {"$type", "GameStateVariableModel"}
+                    };
+
+                    DynamicJsonObject fresh_var = new DynamicJsonObject(var_body);
+                    List<DynamicJsonObject> objlist = new List<DynamicJsonObject>();
+                    foreach (var variable in goodpoint.variables)
+                    {
+                        objlist.Add(variable);
+                    }
+                    objlist.Add(fresh_var);
+                    DynamicJsonArray modded_array = new DynamicJsonArray(objlist.ToArray<object>());
+                    goodpoint.variables = modded_array;
+                    success = true;
+                }
+                else if (new_value == null) //remove variable
+                {
+                    List<DynamicJsonObject> objlist = new List<DynamicJsonObject>();
+                    foreach (var variable in goodpoint.variables)
+                    {
+                        if (variable.storyVariable != var_id) // add all variables except the one we want to remove
+                        {
+                            objlist.Add(variable);
+                        }
+                    }
+                    DynamicJsonArray modded_array = new DynamicJsonArray(objlist.ToArray<object>());
+                    goodpoint.variables = modded_array;
+                    success = true;
+                }
+                else //change variable value
+                {
+                    foreach (var variable in goodpoint.variables)
+                    {
+                        if (variable.storyVariable == var_id)
+                        {
+                            variable.currentValue = new_value;
+                            success = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -228,7 +269,10 @@ namespace savefiledecoder
             {
                 MessageBox.Show("Could not find and replace variable with ID " + var_id + "!");
             }
-            editsSaved = false;
+            else
+            {
+                editsSaved = false;
+            }
             return success;
         }
     }
