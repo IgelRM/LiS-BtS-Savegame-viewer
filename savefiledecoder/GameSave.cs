@@ -209,12 +209,22 @@ namespace savefiledecoder
                     }
                 }
             }
-
+            
             if (pointFound)
             {
                 if (orig_value == null) //add new variable
                 {
                     string guid = Guid.NewGuid().ToString();
+                    if (cell_type == "current")
+                    {
+                        foreach (var variable in m_Data.checkpoints[m_Data.checkpoints.Length-1].variables)
+                        {
+                            if (variable.storyVariable == var_id)
+                            {
+                                guid = variable.uniqueId;
+                            }
+                        }
+                    }
                     Dictionary<string, object> var_body = new Dictionary<string, object>()
                     {
                         {"uniqueId", guid},

@@ -475,13 +475,13 @@ namespace savefiledecoder
             else
             {
                 origCellValue = int.Parse(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
-                switch (e.ColumnIndex)
-                {
-                    case 1: cellType = "global"; break;
-                    case 2: cellType = "current"; break;
-                    case 3: cellType = "last"; break;
-                    default: cellType = "normal"; break;
-                }
+            }
+            switch (e.ColumnIndex)
+            {
+                case 1: cellType = "global"; break;
+                case 2: cellType = "current"; break;
+                case 3: cellType = "last"; break;
+                default: cellType = "normal"; break;
             }
         }
 
