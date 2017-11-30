@@ -6,32 +6,31 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Web.Helpers;
 
 namespace savefiledecoder
 {
     public partial class Form1 : Form
     {
+        Form2 browseForm = new Form2();
         GameData m_GameData = new GameData();
         GameSave m_GameSave;
         const string c_DataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
-        string point_id = "", var_name = "";
+        string point_id = "", var_name = "", flag_name = "";
+        List<string> SteamIDFolders = new List<string>();
+        public static string selectedSavePath = SaveFileViewer.Properties.Settings.Default.SavePath;
+        dynamic appSettings = Json.Decode("{}");
 
         public Form1()
         {
             InitializeComponent();
             ValidatePaths();
-
-            RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
-            localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
-            if (localKey != null)
-            {
-                textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
-                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
-            }
         }
-         
-        private void button1_Click(object sender, EventArgs e)
+
+        bool resizeHelpShown = false;
+        private void buttonShowContent_Click(object sender, EventArgs e)
         {
             byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
 
@@ -40,20 +39,40 @@ namespace savefiledecoder
             m_GameData.Read(initiDataPath);
             m_GameSave = new GameSave(m_GameData);
             m_GameSave.Read(textBoxSavePath.Text);
-            //File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.Raw);
-            if (!GameSave.SaveEmpty) //handles the "Just Started" state.
+#if DEBUG
+            if (Form.ModifierKeys == Keys.Control)
+            {
+                File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.Raw);
+                if (m_GameSave.m_Header != null)
+                {
+                    File.WriteAllText(textBoxSavePath.Text + @"-header.txt", m_GameSave.h_Raw);
+                }
+            }
+#endif
+            if (!m_GameSave.SaveEmpty) //handles the "Just Started" state.
             {
                 UpdateEpsiodeBoxes();
+                UpdateFlagGrid();
                 UpdateDataGrid();
                 label4.Visible = false; //hide save file warning
-                button2.Enabled = true; //allow exporting
+                buttonExport.Enabled = true; //allow exporting
+                buttonExtras.Enabled = true;
                 checkBoxEditMode.Enabled = true;
+                SaveFileViewer.Properties.Settings.Default.BTSpath = textBoxLisPath.Text;
+                SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+
+                if (!resizeHelpShown)
+                {
+                    ToolTip tt = new ToolTip();
+                    tt.IsBalloon = true;
+                    tt.Show("Drag here to resize", this, 140, 115, 2000);
+                    resizeHelpShown = true;
+                }  
             }
             else
             {
                 MessageBox.Show("Save file is empty or corrupt! Please specify a different one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            
+            }  
         }
 
         // only enable boxes for episodes the player has already finished or is currently playing
@@ -98,10 +117,22 @@ namespace savefiledecoder
         }
 
         int visible_row = 2, visible_column = 1;
+        int f_visible_row = 0, f_visible_column = 1;
+
         private void UpdateDataGrid()
         {
             if (m_GameSave == null)
                 return;
+
+            int keyColWidth = 100;
+            try
+            {
+                keyColWidth = dataGridView1.Columns[0].Width;
+            }
+            catch
+            {
+
+            }
 
             if (dataGridView1.FirstDisplayedScrollingRowIndex <= 2)
             {
@@ -163,7 +194,93 @@ namespace savefiledecoder
             {
 
             }
+            dataGridView1.Columns[0].Width = keyColWidth;
 
+        }
+
+        private void UpdateFlagGrid()
+        {
+            if (m_GameSave == null)
+                return;
+
+            int keyColWidth = 100;
+            try
+            {
+                keyColWidth = dataGridViewFlags.Columns[0].Width;
+            }
+            catch
+            {
+
+            }
+
+            if (dataGridViewFlags.FirstDisplayedScrollingRowIndex <= 0)
+            {
+                f_visible_row = 0;
+            }
+            else
+            {
+                f_visible_row = dataGridViewFlags.FirstDisplayedScrollingRowIndex;
+            }
+            if (dataGridViewFlags.FirstDisplayedScrollingColumnIndex <= 1)
+            {
+                f_visible_column = 1;
+            }
+            else if (dataGridViewFlags.FirstDisplayedScrollingColumnHiddenWidth > 60)
+            {
+                f_visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex + 1;
+            }
+            else
+            {
+                f_visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex;
+            }
+            dataGridViewFlags.Columns.Clear();
+            DataTable table = BuildFlagTable();
+            dataGridViewFlags.DataSource = table.DefaultView;
+            dataGridViewFlags.Columns["Key"].Frozen = true;
+            dataGridViewFlags.Columns["Key"].ReadOnly = true;
+            dataGridViewFlags.Rows[0].Frozen = true;
+            dataGridViewFlags.Rows[0].ReadOnly = true;
+            dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
+
+            for (int i = 0; i < dataGridViewFlags.RowCount; i++)
+            {
+                for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
+                {
+                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    {
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                    }
+                    else
+                    {
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                    }
+                }
+            }
+
+            for (int i = 1; i < dataGridViewFlags.RowCount; i++)
+            {
+                for (int j = 1; j < dataGridViewFlags.ColumnCount; j++)
+                {
+                    DataGridViewCheckBoxCell CheckBoxCell = new DataGridViewCheckBoxCell();
+                    CheckBoxCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    dataGridViewFlags.Rows[i].Cells[j] = CheckBoxCell;
+                }
+            }
+
+            for (int i = 0; i < dataGridViewFlags.ColumnCount; i++)
+            {
+                dataGridViewFlags.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            try
+            {
+                dataGridViewFlags.FirstDisplayedScrollingRowIndex = f_visible_row;
+                dataGridViewFlags.FirstDisplayedScrollingColumnIndex = f_visible_column;
+            }
+            catch
+            {
+
+            }
+            dataGridViewFlags.Columns[0].Width = keyColWidth;
         }
 
         private DataTable BuildDataTable()
@@ -199,7 +316,6 @@ namespace savefiledecoder
                 row[m_GameSave.Checkpoints.Count - i] = m_GameSave.Checkpoints[i].Objective;
             }
             t.Rows.Add(row);
-
 
             // variables 
             foreach (var varType in m_GameData.Variables.OrderBy((v) => v.Value.name))
@@ -243,6 +359,39 @@ namespace savefiledecoder
             return t;
         }
 
+        private DataTable BuildFlagTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+            for (int i = m_GameSave.Checkpoints.Count - 2; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i+1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = m_GameSave.Checkpoints.Count - 2; i >= 0; i--)
+            {
+                row[m_GameSave.Checkpoints.Count - i-1] = m_GameSave.Checkpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // flags
+            foreach (var flagName in m_GameSave.m_Data.flags)
+            {
+                row[0] = flagName;
+                for (int i = m_GameSave.Checkpoints.Count - 2; i >=0; i--)
+                {
+                    int rownum = m_GameSave.Checkpoints.Count - i;
+                    row[rownum-1] = m_GameSave.Checkpoints[i].Flags.Contains(flagName);
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
         private void ValidatePaths()
         {
             bool successDataPath = false;
@@ -268,7 +417,10 @@ namespace savefiledecoder
             try
             {
                 string savePath = Path.Combine(textBoxSavePath.Text);
-                successSavePath = File.Exists(savePath);
+                if (File.Exists(savePath) && Path.GetFileName(savePath) == "Data.Save")
+                {
+                    successSavePath = true;
+                }
             }
             catch
             {
@@ -284,21 +436,40 @@ namespace savefiledecoder
             }
             if (successDataPath && successSavePath)
             {
-                button1.Enabled = true;
-                button2.Enabled = false;
+                buttonShowContent.Enabled = true;
+                buttonExport.Enabled = false;
+                buttonExtras.Enabled = false;
                 checkBoxEditMode.Enabled = false;
+                try
+                {
+                    string saveRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(textBoxSavePath.Text).ToString()).ToString()).ToString().ToLowerInvariant();
+                    string testRoot = (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves").ToLowerInvariant();
+                    if (saveRoot != testRoot)
+                    {
+                        buttonSaveSelector.Enabled = false;
+                    }
+                    else
+                    {
+                        buttonSaveSelector.Enabled = true;
+                    }
+                }
+                catch
+                {
+                    buttonSaveSelector.Enabled = false;
+                }
+                
                 label4.Text = "Save file changed! Press 'Show Content' to update.";
                 label4.Visible = true; //shows warning about save file
-                SaveFileViewer.Properties.Settings.Default.Save();
             }
             else
             {
-                button1.Enabled = false;
-                button2.Enabled = false;
+                buttonShowContent.Enabled = false;
+                buttonExport.Enabled = false;
+                buttonExtras.Enabled = false;
+                buttonSaveSelector.Enabled = false;
                 checkBoxEditMode.Enabled = false;
             }
         }
-
 
         private byte[] ReadKey(string assemblyPath)
         {
@@ -327,7 +498,7 @@ namespace savefiledecoder
         }
 
         //export
-        private void button2_Click(object sender, EventArgs e)
+        private void buttonExport_Click(object sender, EventArgs e)
         {
             using (StreamWriter file = new StreamWriter("objectives.txt"))
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
@@ -338,7 +509,7 @@ namespace savefiledecoder
             using (StreamWriter file = new StreamWriter("checkpoints.txt"))
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
-                    file.WriteLine("\"{0}\"", m_GameSave.Checkpoints[i].Objective);
+                    file.WriteLine("\"{0}\"", m_GameSave.Checkpoints[i].PointIdentifier);
                 }
 
             using (StreamWriter file = new StreamWriter("variables.txt"))
@@ -362,60 +533,208 @@ namespace savefiledecoder
         //browse for Data.Save
         private void button5_Click(object sender, EventArgs e)
         {
-            DialogResult result = openFileDialog1.ShowDialog();
-            if (result == DialogResult.OK)
+            if (ModifierKeys == Keys.Control && File.Exists(textBoxSavePath.Text))
             {
-                SaveFileViewer.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
-                textBoxSavePath.Text = openFileDialog1.FileName;
+                System.Diagnostics.Process.Start(Directory.GetParent(textBoxSavePath.Text).ToString());
             }
+            else
+            {
+                DialogResult result = openFileDialog1.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    SaveFileViewer.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
+                    textBoxSavePath.Text = openFileDialog1.FileName;
+                }
+            }
+            
         }
         //browse for BTS install directory
         private void button6_Click(object sender, EventArgs e)
         {
-            DialogResult result = folderBrowserDialog1.ShowDialog();
-            if (result == DialogResult.OK)
+            if (ModifierKeys == Keys.Control && Directory.Exists(textBoxLisPath.Text))
             {
-                SaveFileViewer.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
-                textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
+                System.Diagnostics.Process.Start(textBoxLisPath.Text);
+            }
+            else
+            {
+                DialogResult result = folderBrowserDialog1.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    SaveFileViewer.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
+                    textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
+                }
             }
         }
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.4.2\nTool by /u/DanielWe\nModified by Ladosha and IgelRM", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.5\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            textBoxSavePath.Text = SaveFileViewer.Properties.Settings.Default.SavePath;
-            textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
-            folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
-            label4.Visible = false;
+            if (File.Exists("settings.json"))
+            {
+                string file = File.ReadAllText("settings.json");
+                try
+                {
+                    appSettings = Json.Decode(file);
+                    SaveFileViewer.Properties.Settings.Default.SavePath = appSettings.SavePath;
+                    SaveFileViewer.Properties.Settings.Default.BTSpath = appSettings.BTSpath;
+                    SaveFileViewer.Properties.Settings.Default.rewindNotesShown = appSettings.rewindNotesShown;
+                    SaveFileViewer.Properties.Settings.Default.editModeIntroShown = appSettings.editModeIntroShown;
+                }
+                catch
+                {
+
+                }
+            }
 
             ToolTip toolTip = new ToolTip();
             toolTip.BackColor = System.Drawing.SystemColors.InfoText;
             toolTip.IsBalloon = true;
-            toolTip.SetToolTip(button2, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
+            toolTip.SetToolTip(buttonExport, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
+
+            if (SaveFileViewer.Properties.Settings.Default.BTSpath == "Undefined")
+            {
+                DetectBtsPath();
+            }
+            else
+            {
+                textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
+                folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
+            }
+
+            DetectSavePath();
+            label4.Visible = false;
+            tabControl1.SelectedTab = tabPageFlags;
+            tabControl1.SelectedTab = tabPageVars;
+
+            //double buffering
+            typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridView1, new object[] { true });
+            typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewFlags, new object[] { true });
+
+        }
+
+        private void DetectBtsPath ()
+        {
+            RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64); //https://social.msdn.microsoft.com/Forums/vstudio/en-US/ef0de98a-18db-43e1-b9b9-b52c3b5f3d4c/registry-issue-getting-install-location-and-saving-its-path-c?forum=csharpgeneral
+            localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
+            try 
+            {
+                textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
+                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
+            }
+            catch
+            {
+                textBoxLisPath.Text = "Auto-detection failed! Please select the path manually.";
+            }
+        }
+
+        private void DetectSavePath ()
+        {
+            SteamIDFolders = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves").ToList<string>();
+            if (SteamIDFolders.Count != 0)
+            {
+                SteamIDFolders.RemoveAt(SteamIDFolders.Count - 1); //remove the preferences from the list
+            }
+            if (SaveFileViewer.Properties.Settings.Default.SavePath == "Undefined")
+            {
+                if (SteamIDFolders.Count == 1)
+                {
+                    bool found = false;
+                    for (int i=0; i<3; i++)
+                    {
+                        if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save"))
+                        {
+                            textBoxSavePath.Text = SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save";
+                            SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        textBoxSavePath.Text = "Auto-detection failed! Please select the path manually.";
+                    }
+                }
+                else if (SteamIDFolders.Count > 1)
+                {
+                    browseForm.SteamIDFolders = this.SteamIDFolders;
+                    browseForm.updateComboBox1();
+                    browseForm.savenumber = 0;
+                    browseForm.steamid = SteamIDFolders[0];
+                    browseForm.ShowDialog();
+                    updateSavePath();
+                }
+                else
+                {
+                    textBoxSavePath.Text = "Auto-detection failed! Please select the path manually.";
+                }
+            }
+            else
+            {
+                textBoxSavePath.Text = SaveFileViewer.Properties.Settings.Default.SavePath;
+            }
+        }
+
+        public void updateSavePath()
+        {
+            textBoxSavePath.Text = selectedSavePath;
+            SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
         }
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
-            m_GameSave.Write(textBoxSavePath.Text, m_GameSave.m_Data);
+            m_GameSave.WriteData(textBoxSavePath.Text, m_GameSave.m_Data);
             if (m_GameSave.editsSaved) MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             label4.Visible = false;
+
+            for (int i = 0; i < dataGridView1.RowCount; i++)
+            {
+                for (int j = 0; j < dataGridView1.ColumnCount; j++)
+                {
+                    if (dataGridView1.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    {
+                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                    }
+                    else
+                    {
+                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                    }
+                }
+            }
+
+            for (int i = 0; i < dataGridViewFlags.RowCount; i++)
+            {
+                for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
+                {
+                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    {
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                    }
+                    else
+                    {
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                    }
+                }
+            }
         }
 
         public int? origCellValue, newCellValue;
+        public bool origFlagState, newFlagState;
         private string cellType = "";
 
         public bool editModeActive = false;
-        bool editModeIntroShown = false;
-        private void checkBoxEditMode_MouseUp(object sender, EventArgs e)
+        bool editModeIntroShown = SaveFileViewer.Properties.Settings.Default.editModeIntroShown;
+
+        private void checkBoxEditMode_MouseUp(object sender, MouseEventArgs e)
         {
             if (!editModeIntroShown)
             {
-                MessageBox.Show("Note that the 'Edit Mode' is highly experimental. It has not been extensively tested and might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nTo start editing a cell, double click on it, or select it with the mouse/arrow keys and press F2. Editing of gray-colored cells is not permitted.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 editModeIntroShown = true;
+                SaveFileViewer.Properties.Settings.Default.editModeIntroShown = true;
             }
 
             if (checkBoxEditMode.Checked)
@@ -444,7 +763,11 @@ namespace savefiledecoder
         {
             editModeActive = true;
             dataGridView1.ReadOnly = false;
-            button1.Enabled = false;
+            dataGridViewFlags.ReadOnly = false;
+            buttonShowContent.Enabled = false;
+            buttonManualBrowseBts.Enabled = false;
+            buttonManualBrowseSave.Enabled = false;
+            buttonSaveSelector.Enabled = false;
             textBoxLisPath.Enabled = false;
             textBoxSavePath.Enabled = false;
             checkBoxE1.Enabled = false;
@@ -452,15 +775,20 @@ namespace savefiledecoder
             checkBoxE3.Enabled = false;
             checkBoxE4.Enabled = false;
             buttonSaveEdits.Enabled = true;
-            buttonExtras.Enabled = true;
+            buttonExtras.Enabled = false;
             UpdateDataGrid();
+            UpdateFlagGrid();
         }
         private void disableEditMode()
         {
             editModeActive = false;
             m_GameSave.editsSaved = true;
             dataGridView1.ReadOnly = true;
-            button1.Enabled = true;
+            dataGridViewFlags.ReadOnly = true;
+            buttonShowContent.Enabled = true;
+            buttonManualBrowseBts.Enabled = true;
+            buttonManualBrowseSave.Enabled = true;
+            buttonSaveSelector.Enabled = true;
             textBoxLisPath.Enabled = true;
             textBoxSavePath.Enabled = true;
             UpdateEpsiodeBoxes();
@@ -469,10 +797,11 @@ namespace savefiledecoder
             if (checkBoxE3.Enabled) checkBoxE3.Checked = true;
             if (checkBoxE4.Enabled) checkBoxE4.Checked = true;
             buttonSaveEdits.Enabled = false;
-            buttonExtras.Enabled = false;
+            buttonExtras.Enabled = true;
             label4.Visible = false;
             m_GameSave.Read(textBoxSavePath.Text);
             UpdateDataGrid();
+            UpdateFlagGrid();
         }
 
         private void dataGridView1_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -493,15 +822,81 @@ namespace savefiledecoder
                 default: cellType = "normal"; break;
             }
         }
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Variables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void tabControl1_Selected(object sender, TabControlEventArgs e)
+        {
+            if (!editModeActive)
+            {
+                if (e.TabPage.Name == "tabPageFlags")
+                {
+                    UpdateFlagGrid();
+                }
+                else
+                {
+                    UpdateDataGrid();
+                }
+            }
+        }
+
+        private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            origFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+            if (e.ColumnIndex == 1)
+            {
+                cellType = "current";
+            }
+            else
+            {
+                cellType = "normal";
+            }
+        }
+
+        private void dataGridViewFlags_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            newFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+
+            if (newFlagState != origFlagState)
+            {
+                point_id = dataGridViewFlags.Rows[0].Cells[e.ColumnIndex].Value.ToString();
+                flag_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (m_GameSave.FindAndUpdateFlagValue(point_id, flag_name, origFlagState, cellType))
+                {
+                    dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                    label4.Text = "Press 'Save' to write changes to the save file.";
+                    label4.Visible = true;
+                }
+                else dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+        }
+
+        private void buttonSaveSelector_Click(object sender, EventArgs e)
+        {
+            browseForm.SteamIDFolders = this.SteamIDFolders;
+            browseForm.updateComboBox1();
+            string folder = Directory.GetParent(textBoxSavePath.Text).ToString();
+            browseForm.savenumber = int.Parse(folder.Substring(folder.Length - 1));
+            browseForm.steamid = Path.GetDirectoryName(folder).Remove(0, Path.GetDirectoryName(folder).LastIndexOf('\\')+1);
+            browseForm.ShowDialog();
+            updateSavePath();
+        }
 
         private void buttonExtras_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Coming soon!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            FormExtras formExtras = new FormExtras();
+            formExtras.savePath = textBoxSavePath.Text;
+            formExtras.headerPath = Path.GetDirectoryName(textBoxSavePath.Text) + @"\Header.Save";
+            formExtras.m_GameSave = m_GameSave;
+            formExtras.ShowDialog(); //prevent the user from chaging things in main form while the extras is open
         }
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-
             if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty)
             {
                 newCellValue = null;
@@ -529,6 +924,7 @@ namespace savefiledecoder
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, cellType))
                 {
+                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
@@ -538,6 +934,18 @@ namespace savefiledecoder
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (appSettings.BTSpath != SaveFileViewer.Properties.Settings.Default.BTSpath ||
+            appSettings.SavePath != SaveFileViewer.Properties.Settings.Default.SavePath ||
+            appSettings.editModeIntroShown != SaveFileViewer.Properties.Settings.Default.editModeIntroShown ||
+            appSettings.rewindNotesShown != SaveFileViewer.Properties.Settings.Default.rewindNotesShown)
+            {
+                appSettings.BTSpath = SaveFileViewer.Properties.Settings.Default.BTSpath;
+                appSettings.SavePath = SaveFileViewer.Properties.Settings.Default.SavePath;
+                appSettings.editModeIntroShown = SaveFileViewer.Properties.Settings.Default.editModeIntroShown;
+                appSettings.rewindNotesShown = SaveFileViewer.Properties.Settings.Default.rewindNotesShown;
+                File.WriteAllText("settings.json", Newtonsoft.Json.JsonConvert.SerializeObject(appSettings, Newtonsoft.Json.Formatting.Indented));
+            }
+            
             if (m_GameSave != null && !m_GameSave.editsSaved)
             {
                 DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);

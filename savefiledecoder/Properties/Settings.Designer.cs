@@ -25,8 +25,7 @@ namespace SaveFileViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\Life is Strange - Before the S" +
-            "torm")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Undefined")]
         public string BTSpath {
             get {
                 return ((string)(this["BTSpath"]));
@@ -38,14 +37,37 @@ namespace SaveFileViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C: \\\\Users\\\\[UserName]\\\\AppData\\\\LocalLow\\\\Square Enix\\\\Life is Strange_ Before t" +
-            "he Storm\\\\Saves\\\\[id]\\\\SLOT_00\\\\Data.Save")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Undefined")]
         public string SavePath {
             get {
                 return ((string)(this["SavePath"]));
             }
             set {
                 this["SavePath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool editModeIntroShown {
+            get {
+                return ((bool)(this["editModeIntroShown"]));
+            }
+            set {
+                this["editModeIntroShown"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool rewindNotesShown {
+            get {
+                return ((bool)(this["rewindNotesShown"]));
+            }
+            set {
+                this["rewindNotesShown"] = value;
             }
         }
     }

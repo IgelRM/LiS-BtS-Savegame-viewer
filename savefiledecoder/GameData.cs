@@ -9,14 +9,14 @@ using System.Web.Helpers;
 
 namespace savefiledecoder
 {
-    class GameVariable
+    public class GameVariable
     {
         public string id; //unique-id
         public string name; //variable name, eg: E1_APOLOGIZETOBOUNCER
     }
 
 
-    class GameData
+    public class GameData
     {
         public Dictionary<string, GameVariable> Variables { get { return m_Variables; } }
         public Dictionary<string, GameVariable> Varnames { get { return m_Varnames; } }

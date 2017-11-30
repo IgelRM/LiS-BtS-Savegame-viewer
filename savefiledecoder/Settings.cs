@@ -18,9 +18,9 @@
         }
         
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
-            // Добавьте здесь код для обработки события SettingChangingEvent.
+            // Добавьте здесь код для обработки события SettingsChanging.
         }
-        
+
         private void SettingsSavingEventHandler(object sender, System.ComponentModel.CancelEventArgs e) {
             // Добавьте здесь код для обработки события SettingsSaving.
         }
