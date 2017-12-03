@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,35 +89,35 @@ namespace savefiledecoder
             "Bonus Episode: Farewell"
         };
 
-        public string[] pointNames = new string[]
+        public OrderedDictionary pointNames = new OrderedDictionary()
         {
-            "Old Mill - Exterior", //episode 1
-            "Old Mill - Interior",
-            "Price House - Upstairs",
-            "Price House - Downstairs",
-            "First Dream",
-            "School Campus",
-            "School Drama Lab",
-            "Train",
-            "Overlook",
-            "Junkyard",
-            "Second Dream",
-            "Junkyard - Night",
-            "Overlook - Night",
-            "Episode 1 Ending",
-            "Principal's Office", //episode 2
-            "Blackwell Parking Lot",
-            "Junkyard",
-            "Dream",
-            "Junkyard - Later",
-            "Frank's RV",
-            "Dormitories (Outside)",
-            "Boys' Dormitories",
-            "Campus - Backstage",
-            "The Tempest",
-            "Neighborhood",
-            "Amber House",
-            "Episode 2 Ending"
+            {"E1_S01_A", "Old Mill - Exterior"}, //episode 1
+            {"E1_S01_B", "Old Mill - Interior"},
+            {"E1_S02_BUILD_AB", "Price House - Upstairs"},
+            {"E1_S02_BUILD_CD", "Price House - Downstairs"},
+            {"E1_S03", "First Dream"},
+            {"E1_S04_A", "School Campus"},
+            {"E1_S04_D", "School Drama Lab"},
+            {"E1_S05", "Train"},
+            {"E1_S06", "Overlook"},
+            {"E1_S08", "Junkyard"},
+            {"E1_S09", "Second Dream"},
+            {"E1_S10_A", "Junkyard - Night"},
+            {"E1_S10_B", "Overlook - Night"},
+            {"Episode1End", "Episode 1 Ending"},
+            {"E2_S01_ABC", "Principal's Office"}, //episode 2
+            {"E2_S01_D", "Blackwell Parking Lot"},
+            {"E2_S02_A", "Junkyard"},
+            {"E2_S02_B", "Dream"},
+            {"E2_S02_C", "Junkyard - Later"},
+            {"E2_S03", "Frank's RV"},
+            {"E2_S04_A", "Dormitories (Outside)"},
+            {"E2_S04_B", "Boys' Dormitories"},
+            {"E2_S05_A", "Campus - Backstage"},
+            {"E2_S05_B", "The Tempest"},
+            {"E2_S06", "Neighborhood"},
+            {"E2_S07", "Amber House"},
+            {"Episode2End", "Episode 2 Ending"}
          };
 
         public Dictionary<string, string> varStartDict = new Dictionary<string, string>()
@@ -166,8 +167,7 @@ namespace savefiledecoder
             SaveEmpty = false;
             Checkpoints.Clear();
             EpisodePlayed.Clear();
-            list_EpStates.Clear();
-
+            
             // read and decode Data
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file); // decoded is - dexored content only (since file starts with header)
@@ -257,6 +257,7 @@ namespace savefiledecoder
             }
 
             //fill episodestates
+            list_EpStates.Clear();
             foreach (var episode in m_Header.cachedEpisodes)
             {
                 list_EpStates.Add(episode);

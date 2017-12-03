@@ -481,7 +481,8 @@ namespace savefiledecoder
         }
 
         private void checkBoxEpisodes_CheckedChanged(object sender, EventArgs e)
-        { if (editModeActive==false)
+        {
+            if (!editModeActive)
             {
                 UpdateDataGrid();
             }
@@ -568,7 +569,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.5\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.5.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -633,7 +634,14 @@ namespace savefiledecoder
 
         private void DetectSavePath ()
         {
-            SteamIDFolders = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves").ToList<string>();
+            try
+            {
+                SteamIDFolders = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves").ToList<string>();
+            }
+            catch
+            {
+
+            }
             if (SteamIDFolders.Count != 0)
             {
                 SteamIDFolders.RemoveAt(SteamIDFolders.Count - 1); //remove the preferences from the list
@@ -664,6 +672,15 @@ namespace savefiledecoder
                     browseForm.updateComboBox1();
                     browseForm.savenumber = 0;
                     browseForm.steamid = SteamIDFolders[0];
+                    byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
+                    DecodeEncode.SetKey(key);
+                    string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+                    m_GameData.Read(initiDataPath);
+                    if (m_GameSave == null)
+                    {
+                        m_GameSave = new GameSave(m_GameData);
+                    }
+                    browseForm.m_GameSave = m_GameSave;
                     browseForm.ShowDialog();
                     updateSavePath();
                 }
@@ -829,7 +846,17 @@ namespace savefiledecoder
 
         private void tabControl1_Selected(object sender, TabControlEventArgs e)
         {
-            if (!editModeActive)
+            bool empty = true;
+            try
+            {
+                empty = m_GameSave.SaveEmpty;
+            }
+            catch
+            {
+
+            }
+
+            if (!editModeActive && !empty && m_GameSave.m_Data != null)
             {
                 if (e.TabPage.Name == "tabPageFlags")
                 {
@@ -877,11 +904,36 @@ namespace savefiledecoder
 
         private void buttonSaveSelector_Click(object sender, EventArgs e)
         {
+            try
+            {
+                SteamIDFolders = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves").ToList<string>();
+                if (SteamIDFolders.Count != 0)
+                {
+                    SteamIDFolders.RemoveAt(SteamIDFolders.Count - 1); //remove the preferences from the list
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Could not find save folder!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             browseForm.SteamIDFolders = this.SteamIDFolders;
             browseForm.updateComboBox1();
             string folder = Directory.GetParent(textBoxSavePath.Text).ToString();
             browseForm.savenumber = int.Parse(folder.Substring(folder.Length - 1));
             browseForm.steamid = Path.GetDirectoryName(folder).Remove(0, Path.GetDirectoryName(folder).LastIndexOf('\\')+1);
+
+            byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
+            DecodeEncode.SetKey(key);
+            string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+            m_GameData.Read(initiDataPath);
+            if (m_GameSave == null)
+            {
+                m_GameSave = new GameSave(m_GameData);
+            }
+            m_GameSave.Read(textBoxSavePath.Text);
+
+            browseForm.m_GameSave = m_GameSave;
             browseForm.ShowDialog();
             updateSavePath();
         }
