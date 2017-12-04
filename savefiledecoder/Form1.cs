@@ -18,7 +18,7 @@ namespace savefiledecoder
         GameSave m_GameSave;
         const string c_DataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
-        string point_id = "", var_name = "", flag_name = "";
+        string point_id = "", var_name = "";
         List<string> SteamIDFolders = new List<string>();
         public static string selectedSavePath = SaveFileViewer.Properties.Settings.Default.SavePath;
         dynamic appSettings = Json.Decode("{}");
@@ -53,6 +53,7 @@ namespace savefiledecoder
             {
                 UpdateEpsiodeBoxes();
                 UpdateFlagGrid();
+                UpdateFloatGrid();
                 UpdateDataGrid();
                 label4.Visible = false; //hide save file warning
                 buttonExport.Enabled = true; //allow exporting
@@ -195,6 +196,83 @@ namespace savefiledecoder
 
             }
             dataGridView1.Columns[0].Width = keyColWidth;
+
+        }
+
+        private void UpdateFloatGrid()
+        {
+            if (m_GameSave == null)
+                return;
+
+            int keyColWidth = 100;
+            try
+            {
+                keyColWidth = dataGridViewFloats.Columns[0].Width;
+            }
+            catch
+            {
+
+            }
+
+            if (dataGridViewFloats.FirstDisplayedScrollingRowIndex <= 0)
+            {
+                visible_row = 0;
+            }
+            else
+            {
+                visible_row = dataGridViewFloats.FirstDisplayedScrollingRowIndex;
+            }
+            if (dataGridViewFloats.FirstDisplayedScrollingColumnIndex <= 1)
+            {
+                visible_column = 1;
+            }
+            else if (dataGridViewFloats.FirstDisplayedScrollingColumnHiddenWidth > 60)
+            {
+                visible_column = dataGridViewFloats.FirstDisplayedScrollingColumnIndex + 1;
+            }
+            else
+            {
+                visible_column = dataGridViewFloats.FirstDisplayedScrollingColumnIndex;
+            }
+
+            dataGridViewFloats.Columns.Clear();
+            DataTable table = BuildFloatTable();
+            dataGridViewFloats.DataSource = table.DefaultView;
+            dataGridViewFloats.Columns["Key"].Frozen = true;
+            dataGridViewFloats.Columns["Key"].ReadOnly = true;
+            dataGridViewFloats.Rows[0].Frozen = true;
+            dataGridViewFloats.Rows[0].ReadOnly = true;
+            dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
+
+            for (int i = 0; i < dataGridViewFloats.RowCount; i++)
+            {
+                for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
+                {
+                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    {
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                    }
+                    else
+                    {
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                    }
+                }
+            }
+
+            for (int i = 0; i < dataGridViewFloats.ColumnCount; i++)
+            {
+                dataGridViewFloats.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            try
+            {
+                dataGridViewFloats.FirstDisplayedScrollingRowIndex = visible_row;
+                dataGridViewFloats.FirstDisplayedScrollingColumnIndex = visible_column;
+            }
+            catch
+            {
+
+            }
+            dataGridViewFloats.Columns[0].Width = keyColWidth;
 
         }
 
@@ -344,6 +422,58 @@ namespace savefiledecoder
                     var checkpoint = m_GameSave.Checkpoints[i];
                     VariableState state;
                     bool found = checkpoint.Variables.TryGetValue(varType.Value.name, out state);
+                    if (found)
+                    {
+                        row[m_GameSave.Checkpoints.Count - i] = state.Value;
+                    }
+                    else
+                    {
+                        row[m_GameSave.Checkpoints.Count - i] = null;
+                    }
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        private DataTable BuildFloatTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+            bool first = true;
+            for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
+            {
+                if (first)
+                {
+                    t.Columns.Add("Global");
+                    first = false;
+                }
+                else
+                {
+                    t.Columns.Add("Checkpoint " + (i + 1).ToString());
+                }
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
+            {
+                row[m_GameSave.Checkpoints.Count - i] = m_GameSave.Checkpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // floats
+            foreach (var flt in m_GameSave.m_Data.floatValuesDict)
+            {
+                if (flt.Key == "$type") continue;
+                row[0] = flt.Key;
+                for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
+                {
+                    var checkpoint = m_GameSave.Checkpoints[i];
+                    FloatState state;
+                    bool found = checkpoint.Floats.TryGetValue(flt.Key, out state);
                     if (found)
                     {
                         row[m_GameSave.Checkpoints.Count - i] = state.Value;
@@ -609,11 +739,13 @@ namespace savefiledecoder
             DetectSavePath();
             label4.Visible = false;
             tabControl1.SelectedTab = tabPageFlags;
+            tabControl1.SelectedTab = tabPageFloats;
             tabControl1.SelectedTab = tabPageVars;
 
             //double buffering
             typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridView1, new object[] { true });
             typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewFlags, new object[] { true });
+            typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewFloats, new object[] { true });
 
         }
 
@@ -722,6 +854,21 @@ namespace savefiledecoder
                 }
             }
 
+            for (int i = 0; i < dataGridViewFloats.RowCount; i++)
+            {
+                for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
+                {
+                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    {
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                    }
+                    else
+                    {
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                    }
+                }
+            }
+
             for (int i = 0; i < dataGridViewFlags.RowCount; i++)
             {
                 for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
@@ -739,18 +886,17 @@ namespace savefiledecoder
         }
 
         public int? origCellValue, newCellValue;
+        public float? origFloatValue, newFloatValue;
         public bool origFlagState, newFlagState;
         private string cellType = "";
 
         public bool editModeActive = false;
-        bool editModeIntroShown = SaveFileViewer.Properties.Settings.Default.editModeIntroShown;
 
         private void checkBoxEditMode_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!editModeIntroShown)
+            if (!SaveFileViewer.Properties.Settings.Default.editModeIntroShown)
             {
                 MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                editModeIntroShown = true;
                 SaveFileViewer.Properties.Settings.Default.editModeIntroShown = true;
             }
 
@@ -781,6 +927,7 @@ namespace savefiledecoder
             editModeActive = true;
             dataGridView1.ReadOnly = false;
             dataGridViewFlags.ReadOnly = false;
+            dataGridViewFloats.ReadOnly = false;
             buttonShowContent.Enabled = false;
             buttonManualBrowseBts.Enabled = false;
             buttonManualBrowseSave.Enabled = false;
@@ -795,6 +942,7 @@ namespace savefiledecoder
             buttonExtras.Enabled = false;
             UpdateDataGrid();
             UpdateFlagGrid();
+            UpdateFloatGrid();
         }
         private void disableEditMode()
         {
@@ -802,6 +950,7 @@ namespace savefiledecoder
             m_GameSave.editsSaved = true;
             dataGridView1.ReadOnly = true;
             dataGridViewFlags.ReadOnly = true;
+            dataGridViewFloats.ReadOnly = true;
             buttonShowContent.Enabled = true;
             buttonManualBrowseBts.Enabled = true;
             buttonManualBrowseSave.Enabled = true;
@@ -819,6 +968,7 @@ namespace savefiledecoder
             m_GameSave.Read(textBoxSavePath.Text);
             UpdateDataGrid();
             UpdateFlagGrid();
+            UpdateFloatGrid();
         }
 
         private void dataGridView1_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -839,34 +989,29 @@ namespace savefiledecoder
                 default: cellType = "normal"; break;
             }
         }
+
+        private void dataGridViewFloats_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty) //if the cell was originally empty
+            {
+                origFloatValue = null;
+            }
+            else
+            {
+                origFloatValue = float.Parse(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString().Replace('.', ','));
+            }
+            switch (e.ColumnIndex)
+            {
+                case 1: cellType = "global"; break;
+                case 2: cellType = "current"; break;
+                case 3: cellType = "last"; break;
+                default: cellType = "normal"; break;
+            }
+        }
+
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Variables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
-        }
-
-        private void tabControl1_Selected(object sender, TabControlEventArgs e)
-        {
-            bool empty = true;
-            try
-            {
-                empty = m_GameSave.SaveEmpty;
-            }
-            catch
-            {
-
-            }
-
-            if (!editModeActive && !empty && m_GameSave.m_Data != null)
-            {
-                if (e.TabPage.Name == "tabPageFlags")
-                {
-                    UpdateFlagGrid();
-                }
-                else
-                {
-                    UpdateDataGrid();
-                }
-            }
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -889,10 +1034,10 @@ namespace savefiledecoder
             if (newFlagState != origFlagState)
             {
                 point_id = dataGridViewFlags.Rows[0].Cells[e.ColumnIndex].Value.ToString();
-                flag_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
+                var_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (m_GameSave.FindAndUpdateFlagValue(point_id, flag_name, origFlagState, cellType))
+                if (m_GameSave.FindAndUpdateFlagValue(point_id, var_name, origFlagState, cellType))
                 {
                     dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -981,6 +1126,43 @@ namespace savefiledecoder
                     label4.Visible = true;
                 }
                 else dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origCellValue;
+            }
+        }
+
+        private void dataGridViewFloats_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty)
+            {
+                newFloatValue = null;
+            }
+            else
+            {
+                float result; //result of parsing
+                if (float.TryParse(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString().Replace('.', ','), out result))
+                {
+                    newFloatValue = result;
+                }
+                else
+                {
+                    MessageBox.Show("Variable value contains non-numeric characters! Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    newFloatValue = origFloatValue;
+                    dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFloatValue;
+                }
+            }
+
+            if (newFloatValue != origFloatValue)
+            {
+                point_id = dataGridViewFloats.Rows[0].Cells[e.ColumnIndex].Value.ToString();
+                var_name = dataGridViewFloats.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFloatValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (m_GameSave.FindAndUpdateFloatValue(point_id, var_name, origFloatValue, newFloatValue, cellType))
+                {
+                    dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                    label4.Text = "Press 'Save' to write changes to the save file.";
+                    label4.Visible = true;
+                }
+                else dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFloatValue;
             }
         }
 

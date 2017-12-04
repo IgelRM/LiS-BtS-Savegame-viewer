@@ -56,6 +56,8 @@
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabPageFlags = new System.Windows.Forms.TabPage();
             this.dataGridViewFlags = new System.Windows.Forms.DataGridView();
+            this.tabPageFloats = new System.Windows.Forms.TabPage();
+            this.dataGridViewFloats = new System.Windows.Forms.DataGridView();
             this.buttonAbout = new System.Windows.Forms.Button();
             this.buttonExport = new System.Windows.Forms.Button();
             this.buttonShowContent = new System.Windows.Forms.Button();
@@ -71,6 +73,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabPageFlags.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFlags)).BeginInit();
+            this.tabPageFloats.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFloats)).BeginInit();
             this.SuspendLayout();
             // 
             // openFileDialog1
@@ -393,6 +397,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tabControl1, 5);
             this.tabControl1.Controls.Add(this.tabPageVars);
             this.tabControl1.Controls.Add(this.tabPageFlags);
+            this.tabControl1.Controls.Add(this.tabPageFloats);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(3, 96);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
@@ -400,7 +405,6 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1189, 453);
             this.tabControl1.TabIndex = 4;
-            this.tabControl1.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
             // tabPageVars
             // 
@@ -464,6 +468,37 @@
             this.dataGridViewFlags.TabIndex = 2;
             this.dataGridViewFlags.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFlags_CellBeginEdit);
             this.dataGridViewFlags.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFlags_CellEndEdit);
+            // 
+            // tabPageFloats
+            // 
+            this.tabPageFloats.Controls.Add(this.dataGridViewFloats);
+            this.tabPageFloats.Location = new System.Drawing.Point(4, 22);
+            this.tabPageFloats.Name = "tabPageFloats";
+            this.tabPageFloats.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageFloats.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageFloats.TabIndex = 2;
+            this.tabPageFloats.Text = "Floats";
+            this.tabPageFloats.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewFloats
+            // 
+            this.dataGridViewFloats.AllowUserToAddRows = false;
+            this.dataGridViewFloats.AllowUserToDeleteRows = false;
+            this.dataGridViewFloats.AllowUserToResizeRows = false;
+            this.dataGridViewFloats.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewFloats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dataGridViewFloats.Location = new System.Drawing.Point(1, 2);
+            this.dataGridViewFloats.Margin = new System.Windows.Forms.Padding(0);
+            this.dataGridViewFloats.Name = "dataGridViewFloats";
+            this.dataGridViewFloats.ReadOnly = true;
+            this.dataGridViewFloats.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dataGridViewFloats.ShowEditingIcon = false;
+            this.dataGridViewFloats.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridViewFloats.TabIndex = 3;
+            this.dataGridViewFloats.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFloats_CellBeginEdit);
+            this.dataGridViewFloats.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFloats_CellEndEdit);
             // 
             // buttonAbout
             // 
@@ -575,6 +610,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabPageFlags.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFlags)).EndInit();
+            this.tabPageFloats.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFloats)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -613,6 +650,8 @@
         private System.Windows.Forms.DataGridView dataGridViewFlags;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.TabPage tabPageFloats;
+        private System.Windows.Forms.DataGridView dataGridViewFloats;
     }
 }
 

@@ -18,23 +18,32 @@ namespace savefiledecoder
         public int? Value { get; set; } //? is nullable. it means that the variable can be empty (without value)
     }
 
+    public class FloatState
+    {
+        public string Name { get; set; }
+        public float? Value { get; set; }
+    }
+
     public class Checkpoint
     {
         dynamic m_CheckPoint; //checkpoint object. possibly holding checkpoint name
         private Dictionary<String, VariableState> m_Variables = null;
+        private Dictionary<String, FloatState> m_Floats = null;
         private List<string> m_flags = null;
 
-        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables)
+        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables, Dictionary<String, FloatState> floats)
         {
             m_CheckPoint = checkpoint;
             m_Variables = variables;
+            m_Floats = floats;
         }
 
-        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables, List<string> flags)
+        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables, List<string> flags, Dictionary<String, FloatState> floats)
         {
             m_CheckPoint = checkpoint;
             m_Variables = variables;
             m_flags = flags;
+            m_Floats = floats;
         }
         public string PointIdentifier
         {
@@ -60,6 +69,14 @@ namespace savefiledecoder
             }
         }
 
+        public Dictionary<String, FloatState> Floats
+        {
+            get
+            {
+                return m_Floats;
+            }
+        }
+
         public List<string> Flags
         {
             get
@@ -68,7 +85,6 @@ namespace savefiledecoder
             }
         }
     }
-
 
     public class GameSave
     {
@@ -188,16 +204,18 @@ namespace savefiledecoder
             {
                 List<string> flags = new List<string>();
                 var vars = ReadVarsForCheckpoint(checkpoint);
+                var floats = ReadFloatsForCheckpoint(checkpoint);
                 foreach (var fl in checkpoint.flags)
                 {
                     flags.Add(fl);
                 }
-                Checkpoints.Add(new Checkpoint(checkpoint, vars, flags));
+                Checkpoints.Add(new Checkpoint(checkpoint, vars, flags, floats));
             }
 
             // add currentcheckpoint (seems to be identical to latest checkpoint...)
 
             Dictionary<string, VariableState> variables;
+            Dictionary<string, FloatState> floatvalues;
             try
             {
                 List<string> flags = new List<string>();
@@ -206,7 +224,8 @@ namespace savefiledecoder
                     flags.Add(fl);
                 }
                 variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
-                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckPoint, variables, flags));
+                floatvalues = ReadFloatsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
+                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckPoint, variables, flags, floatvalues));
             }
             catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
@@ -216,7 +235,8 @@ namespace savefiledecoder
 
             // add global variables as a last checkpoint.. // hack...
             variables = ReadVarsForCheckpoint(m_Data);
-            Checkpoints.Add(new Checkpoint(new { pointIdentifier = "Global Vars", currentObjective = "" }, variables));
+            floatvalues = ReadFloatsForCheckpoint(m_Data);
+            Checkpoints.Add(new Checkpoint(new { pointIdentifier = "Global Vars", currentObjective = "" }, variables, floatvalues));
 
             // fill episodeState (?)
             foreach (var episode in m_Data.episodes)
@@ -361,7 +381,22 @@ namespace savefiledecoder
 
             return variablesInPoint;
         }
-        
+
+        public Dictionary<String, FloatState> ReadFloatsForCheckpoint(dynamic checkpoint)
+        {
+            var floatsInPoint = new Dictionary<String, FloatState>(); //string is the variable name, VariableState is a name-value pair
+
+            foreach (var flt in checkpoint.floatValuesDict)
+            {
+                if (flt.Key == "$type") continue;
+                float? value = (float)flt.Value;
+                string name = flt.Key;
+                floatsInPoint[name] = (new FloatState() { Value = value, Name = name });
+            }
+
+            return floatsInPoint;
+        }
+
         public bool FindAndUpdateVarValue (string checkpoint_id, string var_name, int? orig_value, int? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
         {
             dynamic goodpoint;
@@ -462,6 +497,75 @@ namespace savefiledecoder
             if (!success)
             {
                 MessageBox.Show("Could not find and replace variable with ID " + var_id + "!");
+            }
+            else
+            {
+                editsSaved = false;
+            }
+            return success;
+        }
+
+        public bool FindAndUpdateFloatValue(string checkpoint_id, string var_name, float? orig_value, float? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
+        {
+            dynamic goodpoint;
+            bool pointFound = false, success = false;
+
+            if (cell_type == "global")
+            {
+                goodpoint = m_Data;
+                pointFound = true;
+
+            }
+            else if (cell_type == "current")
+            {
+                goodpoint = m_Data.currentCheckpoint.stateCheckPoint;
+                pointFound = true;
+            }
+
+            else
+            {
+                goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
+                foreach (var checkpoint in m_Data.checkpoints)
+                {
+                    if (checkpoint.pointIdentifier == checkpoint_id)
+                    {
+                        goodpoint = checkpoint;
+                        pointFound = true;
+                        break;
+                    }
+                }
+            }
+
+            if (pointFound)
+            {
+                Dictionary<string, object> objlist = new Dictionary<string, object>();
+                foreach (var flt in goodpoint.floatValuesDict)
+                {
+                    //if (flt.Key == "$type") continue;
+                    objlist.Add(flt.Key, flt.Value);
+                }
+                if (orig_value == null) //add new variable
+                {
+                    objlist.Add(var_name, new_value);
+                }
+                else if (new_value == null) //remove variable
+                {
+                    objlist.Remove(var_name);
+                }
+                else //change variable value
+                {
+                    objlist[var_name] = new_value;
+                }
+                goodpoint.floatValuesDict = objlist;
+                success = true;
+            }
+            else
+            {
+                MessageBox.Show("Could not find checkpoint with pointid" + checkpoint_id + "!");
+            }
+            if (!success)
+            {
+                MessageBox.Show("Could not find and replace float with name " + var_name + "!");
             }
             else
             {
