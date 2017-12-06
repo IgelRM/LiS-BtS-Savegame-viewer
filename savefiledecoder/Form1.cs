@@ -896,7 +896,7 @@ namespace savefiledecoder
         {
             if (!SaveFileViewer.Properties.Settings.Default.editModeIntroShown)
             {
-                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 SaveFileViewer.Properties.Settings.Default.editModeIntroShown = true;
             }
 
@@ -1011,7 +1011,7 @@ namespace savefiledecoder
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Variables: Select a cell using the mouse or the arrow keys, and type in the new value.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar.\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show("Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1044,6 +1044,40 @@ namespace savefiledecoder
                     label4.Visible = true;
                 }
                 else dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+        }
+        bool firstEdit = true;
+        private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
+        {
+            int number;
+            if (firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || int.TryParse(e.Value.ToString(), out number)))
+            {
+                firstEdit = false;
+                fillCellsWithValue(dataGridView1.SelectedCells, e.Value);
+                firstEdit = true;
+            }
+        }
+
+        private void dataGridViewFloats_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
+        {
+            float number;
+            if (firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || float.TryParse(e.Value.ToString().Replace('.', ','), out number)))
+            {
+                firstEdit = false;
+                fillCellsWithValue(dataGridViewFloats.SelectedCells, e.Value);
+                firstEdit = true;
+            }
+        }
+
+        private void dataGridViewFlags_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 'T')
+            {
+                fillCellsWithValue(dataGridViewFlags.SelectedCells, true);
+            }
+            else if (e.KeyChar == 'F')
+            {
+                fillCellsWithValue(dataGridViewFlags.SelectedCells, false);
             }
         }
 
@@ -1094,7 +1128,7 @@ namespace savefiledecoder
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty)
+            if (string.IsNullOrWhiteSpace(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString()))
             {
                 newCellValue = null;
             }
@@ -1129,9 +1163,23 @@ namespace savefiledecoder
             }
         }
 
+        private void fillCellsWithValue (DataGridViewSelectedCellCollection selectedCells, object value)
+        {
+            foreach (DataGridViewCell cell in selectedCells)
+            {
+                if (!cell.ReadOnly)
+                {
+                    cell.DataGridView.CurrentCell = cell;
+                    cell.DataGridView.BeginEdit(false);
+                    cell.Value = value;
+                    cell.DataGridView.EndEdit();
+                }
+            }
+        }
+
         private void dataGridViewFloats_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty)
+            if (string.IsNullOrWhiteSpace(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString()))
             {
                 newFloatValue = null;
             }

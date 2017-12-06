@@ -437,6 +437,7 @@
             this.dataGridView1.TabIndex = 2;
             this.dataGridView1.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridView1_CellBeginEdit);
             this.dataGridView1.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellEndEdit);
+            this.dataGridView1.CellParsing += new System.Windows.Forms.DataGridViewCellParsingEventHandler(this.dataGridView1_CellParsing);
             // 
             // tabPageFlags
             // 
@@ -468,6 +469,7 @@
             this.dataGridViewFlags.TabIndex = 2;
             this.dataGridViewFlags.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFlags_CellBeginEdit);
             this.dataGridViewFlags.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFlags_CellEndEdit);
+            this.dataGridViewFlags.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.dataGridViewFlags_KeyPress);
             // 
             // tabPageFloats
             // 
@@ -499,6 +501,7 @@
             this.dataGridViewFloats.TabIndex = 3;
             this.dataGridViewFloats.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFloats_CellBeginEdit);
             this.dataGridViewFloats.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFloats_CellEndEdit);
+            this.dataGridViewFloats.CellParsing += new System.Windows.Forms.DataGridViewCellParsingEventHandler(this.dataGridViewFloats_CellParsing);
             // 
             // buttonAbout
             // 
