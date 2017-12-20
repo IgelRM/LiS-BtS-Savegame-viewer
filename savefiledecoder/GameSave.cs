@@ -133,7 +133,20 @@ namespace savefiledecoder
             {"E2_S05_B", "The Tempest"},
             {"E2_S06", "Neighborhood"},
             {"E2_S07", "Amber House"},
-            {"Episode2End", "Episode 2 Ending"}
+            {"Episode2End", "Episode 2 Ending"},
+            {"EP3_S01_A", "Amber House"}, //episode 3
+            {"EP3_S01_B", "Rachel's Room"},
+            {"EP3_S01_C", "Dream"},
+            {"EP3_S02_A", "Price House - Upstairs"},
+            {"EP3_S02_B", "Price House - Downstairs"},
+            {"EP3_S02_C", "Price House - Garage"},
+            {"EP3_S03", "Junkyard"},
+            {"EP3_S04_ABC", "Hospital"},
+            {"EP3_S04_D", "Hospital - Rachel's Room"},
+            {"EP3_S05", "Amber House - Office"},
+            {"EP3_S06", "Burned Forest"},
+            {"EP3_S07_AB", "Old Mill"},
+            {"EP3_S08", "Hospital - Rachel's Room"}
          };
 
         public Dictionary<string, string> varStartDict = new Dictionary<string, string>()
@@ -164,7 +177,20 @@ namespace savefiledecoder
             {"E2_S05_B", "E2_S06_"},
             {"E2_S06", "E2_S06_"},
             {"E2_S07", "E2_S07_"},
-            {"Episode2End", "E3_"}
+            {"Episode2End", "E3_"},
+            {"EP3_S01_A", "EP3_S01A_"},
+            {"EP3_S01_B", "EP3_S01B_"},
+            {"EP3_S01_C", "EP3_S01C_"},
+            {"EP3_S02_A", "EP3_S02A_"},
+            {"EP3_S02_B", "EP3_S02B_"},
+            {"EP3_S02_C", "EP3_S02C_"},
+            {"EP3_S03", "EP3_S03_"},
+            {"EP3_S04_ABC", "EP3_S04A_"},
+            {"EP3_S04_D", "EP3_S04D_"},
+            {"EP3_S05", "EP3_S05_"},
+            {"EP3_S06", "EP3_S06_"},
+            {"EP3_S07_AB", "EP3_S07A_"},
+            {"EP3_S08", "EP3_S08_"}
         };
 
         public GameSave(GameData gameData)
@@ -177,13 +203,13 @@ namespace savefiledecoder
         public string Raw { get; set; }
         public string h_Raw { get; set; }
         public bool SaveEmpty {get; set;}
-        private MD5 contenthash =MD5.Create();
+        private MD5 contenthash = MD5.Create();
         public void Read(string path)
         {
             SaveEmpty = false;
             Checkpoints.Clear();
             EpisodePlayed.Clear();
-            
+
             // read and decode Data
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file); // decoded is - dexored content only (since file starts with header)
@@ -296,7 +322,7 @@ namespace savefiledecoder
             Raw = Newtonsoft.Json.JsonConvert.SerializeObject(json_data, Newtonsoft.Json.Formatting.Indented); //Raw is a utf8 string.
             byte[] content = Encoding.UTF8.GetBytes(Raw); //dexored (for now) new content
             byte[] chash = contenthash.ComputeHash(content); //md5 hash of dexored new content
-            byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encryptt and decrypt it.
+            byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encrypt and decrypt it.
             byte[] modded_file = new byte[20 + encoded.Length];
             byte[] file_header = new byte[4] { 81, 55, 110, 170 };
 
