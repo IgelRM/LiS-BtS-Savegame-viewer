@@ -23,13 +23,14 @@ namespace savefiledecoder
         Dictionary<string, GameVariable> m_Variables  = new Dictionary<string, GameVariable>(); //string is the variable ID here
         Dictionary<string, GameVariable> m_Varnames = new Dictionary<string, GameVariable>(); //string is the variable name here
 
-
+        public string Raw { get; set; }
+        public dynamic json;
         public void Read(string path)
         {
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file);
-            string str = Encoding.UTF8.GetString(decoded); //convert the byte array to a string
-            dynamic json = Json.Decode(str);
+            Raw = Encoding.UTF8.GetString(decoded); //convert the byte array to a string
+            json = Json.Decode(Raw);
             dynamic variables = json.variables;
             foreach(dynamic variable in variables)
             {

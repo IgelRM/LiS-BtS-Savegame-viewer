@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.Web.Helpers;
 
 namespace savefiledecoder
 {
@@ -28,6 +27,7 @@ namespace savefiledecoder
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(headerPath, saveFileDialog1.FileName);
+                MessageBox.Show("The backup was successful!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
         }
@@ -62,7 +62,7 @@ namespace savefiledecoder
                 dateTimePicker1.Value = new DateTime(m_GameSave.dateofSave[2], m_GameSave.dateofSave[1], m_GameSave.dateofSave[0]);
                 autoChange = false;
                 dateSelected = false; pointSelected = false;
-                if (m_GameSave.m_Data.currentCheckpoint.hasMidLevelData == true)
+                if (m_GameSave.m_Data.currentCheckpoint.hasMidLevelData.Value == true)
                 {
                     labelPointType.Text = "Type: Mid-level checkpoint";
                     labelPointType.ForeColor = Color.Red;
@@ -124,7 +124,7 @@ namespace savefiledecoder
         private void FormExtras_Load(object sender, EventArgs e)
         {
             ToolTip toolTip = new ToolTip();
-            toolTip.BackColor = System.Drawing.SystemColors.InfoText;
+            toolTip.BackColor = SystemColors.InfoText;
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(buttonLoadHeader, "Load the checkpoint data from selected save");
             toolTip.SetToolTip(buttonRewindCheckpoint, "Write changes to the save files");
@@ -162,12 +162,12 @@ namespace savefiledecoder
                 {
                     case 0: pointOffset = 0; break;
                     case 1: pointOffset = 14; break;
-                    case 2: break;
+                    case 2: pointOffset = 27; break;
                     case 3: break;
                 }
-                dynamic dest_point = m_GameSave.m_Data.Checkpoints[comboBoxPoint.SelectedIndex + pointOffset]; //the point that we ARE reverting to
+                dynamic dest_point = m_GameSave.m_Data.checkpoints[comboBoxPoint.SelectedIndex + pointOffset]; //the point that we ARE reverting to
                 string var_Start = "";
-                m_GameSave.varStartDict.TryGetValue(dest_point.pointIdentifier, out var_Start);
+                m_GameSave.varStartDict.TryGetValue(dest_point.pointIdentifier.Value, out var_Start);
 
                 m_GameSave.dateofSave[0] = dateTimePicker1.Value.Day;
                 m_GameSave.dateofSave[1] = dateTimePicker1.Value.Month;
@@ -214,9 +214,9 @@ namespace savefiledecoder
             {
                 case 0: start = 0; end = 14; break;
                 case 1: start = 14; end = 27; break;
-                case 2: start = 27; break; //future-proof for ep3. case 4 unknown for now
+                case 2: start = 27; break; //future-proof for ep3. case 3 unknown for now
             }
-            for (int i=start; i<m_GameSave.m_Data.checkpoints.Length; i++)
+            for (int i=start; i<m_GameSave.m_Data.checkpoints.Count; i++)
             {
                 if (i == end) break;
                 else comboBoxPoint.Items.Add(m_GameSave.pointNames[i]);

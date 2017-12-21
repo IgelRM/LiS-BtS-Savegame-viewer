@@ -8,6 +8,7 @@ using System.IO;
 using System.Web.Helpers;
 using System.Windows.Forms;
 using System.Security.Cryptography;
+using Newtonsoft.Json.Linq;
 
 namespace savefiledecoder
 {
@@ -133,7 +134,21 @@ namespace savefiledecoder
             {"E2_S05_B", "The Tempest"},
             {"E2_S06", "Neighborhood"},
             {"E2_S07", "Amber House"},
-            {"Episode2End", "Episode 2 Ending"}
+            {"Episode2End", "Episode 2 Ending"},
+            {"EP3_S01_A", "Amber House"}, //episode 3
+            {"EP3_S01_B", "Rachel's Room"},
+            {"EP3_S01_C", "Dream"},
+            {"EP3_S02_A", "Price House - Upstairs"},
+            {"EP3_S02_B", "Price House - Downstairs"},
+            {"EP3_S03_AC", "Junkyard"},
+            {"EP3_S04_AEBC", "Hospital"},
+            {"EP3_S04_D", "Hospital - Rachel's Room"},
+            {"EP3_S05", "Amber House - Office"},
+            {"EP3_S06", "Burned Forest"},
+            {"EP3_S07_B", "Old Mill"},
+            {"EP3_S08", "Hospital - Rachel's Room"},
+            {"Episode3End", "Episode 3 Ending"}
+
          };
 
         public Dictionary<string, string> varStartDict = new Dictionary<string, string>()
@@ -164,7 +179,20 @@ namespace savefiledecoder
             {"E2_S05_B", "E2_S06_"},
             {"E2_S06", "E2_S06_"},
             {"E2_S07", "E2_S07_"},
-            {"Episode2End", "E3_"}
+            {"Episode2End", "E3_S02A_"},
+            {"E3_S01_A", "E3_S02A_"},
+            {"E3_S01_B", "E3_S02A_"},
+            {"E3_S01_C", "E3_S02A_"},
+            {"E3_S02_A", "E3_S02A_"},
+            {"E3_S02_B", "E3_S02B_"},
+            {"E3_S03_AC", "E3_S03_"},
+            {"E3_S04_AEBC", "E3_S04A_"},
+            {"E3_S04_D", "E3_S05A_"},
+            {"E3_S05", "E3_S05A_"},
+            {"E3_S06", "E3_S07B_"},
+            {"E3_S07_B", "E3_S07B_"},
+            {"E3_S08", "E3_S08_"},
+            {"Episode3End", "E4_"}
         };
 
         public GameSave(GameData gameData)
@@ -188,10 +216,9 @@ namespace savefiledecoder
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file); // decoded is - dexored content only (since file starts with header)
             Raw = Encoding.UTF8.GetString(decoded);
-
             try
             {
-                m_Data = Json.Decode(Raw);  //this is the save file, NOT initialdata
+                m_Data = Newtonsoft.Json.JsonConvert.DeserializeObject(Raw, new Newtonsoft.Json.JsonSerializerSettings() { });  //this is the save file, NOT initialdata
             }
             catch
             {
@@ -207,7 +234,7 @@ namespace savefiledecoder
                 var floats = ReadFloatsForCheckpoint(checkpoint);
                 foreach (var fl in checkpoint.flags)
                 {
-                    flags.Add(fl);
+                    flags.Add(fl.Value);
                 }
                 Checkpoints.Add(new Checkpoint(checkpoint, vars, flags, floats));
             }
@@ -219,13 +246,13 @@ namespace savefiledecoder
             try
             {
                 List<string> flags = new List<string>();
-                foreach (var fl in m_Data.currentCheckpoint.stateCheckPoint.flags)
+                foreach (var fl in m_Data.currentCheckpoint.stateCheckpoint.flags)
                 {
-                    flags.Add(fl);
+                    flags.Add(fl.Value);
                 }
-                variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
-                floatvalues = ReadFloatsForCheckpoint(m_Data.currentCheckpoint.stateCheckPoint);
-                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckPoint, variables, flags, floatvalues));
+                variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckpoint);
+                floatvalues = ReadFloatsForCheckpoint(m_Data.currentCheckpoint.stateCheckpoint);
+                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckpoint, variables, flags, floatvalues));
             }
             catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
@@ -236,7 +263,7 @@ namespace savefiledecoder
             // add global variables as a last checkpoint.. // hack...
             variables = ReadVarsForCheckpoint(m_Data);
             floatvalues = ReadFloatsForCheckpoint(m_Data);
-            Checkpoints.Add(new Checkpoint(new { pointIdentifier = "Global Vars", currentObjective = "" }, variables, floatvalues));
+            Checkpoints.Add(new Checkpoint(new { pointIdentifier = "Global Vars", currentObjective = m_Data.currentObjective }, variables, floatvalues));
 
             // fill episodeState (?)
             foreach (var episode in m_Data.episodes)
@@ -388,9 +415,9 @@ namespace savefiledecoder
 
             foreach (var flt in checkpoint.floatValuesDict)
             {
-                if (flt.Key == "$type") continue;
+                if (flt.Name == "$type") continue;
                 float? value = (float)flt.Value;
-                string name = flt.Key;
+                string name = flt.Name;
                 floatsInPoint[name] = (new FloatState() { Value = value, Name = name });
             }
 
@@ -411,7 +438,7 @@ namespace savefiledecoder
             }
             else if (cell_type == "current")
             {
-                goodpoint = m_Data.currentCheckpoint.stateCheckPoint;
+                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
                 pointFound = true;
             }
             
@@ -420,7 +447,7 @@ namespace savefiledecoder
                 goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
                 foreach (var checkpoint in m_Data.checkpoints)
                 {
-                    if (checkpoint.pointIdentifier == checkpoint_id)
+                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
                     {
                         goodpoint = checkpoint;
                         pointFound = true;
@@ -438,9 +465,9 @@ namespace savefiledecoder
                     {
                         foreach (var variable in m_Data.checkpoints[m_Data.checkpoints.Length-1].variables)
                         {
-                            if (variable.storyVariable == var_id)
+                            if (variable.storyVariable.Value == var_id)
                             {
-                                guid = variable.uniqueId;
+                                guid = variable.uniqueId.Value;
                             }
                         }
                     }
@@ -452,38 +479,32 @@ namespace savefiledecoder
                         {"$type", "GameStateVariableModel"}
                     };
 
-                    DynamicJsonObject fresh_var = new DynamicJsonObject(var_body);
-                    List<DynamicJsonObject> objlist = new List<DynamicJsonObject>();
-                    foreach (var variable in goodpoint.variables)
-                    {
-                        objlist.Add(variable);
-                    }
-                    objlist.Add(fresh_var);
-                    DynamicJsonArray modded_array = new DynamicJsonArray(objlist.ToArray<object>());
-                    goodpoint.variables = modded_array;
+                    JObject fresh_var = JObject.FromObject(var_body);
+                    ((JArray)goodpoint.variables).Add(fresh_var);
                     success = true;
                 }
                 else if (new_value == null) //remove variable
                 {
-                    List<DynamicJsonObject> objlist = new List<DynamicJsonObject>();
+
+                    JObject delvar = new JObject();
                     foreach (var variable in goodpoint.variables)
                     {
-                        if (variable.storyVariable != var_id) // add all variables except the one we want to remove
+                        if (variable.storyVariable.Value == var_id)
                         {
-                            objlist.Add(variable);
+                            delvar = variable;
+                            break;
                         }
                     }
-                    DynamicJsonArray modded_array = new DynamicJsonArray(objlist.ToArray<object>());
-                    goodpoint.variables = modded_array;
+                    ((JArray)goodpoint.variables).Remove(delvar);
                     success = true;
                 }
                 else //change variable value
                 {
                     foreach (var variable in goodpoint.variables)
                     {
-                        if (variable.storyVariable == var_id)
+                        if (variable.storyVariable.Value == var_id)
                         {
-                            variable.currentValue = new_value;
+                            variable.currentValue.Value = new_value;
                             success = true;
                             break;
                         }
@@ -518,7 +539,7 @@ namespace savefiledecoder
             }
             else if (cell_type == "current")
             {
-                goodpoint = m_Data.currentCheckpoint.stateCheckPoint;
+                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
                 pointFound = true;
             }
 
@@ -527,7 +548,7 @@ namespace savefiledecoder
                 goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
                 foreach (var checkpoint in m_Data.checkpoints)
                 {
-                    if (checkpoint.pointIdentifier == checkpoint_id)
+                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
                     {
                         goodpoint = checkpoint;
                         pointFound = true;
@@ -538,25 +559,18 @@ namespace savefiledecoder
 
             if (pointFound)
             {
-                Dictionary<string, object> objlist = new Dictionary<string, object>();
-                foreach (var flt in goodpoint.floatValuesDict)
+                if (orig_value == null) //add new floatval
                 {
-                    //if (flt.Key == "$type") continue;
-                    objlist.Add(flt.Key, flt.Value);
+                    ((JObject)goodpoint.floatValuesDict).Add(var_name, new_value);
                 }
-                if (orig_value == null) //add new variable
+                else if (new_value == null) //remove floatval
                 {
-                    objlist.Add(var_name, new_value);
+                    ((JObject)goodpoint.floatValuesDict).Remove(var_name);
                 }
-                else if (new_value == null) //remove variable
+                else //change floatval value
                 {
-                    objlist.Remove(var_name);
+                    goodpoint.floatValuesDict[var_name].Value = new_value;
                 }
-                else //change variable value
-                {
-                    objlist[var_name] = new_value;
-                }
-                goodpoint.floatValuesDict = objlist;
                 success = true;
             }
             else
@@ -580,7 +594,7 @@ namespace savefiledecoder
             bool pointFound = false, success = false;
             if (cell_type == "current")
             {
-                goodpoint = m_Data.currentCheckpoint.stateCheckPoint;
+                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
                 pointFound = true;
             }
 
@@ -589,7 +603,7 @@ namespace savefiledecoder
                 goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
                 foreach (var checkpoint in m_Data.checkpoints)
                 {
-                    if (checkpoint.pointIdentifier == checkpoint_id)
+                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
                     {
                         goodpoint = checkpoint;
                         pointFound = true;
@@ -599,21 +613,15 @@ namespace savefiledecoder
             }
             if (pointFound)
             {
-                List<string> flaglist = new List<string>();
-                foreach (var flag in goodpoint.flags)
-                {
-                    flaglist.Add(flag);
-                }
                 if (origValue == false) //add new flag
                 {
-                    flaglist.Add(flag_name);
+                    ((JArray)goodpoint.flags).Add(flag_name);
                 }
                 else //remove one of the existing flags
                 {
-                    flaglist.Remove(flag_name);
+                    ((JArray)goodpoint.flags).Remove(flag_name);
                 }
-                DynamicJsonArray modded_array = new DynamicJsonArray(flaglist.ToArray<object>());
-                goodpoint.flags = modded_array;
+
                 success = true;
             }
             else
@@ -636,7 +644,7 @@ namespace savefiledecoder
             rw_CleanMinorAndMajorVars(varStart); //remove variables of future scenes from the minor and major variable list
 
             //erase future checkpoints from the checkpoint list
-            List<DynamicJsonObject> checkpointsList = new List<DynamicJsonObject>();
+            List<JObject> checkpointsList = new List<JObject>();
             foreach (var checkpoint in m_Data.checkpoints)
             {
                 checkpointsList.Add(checkpoint);
@@ -645,14 +653,14 @@ namespace savefiledecoder
                     break;
                 }
             }
-            m_Data.Checkpoints = checkpointsList.ToArray();
+            m_Data.checkpoints = JArray.FromObject(checkpointsList);
 
-            m_Data.flags = destPoint.flags; //copy flags from last checkpoint to global flags
-            m_Data.floatValuesDict = destPoint.floatValuesDict; //copy floatvalues from last checkpoint to global floatvalues
+            ((JToken)m_Data.flags).Replace(destPoint.flags); //copy flags from last checkpoint to global flags
+            ((JToken)m_Data.floatValuesDict).Replace(destPoint.floatValuesDict); ; //copy floatvalues from last checkpoint to global floatvalues
 
             //set episodestates
             string destPointID = destPoint.pointIdentifier;
-            for (int i=0; i<m_Data.episodes.Length; i++)
+            for (int i=0; i<m_Data.episodes.Count; i++)
             {
                 if (i < epNumber)
                 {
@@ -680,7 +688,7 @@ namespace savefiledecoder
                         globalvar.currentValue = variable.currentValue;
                         break;
                     }
-                    else if (rw_ShouldGlobalVarBeAltered(globalvar.storyVariable, destPointID))
+                    else if (rw_ShouldGlobalVarBeAltered(globalvar.storyVariable.Value, destPointID))
                     {
                         globalvar.currentValue = 0;
                     }
@@ -697,7 +705,7 @@ namespace savefiledecoder
         public void RewindHeader()
         {
             m_Header.uniqueId = System.Guid.NewGuid();
-            for (int i=0; i< m_Data.episodes.Length; i++)
+            for (int i=0; i< m_Data.episodes.Count; i++)
             {
                 m_Header.cachedEpisodes[i] = m_Data.episodes[i].episodeState;
             }
@@ -706,6 +714,11 @@ namespace savefiledecoder
             {
                 m_Header.currentScene = "GLOBAL_CODE_READYTOSTARTEPISODE";
                 m_Header.currentEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
+            }
+            else if (m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
+            {
+                m_Header.currentScene = "GLOBAL_CODE_STORYCOMPLETE";
+                m_Header.currentEpisode = "GLOBAL_CODE_STORYCOMPLETE";
             }
             else
             {
@@ -722,8 +735,8 @@ namespace savefiledecoder
 
             if (varStart == "E1_")
             {
-                m_Data.minorChoiceVariables = null;
-                m_Data.majorChoiceVariables = null;
+                m_Data.minorChoiceVariables = new JArray();
+                m_Data.majorChoiceVariables = new JArray();
             }
             else
             {
@@ -743,8 +756,8 @@ namespace savefiledecoder
                     }
                     else majorVarList.Add(variable);
                 }
-                m_Data.minorChoiceVariables = minorVarList.ToArray();
-                m_Data.majorChoiceVariables = majorVarList.ToArray();
+                m_Data.minorChoiceVariables = JArray.FromObject(minorVarList);
+                m_Data.majorChoiceVariables = JArray.FromObject(majorVarList);
             }
         }
 
@@ -754,7 +767,7 @@ namespace savefiledecoder
             if (m_Data.currentCheckpoint.hasMidLevelData == true)
             {
                 m_Data.currentCheckpoint.hasMidLevelData = false;
-                m_Data.currentCheckpoint.visitedNodes = null;
+                ((JArray)m_Data.currentCheckpoint.visitedNodes).Replace(new JArray());
             }
 
             if (destPoint.pointIdentifier == "Episode1End")
@@ -765,7 +778,11 @@ namespace savefiledecoder
             {
                 m_Data.currentCheckpoint.currentScene = "e2_s07";
             }
-            //add ep3 and ep4 info here when they are out
+            else if (destPoint.pointIdentifier == "Episode3End")
+            {
+                m_Data.currentCheckpoint.currentScene = "e3_s08";
+            }
+
             else
             {
                 string id = destPoint.pointIdentifier;
@@ -774,7 +791,7 @@ namespace savefiledecoder
             m_Data.currentCheckpoint.currentEpisode = "E" + (epNumber+1).ToString();
         }
 
-        public Dictionary<string, string> globalVarStartDict = new Dictionary<string, string>()
+        public Dictionary<string, string> globalVarStartDict = new Dictionary<string, string>() //for graffiti variables
         {
             {"E1_S01_A", "E1_"},
             {"E1_S01_B", "E1_S01B_"},
@@ -802,7 +819,21 @@ namespace savefiledecoder
             {"E2_S05_B", "E2_S05_"},
             {"E2_S06", "E2_S07_"},
             {"E2_S07", "E2_S07_"},
-            {"Episode2End", "E3_"}
+            {"Episode2End", "E3_"},
+            {"E3_S01_A", "E3_S01_"},
+            {"E3_S01_B", "E3_S01B_"},
+            {"E3_S01_C", "E3_S02A_"},
+            {"E3_S02_A", "E3_S02A_"},
+            {"E3_S02_B", "E3_S02C_"},
+            {"E3_S03_AC", "E3_S03_"},
+            {"E3_S04_AEBC", "E3_S04_"},
+            {"E3_S04_D",  "E3_S04A_"},
+            {"E3_S05", "E3_S05_"},
+            {"E3_S06", "E3_S07_"},
+            {"E3_S07_B", "E4_ "},
+            {"E3_S08", " E4_"},
+            {"Episode3End", "E4_"}
+
         };
 
         string[] grafiitiVars = new string[]
@@ -817,13 +848,23 @@ namespace savefiledecoder
             "E2_S03_RVGRAFFITI",
             "E2_S04A_GRAFFITICONCRETE",
             "E2_S05_MIRRORGRAFFITI",
-            "E2_S07_JAMESGRAFFITI"
+            "E2_S07_JAMESGRAFFITI",
+            "E3_S01_PLANNERGRAFFITI",
+            "E3_S01B_MAPGRAFFITI",
+            "E3_S02A_GRAFFITIPHOTO",
+            "E3_S02C_GRAFFITICALENDAR",
+            "E3_S03_GOBULEGRAFFITI",
+            "E3_S04_GRAFFITINORTHCAST",
+            "E3_S04A_GRAFFITIPOSTER",
+            "E3_S04A_VENDINGMACHINEGRAFFITI",
+            "E3_S05_GRAFFITI",
+            "E3_S07_CARVE"
         };
 
         private bool rw_ShouldGlobalVarBeAltered (string storyID, string pointID)
         {
             string limit = String.Empty;
-            List<string> goodVars = new List<string>();
+            List<string> notouchVars = new List<string>();
 
             globalVarStartDict.TryGetValue(pointID, out limit);
             foreach (string variable in grafiitiVars)
@@ -832,14 +873,14 @@ namespace savefiledecoder
                 {
                     break;
                 }
-                else goodVars.Add(variable);
+                else notouchVars.Add(variable);
             }
 
             if (storyID == m_GameData.GetVariableID("E1_S01_CI_PUNKJACKET") || storyID == m_GameData.GetVariableID("E1_S06_CHLOESTICKSUPFORHERSELF"))
             {
                 return false;
             }
-            else if (goodVars.Contains(m_GameData.GetVariableName(storyID)))
+            else if (notouchVars.Contains(m_GameData.GetVariableName(storyID)))
             {
                 return false;
             }

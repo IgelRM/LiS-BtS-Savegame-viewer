@@ -43,6 +43,7 @@ namespace savefiledecoder
             if (Form.ModifierKeys == Keys.Control)
             {
                 File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.Raw);
+                File.WriteAllText(textBoxSavePath.Text + @"-initialdata.txt", m_GameData.Raw);
                 if (m_GameSave.m_Header != null)
                 {
                     File.WriteAllText(textBoxSavePath.Text + @"-header.txt", m_GameSave.h_Raw);
@@ -467,13 +468,13 @@ namespace savefiledecoder
             // floats
             foreach (var flt in m_GameSave.m_Data.floatValuesDict)
             {
-                if (flt.Key == "$type") continue;
-                row[0] = flt.Key;
+                if (flt.Name == "$type") continue;
+                row[0] = flt.Name;
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     var checkpoint = m_GameSave.Checkpoints[i];
                     FloatState state;
-                    bool found = checkpoint.Floats.TryGetValue(flt.Key, out state);
+                    bool found = checkpoint.Floats.TryGetValue(flt.Name, out state);
                     if (found)
                     {
                         row[m_GameSave.Checkpoints.Count - i] = state.Value;
@@ -508,13 +509,13 @@ namespace savefiledecoder
             t.Rows.Add(row);
 
             // flags
-            foreach (var flagName in m_GameSave.m_Data.flags)
+            foreach (var flag in m_GameSave.m_Data.flags)
             {
-                row[0] = flagName;
+                row[0] = flag.Value;
                 for (int i = m_GameSave.Checkpoints.Count - 2; i >=0; i--)
                 {
                     int rownum = m_GameSave.Checkpoints.Count - i;
-                    row[rownum-1] = m_GameSave.Checkpoints[i].Flags.Contains(flagName);
+                    row[rownum-1] = m_GameSave.Checkpoints[i].Flags.Contains(flag.Value);
                 }
                 t.Rows.Add(row);
             }
@@ -699,7 +700,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.6\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.7\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)

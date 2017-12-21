@@ -16,7 +16,6 @@ namespace savefiledecoder
         public Form2()
         {
             InitializeComponent();
-            this.FormBorderStyle = FormBorderStyle.FixedSingle; //https://stackoverflow.com/questions/5169131/c-making-a-form-non-resizable
         }
 
         public List<string> SteamIDFolders = new List<string>();
@@ -56,6 +55,8 @@ namespace savefiledecoder
 
         private void UpdateStatus()
         {
+            labelStatus.Visible = false;
+
             bool[] status = new bool[3];
 
             for (int i = 0; i < 3; i++)
@@ -72,10 +73,10 @@ namespace savefiledecoder
 
         private void Form2_Load(object sender, EventArgs e)
         {
+            comboBox1.SelectedItem = steamid;
             if (savenumber == 0 && radioButton1.Enabled) radioButton1.Checked = true;
             else if (savenumber == 1) radioButton2.Checked = true;
             else  if (radioButton3.Enabled) radioButton3.Checked = true;
-            comboBox1.SelectedItem = steamid;
         }
 
         private void InterpretHeader(int number)
@@ -104,6 +105,11 @@ namespace savefiledecoder
             {
                 text += "Ready to start Episode " + (ep+2);
             }
+            else if (m_GameSave.m_Header.currentEpisode == "GLOBAL_CODE_STORYCOMPLETE")
+            {
+                text += "Story Complete";
+                labelStatus.ForeColor = Color.Green;
+            }
             else if (m_GameSave.m_Header.currentEpisode == "GLOBAL_CODE_SAVEJUSTSTARTED")
             {
                 text += "Just Started";
@@ -123,6 +129,7 @@ namespace savefiledecoder
             text += String.Format("{1}/{0}/{2}", m_GameSave.dateofSave[0], m_GameSave.dateofSave[1], m_GameSave.dateofSave[2]);
 
             labelStatus.Text = text;
+            labelStatus.Visible = true;
         }
 
         private void radioButtons_CheckedChanged(object sender, EventArgs e)
