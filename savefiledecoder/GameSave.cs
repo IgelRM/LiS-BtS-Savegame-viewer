@@ -148,7 +148,6 @@ namespace savefiledecoder
             {"EP3_S07_B", "Old Mill"},
             {"EP3_S08", "Hospital - Rachel's Room"},
             {"Episode3End", "Episode 3 Ending"}
-
          };
 
         public Dictionary<string, string> varStartDict = new Dictionary<string, string>()
@@ -205,13 +204,13 @@ namespace savefiledecoder
         public string Raw { get; set; }
         public string h_Raw { get; set; }
         public bool SaveEmpty {get; set;}
-        private MD5 contenthash =MD5.Create();
+        private MD5 contenthash = MD5.Create();
         public void Read(string path)
         {
             SaveEmpty = false;
             Checkpoints.Clear();
             EpisodePlayed.Clear();
-            
+
             // read and decode Data
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file); // decoded is - dexored content only (since file starts with header)
@@ -323,7 +322,7 @@ namespace savefiledecoder
             Raw = Newtonsoft.Json.JsonConvert.SerializeObject(json_data, Newtonsoft.Json.Formatting.Indented); //Raw is a utf8 string.
             byte[] content = Encoding.UTF8.GetBytes(Raw); //dexored (for now) new content
             byte[] chash = contenthash.ComputeHash(content); //md5 hash of dexored new content
-            byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encryptt and decrypt it.
+            byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encrypt and decrypt it.
             byte[] modded_file = new byte[20 + encoded.Length];
             byte[] file_header = new byte[4] { 81, 55, 110, 170 };
 
