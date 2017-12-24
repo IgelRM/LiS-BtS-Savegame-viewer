@@ -135,18 +135,18 @@ namespace savefiledecoder
             {"E2_S06", "Neighborhood"},
             {"E2_S07", "Amber House"},
             {"Episode2End", "Episode 2 Ending"},
-            {"EP3_S01_A", "Amber House"}, //episode 3
-            {"EP3_S01_B", "Rachel's Room"},
-            {"EP3_S01_C", "Dream"},
-            {"EP3_S02_A", "Price House - Upstairs"},
-            {"EP3_S02_B", "Price House - Downstairs"},
-            {"EP3_S03_AC", "Junkyard"},
-            {"EP3_S04_AEBC", "Hospital"},
-            {"EP3_S04_D", "Hospital - Rachel's Room"},
-            {"EP3_S05", "Amber House - Office"},
-            {"EP3_S06", "Burned Forest"},
-            {"EP3_S07_B", "Old Mill"},
-            {"EP3_S08", "Hospital - Rachel's Room"},
+            {"E3_S01_A", "Amber House"}, //episode 3
+            {"E3_S01_B", "Rachel's Room"},
+            {"E3_S01_C", "Dream"},
+            {"E3_S02_A", "Price House - Upstairs"},
+            {"E3_S02_B", "Price House - Downstairs"},
+            {"E3_S03_AC", "Junkyard"},
+            {"E3_S04_AEBC", "Hospital"},
+            {"E3_S04_D", "Hospital - Rachel's Room"},
+            {"E3_S05", "Amber House - Office"},
+            {"E3_S06", "Burned Forest"},
+            {"E3_S07_B", "Old Mill"},
+            {"E3_S08", "Hospital - Rachel's Room"},
             {"Episode3End", "Episode 3 Ending"}
          };
 

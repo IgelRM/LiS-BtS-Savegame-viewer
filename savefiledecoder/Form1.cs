@@ -168,6 +168,12 @@ namespace savefiledecoder
             dataGridView1.Rows[1].ReadOnly = true;
             dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
 
+
+            for (int i = 2; i < dataGridView1.Rows[0].Cells.Count; i++)
+            {
+                dataGridView1.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridView1.Rows[0].Cells[i].Value].ToString();
+            }
+
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
                 for (int j = 0; j < dataGridView1.ColumnCount; j++)
@@ -245,6 +251,12 @@ namespace savefiledecoder
             dataGridViewFloats.Rows[0].ReadOnly = true;
             dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
 
+
+            for (int i = 2; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
+            {
+                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[i].Value].ToString();
+            }
+
             for (int i = 0; i < dataGridViewFloats.RowCount; i++)
             {
                 for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
@@ -320,6 +332,11 @@ namespace savefiledecoder
             dataGridViewFlags.Rows[0].Frozen = true;
             dataGridViewFlags.Rows[0].ReadOnly = true;
             dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
+
+            for (int i = 1; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
+            {
+                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[i].Value].ToString();
+            }
 
             for (int i = 0; i < dataGridViewFlags.RowCount; i++)
             {
@@ -700,7 +717,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.7\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.7.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
