@@ -621,11 +621,10 @@ namespace savefiledecoder
 
         private byte[] ReadKey(string assemblyPath)
         {
-            var ass = Assembly.LoadFile(assemblyPath);
+            var ass = Assembly.Load(File.ReadAllBytes(assemblyPath));
             Type t = ass.GetType("T_3EF937CB");
             FieldInfo keyField = t.GetField("_18AFCD9AB", BindingFlags.Static | BindingFlags.NonPublic);
             return (byte[])keyField.GetValue(null);
-
         }
 
         private void checkBoxEpisodes_CheckedChanged(object sender, EventArgs e)
@@ -717,7 +716,7 @@ namespace savefiledecoder
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.7.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.8\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -1141,6 +1140,7 @@ namespace savefiledecoder
             formExtras.savePath = textBoxSavePath.Text;
             formExtras.headerPath = Path.GetDirectoryName(textBoxSavePath.Text) + @"\Header.Save";
             formExtras.m_GameSave = m_GameSave;
+            formExtras.m_assFile = new AssFile(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
             formExtras.ShowDialog(); //prevent the user from chaging things in main form while the extras is open
         }
 

@@ -20,6 +20,7 @@ namespace savefiledecoder
         public string savePath, headerPath;
 
         public GameSave m_GameSave;
+        public AssFile m_assFile;
 
         private void buttonManualBkpHeader_Click(object sender, EventArgs e)
         {
@@ -225,5 +226,45 @@ namespace savefiledecoder
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;
             autoChange = false;
         }
+
+        private void buttonLoadDLL_Click(object sender, EventArgs e)
+        {
+            m_assFile.Read();
+            switch (m_assFile.CheckIntroSkip())
+            {
+                case true: checkBoxSkipIntro.Checked = true; checkBoxSkipIntro.Enabled = true; break;
+                case false: checkBoxSkipIntro.Checked = false; checkBoxSkipIntro.Enabled = true; break;
+                case null: checkBoxSkipIntro.Enabled = false; break;
+            }
+            switch (m_assFile.CheckCutsceneSkip())
+            {
+                case true: checkBoxSkipCutscenes.Checked = true; checkBoxSkipCutscenes.Enabled = true; break;
+                case false: checkBoxSkipCutscenes.Checked = false; checkBoxSkipCutscenes.Enabled = true; break;
+                case null: checkBoxSkipCutscenes.Enabled = false; break;
+            }
+        }
+
+        private void buttonSaveDLL_Click(object sender, EventArgs e)
+        {
+            if(m_assFile.Write())
+            {
+                MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Error while saving DLL!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CheckBoxSkipIntro_MouseUp(object sender, MouseEventArgs e)
+        {
+            m_assFile.ChangeIntroSkip(checkBoxSkipIntro.Checked);
+        }
+
+        private void CheckBoxSkipCutscenes_MouseUp(object sender, MouseEventArgs e)
+        {
+            m_assFile.ChangeCutsceneSkip(checkBoxSkipCutscenes.Checked);
+        }
+
     }
 }
