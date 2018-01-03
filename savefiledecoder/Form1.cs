@@ -815,7 +815,7 @@ namespace savefiledecoder
                         textBoxSavePath.Text = "Auto-detection failed! Please select the path manually.";
                     }
                 }
-                else if (SteamIDFolders.Count > 1)
+                else if (SteamIDFolders.Count > 1 && Directory.Exists(textBoxLisPath.Text))
                 {
                     browseForm.SteamIDFolders = this.SteamIDFolders;
                     browseForm.updateComboBox1();
