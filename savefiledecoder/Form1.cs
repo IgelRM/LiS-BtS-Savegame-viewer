@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Web.Helpers;
+using System.Globalization;
 
 namespace savefiledecoder
 {
@@ -20,7 +21,7 @@ namespace savefiledecoder
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
         string point_id = "", var_name = "";
         List<string> SteamIDFolders = new List<string>();
-        public static string selectedSavePath = SaveFileViewer.Properties.Settings.Default.SavePath;
+        public static string selectedSavePath = savefiledecoder.Properties.Settings.Default.SavePath;
         dynamic appSettings = Json.Decode("{}");
 
         public Form1()
@@ -60,8 +61,8 @@ namespace savefiledecoder
                 buttonExport.Enabled = true; //allow exporting
                 buttonExtras.Enabled = true;
                 checkBoxEditMode.Enabled = true;
-                SaveFileViewer.Properties.Settings.Default.BTSpath = textBoxLisPath.Text;
-                SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+                savefiledecoder.Properties.Settings.Default.BTSpath = textBoxLisPath.Text;
+                savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
 
                 if (!resizeHelpShown)
                 {
@@ -69,7 +70,13 @@ namespace savefiledecoder
                     tt.IsBalloon = true;
                     tt.Show("Drag here to resize", this, 140, 115, 2000);
                     resizeHelpShown = true;
-                }  
+                }
+
+                if (!Properties.Settings.Default.findHintShown)
+                {
+                    MessageBox.Show("Press Ctrl+F to search the table!", "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Properties.Settings.Default.findHintShown = true;
+                }
             }
             else
             {
@@ -690,7 +697,7 @@ namespace savefiledecoder
                 DialogResult result = openFileDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    SaveFileViewer.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
+                    savefiledecoder.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
                     textBoxSavePath.Text = openFileDialog1.FileName;
                 }
             }
@@ -708,7 +715,7 @@ namespace savefiledecoder
                 DialogResult result = folderBrowserDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    SaveFileViewer.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
+                    savefiledecoder.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
                     textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
                 }
             }
@@ -727,15 +734,17 @@ namespace savefiledecoder
                 try
                 {
                     appSettings = Json.Decode(file);
-                    SaveFileViewer.Properties.Settings.Default.SavePath = appSettings.SavePath;
-                    SaveFileViewer.Properties.Settings.Default.BTSpath = appSettings.BTSpath;
-                    SaveFileViewer.Properties.Settings.Default.rewindNotesShown = appSettings.rewindNotesShown;
-                    SaveFileViewer.Properties.Settings.Default.editModeIntroShown = appSettings.editModeIntroShown;
                 }
                 catch
                 {
 
                 }
+
+                Properties.Settings.Default.SavePath = appSettings.SavePath ?? "Undefined";
+                Properties.Settings.Default.BTSpath = appSettings.BTSpath ?? "Undefined";
+                Properties.Settings.Default.rewindNotesShown = appSettings.rewindNotesShown ?? false;
+                Properties.Settings.Default.editModeIntroShown = appSettings.editModeIntroShown ?? false;
+                Properties.Settings.Default.findHintShown = appSettings.findHintShown ?? false;
             }
 
             ToolTip toolTip = new ToolTip();
@@ -743,14 +752,14 @@ namespace savefiledecoder
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(buttonExport, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
 
-            if (SaveFileViewer.Properties.Settings.Default.BTSpath == "Undefined")
+            if (savefiledecoder.Properties.Settings.Default.BTSpath == "Undefined")
             {
                 DetectBtsPath();
             }
             else
             {
-                textBoxLisPath.Text = SaveFileViewer.Properties.Settings.Default.BTSpath;
-                folderBrowserDialog1.SelectedPath = SaveFileViewer.Properties.Settings.Default.BTSpath;
+                textBoxLisPath.Text = savefiledecoder.Properties.Settings.Default.BTSpath;
+                folderBrowserDialog1.SelectedPath = savefiledecoder.Properties.Settings.Default.BTSpath;
             }
 
             DetectSavePath();
@@ -795,7 +804,7 @@ namespace savefiledecoder
             {
                 SteamIDFolders.RemoveAt(SteamIDFolders.Count - 1); //remove the preferences from the list
             }
-            if (SaveFileViewer.Properties.Settings.Default.SavePath == "Undefined")
+            if (savefiledecoder.Properties.Settings.Default.SavePath == "Undefined")
             {
                 if (SteamIDFolders.Count == 1)
                 {
@@ -805,7 +814,7 @@ namespace savefiledecoder
                         if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save"))
                         {
                             textBoxSavePath.Text = SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save";
-                            SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+                            savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
                             found = true;
                             break;
                         }
@@ -840,14 +849,14 @@ namespace savefiledecoder
             }
             else
             {
-                textBoxSavePath.Text = SaveFileViewer.Properties.Settings.Default.SavePath;
+                textBoxSavePath.Text = savefiledecoder.Properties.Settings.Default.SavePath;
             }
         }
 
         public void updateSavePath()
         {
             textBoxSavePath.Text = selectedSavePath;
-            SaveFileViewer.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+            savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
         }
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
@@ -911,10 +920,10 @@ namespace savefiledecoder
 
         private void checkBoxEditMode_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!SaveFileViewer.Properties.Settings.Default.editModeIntroShown)
+            if (!savefiledecoder.Properties.Settings.Default.editModeIntroShown)
             {
                 MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                SaveFileViewer.Properties.Settings.Default.editModeIntroShown = true;
+                savefiledecoder.Properties.Settings.Default.editModeIntroShown = true;
             }
 
             if (checkBoxEditMode.Checked)
@@ -1195,6 +1204,23 @@ namespace savefiledecoder
             }
         }
 
+        FindForm findForm;
+        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (dataGridView1.DataSource != null && ModifierKeys == Keys.Control && (int)e.KeyChar == 6)
+            {
+                if (findForm == null)
+                {
+                    findForm = new FindForm();
+                    findForm.form1 = this;
+                }
+                findForm.tab_num = tabControl1.SelectedIndex;
+                findForm.UpdateRadioChoice();
+                findForm.Show(this);
+                ((DataGridView)tabControl1.SelectedTab.Controls[0]).CancelEdit();
+            } 
+        }
+
         private void dataGridViewFloats_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString()))
@@ -1234,15 +1260,17 @@ namespace savefiledecoder
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (appSettings.BTSpath != SaveFileViewer.Properties.Settings.Default.BTSpath ||
-            appSettings.SavePath != SaveFileViewer.Properties.Settings.Default.SavePath ||
-            appSettings.editModeIntroShown != SaveFileViewer.Properties.Settings.Default.editModeIntroShown ||
-            appSettings.rewindNotesShown != SaveFileViewer.Properties.Settings.Default.rewindNotesShown)
+            if (appSettings.BTSpath != Properties.Settings.Default.BTSpath ||
+            appSettings.SavePath != Properties.Settings.Default.SavePath ||
+            appSettings.editModeIntroShown != Properties.Settings.Default.editModeIntroShown ||
+            appSettings.rewindNotesShown != Properties.Settings.Default.rewindNotesShown ||
+            appSettings.findHintShown != Properties.Settings.Default.findHintShown)
             {
-                appSettings.BTSpath = SaveFileViewer.Properties.Settings.Default.BTSpath;
-                appSettings.SavePath = SaveFileViewer.Properties.Settings.Default.SavePath;
-                appSettings.editModeIntroShown = SaveFileViewer.Properties.Settings.Default.editModeIntroShown;
-                appSettings.rewindNotesShown = SaveFileViewer.Properties.Settings.Default.rewindNotesShown;
+                appSettings.BTSpath = Properties.Settings.Default.BTSpath;
+                appSettings.SavePath = Properties.Settings.Default.SavePath;
+                appSettings.editModeIntroShown = Properties.Settings.Default.editModeIntroShown;
+                appSettings.rewindNotesShown = Properties.Settings.Default.rewindNotesShown;
+                appSettings.findHintShown = Properties.Settings.Default.findHintShown;
                 File.WriteAllText("settings.json", Newtonsoft.Json.JsonConvert.SerializeObject(appSettings, Newtonsoft.Json.Formatting.Indented));
             }
             
@@ -1259,6 +1287,54 @@ namespace savefiledecoder
                 }
             }
             else e.Cancel = false;
+        }
+
+        public string find_Starts = "", find_Contains = "", find_Ends = "";
+        public List<DataGridViewCell> find_results = new List<DataGridViewCell>();
+
+        public void ResetFindStrings()
+        {
+            find_Starts = "";
+            find_Contains = "";
+            find_Ends = "";
+        }
+
+        DataGridView target_grid;
+        int res_index = 0;
+        public void FindFirst(int tab_num, bool CaseSensitive)
+        {
+            tabControl1.SelectTab(tab_num);
+            target_grid = (DataGridView)tabControl1.SelectedTab.Controls[0];
+
+            StringComparison strcomp = CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
+
+            for (int i = (tab_num == 0) ? 2 : 1; i < target_grid.RowCount; i++)
+            {
+                string value = target_grid[0, i].Value.ToString();
+                if (value.StartsWith(find_Starts, !CaseSensitive, CultureInfo.InvariantCulture) && (value.IndexOf(find_Contains, strcomp) != -1) && value.EndsWith(find_Ends, !CaseSensitive, CultureInfo.InvariantCulture)) find_results.Add(target_grid[0, i]);
+            }
+
+            if (find_results.Count > 0)
+            {
+                target_grid.CurrentCell = find_results[0];
+                res_index = 0;
+            } 
+        }
+
+        public void FindPrev(int tab_num)
+        {
+            tabControl1.SelectTab(tab_num);
+            res_index--;
+            if (res_index < 0) res_index = find_results.Count - 1;
+            target_grid.CurrentCell = find_results[res_index];
+        }
+
+        public void FindNext(int tab_num)
+        {
+            tabControl1.SelectTab(tab_num);
+            res_index++;
+            if (res_index == find_results.Count) res_index = 0;
+            target_grid.CurrentCell = find_results[res_index];
         }
     }
 }

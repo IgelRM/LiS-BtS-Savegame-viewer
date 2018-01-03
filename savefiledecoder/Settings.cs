@@ -1,4 +1,4 @@
-﻿namespace SaveFileViewer.Properties {
+﻿namespace savefiledecoder.Properties {
     
     
     // Этот класс позволяет обрабатывать определенные события в классе параметров:

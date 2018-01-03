@@ -316,7 +316,7 @@
             // 
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Help;
-            this.pictureBox1.Image = global::SaveFileViewer.Properties.Resources.Help;
+            this.pictureBox1.Image = global::savefiledecoder.Properties.Resources.Help;
             this.pictureBox1.Location = new System.Drawing.Point(417, 6);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
@@ -595,6 +595,7 @@
             this.ClientSize = new System.Drawing.Size(1195, 550);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(1020, 450);
             this.Name = "Form1";
@@ -602,6 +603,7 @@
             this.Text = "LiS BtS Savegame Viewer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Form1_KeyPress);
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanelEpisodes.ResumeLayout(false);
             this.tableLayoutPanelEpisodes.PerformLayout();

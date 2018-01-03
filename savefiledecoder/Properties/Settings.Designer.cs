@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SaveFileViewer.Properties {
+namespace savefiledecoder.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -68,6 +68,18 @@ namespace SaveFileViewer.Properties {
             }
             set {
                 this["rewindNotesShown"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool findHintShown {
+            get {
+                return ((bool)(this["findHintShown"]));
+            }
+            set {
+                this["findHintShown"] = value;
             }
         }
     }

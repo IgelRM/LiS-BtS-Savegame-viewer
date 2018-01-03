@@ -105,7 +105,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Help;
-            this.pictureBox1.Image = global::SaveFileViewer.Properties.Resources.Help;
+            this.pictureBox1.Image = global::savefiledecoder.Properties.Resources.Help;
             this.pictureBox1.Location = new System.Drawing.Point(80, 22);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(16, 16);
