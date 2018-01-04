@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Web.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace savefiledecoder
@@ -30,14 +31,14 @@ namespace savefiledecoder
             byte[] file = File.ReadAllBytes(path);
             byte[] decoded = DecodeEncode.Decode(file);
             Raw = Encoding.UTF8.GetString(decoded); //convert the byte array to a string
-            json = Json.Decode(Raw);
+            json = JsonConvert.DeserializeObject(Raw);
             dynamic variables = json.variables;
             foreach(dynamic variable in variables)
             {
                 if(variable["$type"] == "StoryVariable")
                 {
-                    m_Variables[variable.uniqueId] = new GameVariable { name = variable.objectName, id = variable.uniqueId };
-                    m_Varnames[variable.objectName] = new GameVariable { name = variable.objectName, id = variable.uniqueId };
+                    m_Variables[variable.uniqueId.Value] = new GameVariable { name = variable.objectName.Value, id = variable.uniqueId.Value};
+                    m_Varnames[variable.objectName.Value] = new GameVariable { name = variable.objectName.Value, id = variable.uniqueId.Value};
 
                 }
             }

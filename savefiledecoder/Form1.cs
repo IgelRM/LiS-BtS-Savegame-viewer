@@ -1,5 +1,4 @@
 ﻿using System;
-
 using System.Windows.Forms;
 using System.IO;
 using System.Data;
@@ -7,7 +6,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Win32;
 using System.Collections.Generic;
-using System.Web.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Globalization;
 
 namespace savefiledecoder
@@ -22,7 +22,7 @@ namespace savefiledecoder
         string point_id = "", var_name = "";
         List<string> SteamIDFolders = new List<string>();
         public static string selectedSavePath = Properties.Settings.Default.SavePath;
-        dynamic appSettings = Json.Decode("{}");
+        dynamic appSettings = new JObject();
 
         public Form1()
         {
@@ -733,7 +733,7 @@ namespace savefiledecoder
                 string file = File.ReadAllText("settings.json");
                 try
                 {
-                    appSettings = Json.Decode(file);
+                    appSettings = JsonConvert.DeserializeObject(file);
                 }
                 catch
                 {
@@ -1271,7 +1271,7 @@ namespace savefiledecoder
                 appSettings.editModeIntroShown = Properties.Settings.Default.editModeIntroShown;
                 appSettings.rewindNotesShown = Properties.Settings.Default.rewindNotesShown;
                 appSettings.findHintShown = Properties.Settings.Default.findHintShown;
-                File.WriteAllText("settings.json", Newtonsoft.Json.JsonConvert.SerializeObject(appSettings, Newtonsoft.Json.Formatting.Indented));
+                File.WriteAllText("settings.json", JsonConvert.SerializeObject(appSettings, Formatting.Indented));
             }
             
             if (m_GameSave != null && !m_GameSave.editsSaved)

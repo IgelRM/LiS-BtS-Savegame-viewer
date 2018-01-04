@@ -123,7 +123,7 @@ namespace savefiledecoder
 
             if  (m_GameSave.m_Header.currentScene != "GLOBAL_CODE_READYTOSTARTEPISODE")
             {
-                text += m_GameSave.pointNames[m_GameSave.m_Header.currentScene.ToUpper()];
+                text += m_GameSave.pointNames[m_GameSave.m_Header.currentScene.Value.ToUpper()];
             }
             text += "\n";
             text += String.Format("{1}/{0}/{2}", m_GameSave.dateofSave[0], m_GameSave.dateofSave[1], m_GameSave.dateofSave[2]);

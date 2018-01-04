@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Web.Helpers;
 using System.Windows.Forms;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace savefiledecoder
@@ -217,7 +217,7 @@ namespace savefiledecoder
             Raw = Encoding.UTF8.GetString(decoded);
             try
             {
-                m_Data = Newtonsoft.Json.JsonConvert.DeserializeObject(Raw, new Newtonsoft.Json.JsonSerializerSettings() { });  //this is the save file, NOT initialdata
+                m_Data = JsonConvert.DeserializeObject(Raw, new JsonSerializerSettings() { });  //this is the save file, NOT initialdata
             }
             catch
             {
@@ -295,7 +295,7 @@ namespace savefiledecoder
 
             try
             {
-                m_Header = Json.Decode(h_Raw);  //this is the header file
+                m_Header = JsonConvert.DeserializeObject(h_Raw);  //this is the header file
             }
             catch
             {
@@ -306,11 +306,11 @@ namespace savefiledecoder
             list_EpStates.Clear();
             foreach (var episode in m_Header.cachedEpisodes)
             {
-                list_EpStates.Add(episode);
+                list_EpStates.Add(episode.Value);
             }
 
             //read the date of the save
-            for (int i = 0; i < m_Header.saveDate.Length; i++)
+            for (int i = 0; i < m_Header.saveDate.Count; i++)
             {
                 dateofSave[i] = m_Header.saveDate[i]; //need to test if it's possible to write to this dynamic array without an intermediate one
             }
@@ -319,7 +319,7 @@ namespace savefiledecoder
         public bool editsSaved = true, h_editsSaved = true;
         public void WriteData (string path, dynamic json_data)
         {
-            Raw = Newtonsoft.Json.JsonConvert.SerializeObject(json_data, Newtonsoft.Json.Formatting.Indented); //Raw is a utf8 string.
+            Raw = JsonConvert.SerializeObject(json_data, Formatting.Indented); //Raw is a utf8 string.
             byte[] content = Encoding.UTF8.GetBytes(Raw); //dexored (for now) new content
             byte[] chash = contenthash.ComputeHash(content); //md5 hash of dexored new content
             byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encrypt and decrypt it.
@@ -355,7 +355,7 @@ namespace savefiledecoder
 
         public void WriteHeader (string h_path, dynamic h_json_data)
         {
-            h_Raw = Newtonsoft.Json.JsonConvert.SerializeObject(h_json_data, Newtonsoft.Json.Formatting.Indented);
+            h_Raw = JsonConvert.SerializeObject(h_json_data, Formatting.Indented);
             byte[] content = Encoding.UTF8.GetBytes(h_Raw);
             byte[] chash = contenthash.ComputeHash(content);
             byte[] encoded = DecodeEncode.Decode(content);
@@ -703,12 +703,12 @@ namespace savefiledecoder
 
         public void RewindHeader()
         {
-            m_Header.uniqueId = System.Guid.NewGuid();
+            m_Header.uniqueId.Value = Guid.NewGuid();
             for (int i=0; i< m_Data.episodes.Count; i++)
             {
                 m_Header.cachedEpisodes[i] = m_Data.episodes[i].episodeState;
             }
-            m_Header.saveDate = dateofSave;
+            m_Header.saveDate = JArray.FromObject(dateofSave);
             if (m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
             {
                 m_Header.currentScene = "GLOBAL_CODE_READYTOSTARTEPISODE";

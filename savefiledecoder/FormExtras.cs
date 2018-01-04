@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace savefiledecoder
 {
@@ -188,7 +190,7 @@ namespace savefiledecoder
                 }
                 else if (dateSelected && !pointSelected)
                 {
-                    m_GameSave.m_Header.saveDate = m_GameSave.dateofSave;
+                    m_GameSave.m_Header.saveDate = JArray.FromObject(m_GameSave.dateofSave);
                     m_GameSave.WriteHeader(headerPath, m_GameSave.m_Header);
                 }
                 else
