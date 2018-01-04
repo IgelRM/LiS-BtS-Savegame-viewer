@@ -21,7 +21,7 @@ namespace savefiledecoder
         const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
         string point_id = "", var_name = "";
         List<string> SteamIDFolders = new List<string>();
-        public static string selectedSavePath = savefiledecoder.Properties.Settings.Default.SavePath;
+        public static string selectedSavePath = Properties.Settings.Default.SavePath;
         dynamic appSettings = Json.Decode("{}");
 
         public Form1()
@@ -61,8 +61,8 @@ namespace savefiledecoder
                 buttonExport.Enabled = true; //allow exporting
                 buttonExtras.Enabled = true;
                 checkBoxEditMode.Enabled = true;
-                savefiledecoder.Properties.Settings.Default.BTSpath = textBoxLisPath.Text;
-                savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+                Properties.Settings.Default.BTSpath = textBoxLisPath.Text;
+                Properties.Settings.Default.SavePath = textBoxSavePath.Text;
 
                 if (!resizeHelpShown)
                 {
@@ -697,7 +697,7 @@ namespace savefiledecoder
                 DialogResult result = openFileDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    savefiledecoder.Properties.Settings.Default.SavePath = openFileDialog1.FileName;
+                    Properties.Settings.Default.SavePath = openFileDialog1.FileName;
                     textBoxSavePath.Text = openFileDialog1.FileName;
                 }
             }
@@ -715,7 +715,7 @@ namespace savefiledecoder
                 DialogResult result = folderBrowserDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    savefiledecoder.Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
+                    Properties.Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
                     textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
                 }
             }
@@ -752,14 +752,14 @@ namespace savefiledecoder
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(buttonExport, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
 
-            if (savefiledecoder.Properties.Settings.Default.BTSpath == "Undefined")
+            if (Properties.Settings.Default.BTSpath == "Undefined")
             {
                 DetectBtsPath();
             }
             else
             {
-                textBoxLisPath.Text = savefiledecoder.Properties.Settings.Default.BTSpath;
-                folderBrowserDialog1.SelectedPath = savefiledecoder.Properties.Settings.Default.BTSpath;
+                textBoxLisPath.Text = Properties.Settings.Default.BTSpath;
+                folderBrowserDialog1.SelectedPath = Properties.Settings.Default.BTSpath;
             }
 
             DetectSavePath();
@@ -804,7 +804,7 @@ namespace savefiledecoder
             {
                 SteamIDFolders.RemoveAt(SteamIDFolders.Count - 1); //remove the preferences from the list
             }
-            if (savefiledecoder.Properties.Settings.Default.SavePath == "Undefined")
+            if (Properties.Settings.Default.SavePath == "Undefined")
             {
                 if (SteamIDFolders.Count == 1)
                 {
@@ -814,7 +814,7 @@ namespace savefiledecoder
                         if (File.Exists(SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save"))
                         {
                             textBoxSavePath.Text = SteamIDFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save";
-                            savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+                            Properties.Settings.Default.SavePath = textBoxSavePath.Text;
                             found = true;
                             break;
                         }
@@ -849,14 +849,14 @@ namespace savefiledecoder
             }
             else
             {
-                textBoxSavePath.Text = savefiledecoder.Properties.Settings.Default.SavePath;
+                textBoxSavePath.Text = Properties.Settings.Default.SavePath;
             }
         }
 
         public void updateSavePath()
         {
             textBoxSavePath.Text = selectedSavePath;
-            savefiledecoder.Properties.Settings.Default.SavePath = textBoxSavePath.Text;
+            Properties.Settings.Default.SavePath = textBoxSavePath.Text;
         }
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
@@ -920,10 +920,10 @@ namespace savefiledecoder
 
         private void checkBoxEditMode_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!savefiledecoder.Properties.Settings.Default.editModeIntroShown)
+            if (!Properties.Settings.Default.editModeIntroShown)
             {
                 MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                savefiledecoder.Properties.Settings.Default.editModeIntroShown = true;
+                Properties.Settings.Default.editModeIntroShown = true;
             }
 
             if (checkBoxEditMode.Checked)
