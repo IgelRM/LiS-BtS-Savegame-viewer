@@ -473,7 +473,7 @@ namespace savefiledecoder
                     string guid = Guid.NewGuid().ToString();
                     if (cell_type == "current")
                     {
-                        foreach (var variable in m_Data.checkpoints[m_Data.checkpoints.Length-1].variables)
+                        foreach (var variable in m_Data.checkpoints[m_Data.checkpoints.Count-1].variables)
                         {
                             if (variable.storyVariable.Value == var_id)
                             {

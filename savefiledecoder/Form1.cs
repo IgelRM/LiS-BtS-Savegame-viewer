@@ -1079,7 +1079,7 @@ namespace savefiledecoder
         private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
             int number;
-            if (firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || int.TryParse(e.Value.ToString(), out number)))
+            if (dataGridView1.SelectedCells.Count > 1 && firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || int.TryParse(e.Value.ToString(), out number)))
             {
                 firstEdit = false;
                 fillCellsWithValue(dataGridView1.SelectedCells, e.Value);
@@ -1090,7 +1090,7 @@ namespace savefiledecoder
         private void dataGridViewFloats_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
             float number;
-            if (firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || float.TryParse(e.Value.ToString().Replace('.', ','), out number)))
+            if (dataGridViewFloats.SelectedCells.Count > 1 && firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || float.TryParse(e.Value.ToString().Replace('.', ','), out number)))
             {
                 firstEdit = false;
                 fillCellsWithValue(dataGridViewFloats.SelectedCells, e.Value);
