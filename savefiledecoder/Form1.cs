@@ -724,9 +724,9 @@ namespace savefiledecoder
             }
         }
 
-        private void button3_Click_1(object sender, EventArgs e)
+        private void buttonAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.8\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.8.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
