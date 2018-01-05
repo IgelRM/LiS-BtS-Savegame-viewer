@@ -65,7 +65,7 @@ namespace savefiledecoder
                 dateTimePicker1.Value = new DateTime(m_GameSave.dateofSave[2], m_GameSave.dateofSave[1], m_GameSave.dateofSave[0]);
                 autoChange = false;
                 dateSelected = false; pointSelected = false;
-                if (m_GameSave.m_Data.currentCheckpoint.hasMidLevelData.Value == true)
+                if (m_GameSave.isAtMidLevel)
                 {
                     labelPointType.Text = "Type: Mid-level checkpoint";
                     labelPointType.ForeColor = Color.Red;

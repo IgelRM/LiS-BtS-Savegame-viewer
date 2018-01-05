@@ -94,6 +94,17 @@ namespace savefiledecoder
         public Dictionary<String, bool> EpisodePlayed { get; } = new Dictionary<String, bool>(); //string is the name of an episode, e.g E1, E2. bool is -played or not.
 
         public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
+        public bool isAtMidLevel
+        {
+            get
+            {
+                return m_Data.currentCheckpoint.hasMidLevelData;
+            }
+            set
+            {
+                m_Data.currentCheckpoint.hasMidLevelData = value;
+            }
+        }
 
         public List<string> list_EpStates = new List<string>();
         public int[] dateofSave = new int[3];
@@ -763,9 +774,9 @@ namespace savefiledecoder
         private void rw_SyncLastAndCurrent (dynamic destPoint, int epNumber)
         {
             m_Data.currentCheckpoint.stateCheckpoint = destPoint;
-            if (m_Data.currentCheckpoint.hasMidLevelData == true)
+            if (isAtMidLevel)
             {
-                m_Data.currentCheckpoint.hasMidLevelData = false;
+                isAtMidLevel = false;
                 ((JArray)m_Data.currentCheckpoint.visitedNodes).Replace(new JArray());
             }
 

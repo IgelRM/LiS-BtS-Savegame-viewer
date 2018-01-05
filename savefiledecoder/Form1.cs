@@ -176,7 +176,8 @@ namespace savefiledecoder
             dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            for (int i = 2; i < dataGridView1.Rows[0].Cells.Count; i++)
+            dataGridView1.Rows[0].Cells[2].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridView1.Rows[0].Cells[3].Value].ToString() : m_GameSave.pointNames[dataGridView1.Rows[0].Cells[2].Value].ToString();
+            for (int i = 3; i < dataGridView1.Rows[0].Cells.Count; i++)
             {
                 dataGridView1.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridView1.Rows[0].Cells[i].Value].ToString();
             }
@@ -259,7 +260,8 @@ namespace savefiledecoder
             dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            for (int i = 2; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
+            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[3].Value].ToString() : m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[2].Value].ToString();
+            for (int i = 3; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
             {
                 dataGridViewFloats.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[i].Value].ToString();
             }
@@ -340,7 +342,8 @@ namespace savefiledecoder
             dataGridViewFlags.Rows[0].ReadOnly = true;
             dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
 
-            for (int i = 1; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
+            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[2].Value].ToString() : m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[1].Value].ToString();
+            for (int i = 2; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
             {
                 dataGridViewFlags.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[i].Value].ToString();
             }
