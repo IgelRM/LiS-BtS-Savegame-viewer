@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
-using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -215,7 +212,6 @@ namespace savefiledecoder
         public string Raw { get; set; }
         public string h_Raw { get; set; }
         public bool SaveEmpty {get; set;}
-        private MD5 contenthash = MD5.Create();
         public void Read(string path)
         {
             SaveEmpty = false;
@@ -223,12 +219,11 @@ namespace savefiledecoder
             EpisodePlayed.Clear();
 
             // read and decode Data
-            byte[] file = File.ReadAllBytes(path);
-            byte[] decoded = DecodeEncode.Decode(file); // decoded is - dexored content only (since file starts with header)
-            Raw = Encoding.UTF8.GetString(decoded);
+            var fileContent = File.ReadAllBytes(path);
             try
             {
-                m_Data = JsonConvert.DeserializeObject(Raw, new JsonSerializerSettings() { });  //this is the save file, NOT initialdata
+                m_Data = JsonConverter.DecodeFileContentToJson(fileContent);
+                Raw = m_Data.ToString();
             }
             catch
             {
@@ -300,13 +295,11 @@ namespace savefiledecoder
         public void ReadHeader (string h_path)
         {
             //read and decode data
-            byte[] h_file = File.ReadAllBytes(h_path);
-            byte[] h_decoded = DecodeEncode.Decode(h_file); // decoded is - dexored content only (since file starts with those 4 bytes)
-            h_Raw = Encoding.UTF8.GetString(h_decoded);
-
+            var fileContent = File.ReadAllBytes(h_path);
             try
             {
-                m_Header = JsonConvert.DeserializeObject(h_Raw);  //this is the header file
+                m_Header = JsonConverter.DecodeFileContentToJson(fileContent);
+                Raw = m_Header.ToString();
             }
             catch
             {
@@ -330,73 +323,27 @@ namespace savefiledecoder
         public bool editsSaved = true, h_editsSaved = true;
         public void WriteData (string path, dynamic json_data)
         {
-            Raw = JsonConvert.SerializeObject(json_data, Formatting.Indented); //Raw is a utf8 string.
-            byte[] content = Encoding.UTF8.GetBytes(Raw); //dexored (for now) new content
-            byte[] chash = contenthash.ComputeHash(content); //md5 hash of dexored new content
-            byte[] encoded = DecodeEncode.Decode(content); //xor-ed new content. XOR functions can be applied on data to repeatedly encrypt and decrypt it.
-            byte[] modded_file = new byte[20 + encoded.Length];
-            byte[] file_header = new byte[4] { 81, 55, 110, 170 };
-
-            int num = 0;
-            int i;
-            for (i = 0; i < file_header.Length + num; i++)
-            {
-                modded_file[i] = file_header[i - num];
-            }
-            num = i;
-            while (i < 16 + num)
-            {
-                modded_file[i] = chash[i - num];
-                i++;
-            }
-            num = i;
-            while (i < encoded.Length + num)
-            {
-                modded_file[i] = encoded[i - num];
-                i++;
-            }
+            var fileContent = JsonConverter.EncodeJsonToFileContent(json_data);
+            
             if (!File.Exists(path + @".bkp"))
             {
                 File.Copy(path, path + @".bkp", false);
             }
             
-            File.WriteAllBytes(path, modded_file); //write changes to Data.Save
+            File.WriteAllBytes(path, fileContent); // Write changes to Data.Save
             editsSaved = true;
         }
 
         public void WriteHeader (string h_path, dynamic h_json_data)
         {
-            h_Raw = JsonConvert.SerializeObject(h_json_data, Formatting.Indented);
-            byte[] content = Encoding.UTF8.GetBytes(h_Raw);
-            byte[] chash = contenthash.ComputeHash(content);
-            byte[] encoded = DecodeEncode.Decode(content);
-            byte[] modded_hfile = new byte[20 + encoded.Length];
-            byte[] file_header = new byte[4] { 81, 55, 110, 170 };
+            var fileContent = JsonConverter.EncodeJsonToFileContent(h_json_data);
 
-            int num = 0;
-            int i;
-            for (i = 0; i < file_header.Length + num; i++)
-            {
-                modded_hfile[i] = file_header[i - num];
-            }
-            num = i;
-            while (i < 16 + num)
-            {
-                modded_hfile[i] = chash[i - num];
-                i++;
-            }
-            num = i;
-            while (i < encoded.Length + num)
-            {
-                modded_hfile[i] = encoded[i - num];
-                i++;
-            }
             if (!File.Exists(h_path + @".bkp"))
             {
                 File.Copy(h_path, h_path + @".bkp", false);
             }
 
-            File.WriteAllBytes(h_path, modded_hfile); //write changes to Header.Save
+            File.WriteAllBytes(h_path, fileContent); // Write changes to Header.Save
             h_editsSaved = true;
         }
 
@@ -412,7 +359,7 @@ namespace savefiledecoder
             {
                 int value = variable.currentValue;
                 string gameVariableId = variable.storyVariable;
-                string name = m_GameData.GetVariableName(gameVariableId);
+                string name = m_GameData.GetOrCreateVariableNameById(gameVariableId);
                 variablesInPoint[name]= (new VariableState() { Value = value, Name = name });
             }
 
@@ -437,7 +384,7 @@ namespace savefiledecoder
         public bool FindAndUpdateVarValue (string checkpoint_id, string var_name, int? orig_value, int? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
         {
             dynamic goodpoint;
-            string var_id = m_GameData.GetVariableID(var_name);
+            string var_id = m_GameData.GetVariableIdByName(var_name);
             bool pointFound = false, success = false;
              
             if (cell_type == "global")
@@ -886,11 +833,11 @@ namespace savefiledecoder
                 else notouchVars.Add(variable);
             }
 
-            if (storyID == m_GameData.GetVariableID("E1_S01_CI_PUNKJACKET") || storyID == m_GameData.GetVariableID("E1_S06_CHLOESTICKSUPFORHERSELF"))
+            if (storyID == m_GameData.GetVariableIdByName("E1_S01_CI_PUNKJACKET") || storyID == m_GameData.GetVariableIdByName("E1_S06_CHLOESTICKSUPFORHERSELF"))
             {
                 return false;
             }
-            else if (notouchVars.Contains(m_GameData.GetVariableName(storyID)))
+            else if (notouchVars.Contains(m_GameData.GetOrCreateVariableNameById(storyID)))
             {
                 return false;
             }

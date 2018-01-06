@@ -17,8 +17,6 @@ namespace savefiledecoder
         Form2 browseForm = new Form2();
         GameData m_GameData = new GameData();
         GameSave m_GameSave;
-        const string c_DataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
-        const string c_AssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
         string point_id = "", var_name = "";
         List<string> SteamIDFolders = new List<string>();
         public static string selectedSavePath = Properties.Settings.Default.SavePath;
@@ -33,10 +31,8 @@ namespace savefiledecoder
         bool resizeHelpShown = false;
         private void buttonShowContent_Click(object sender, EventArgs e)
         {
-            byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
-
-            DecodeEncode.SetKey(key);
-            string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+            DeckNineXorEncoder.ReadKeyFromFile(Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.CSharpAssemblyPath));
+            string initiDataPath = Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.InitialDataPath);
             m_GameData.Read(initiDataPath);
             m_GameSave = new GameSave(m_GameData);
             m_GameSave.Read(textBoxSavePath.Text);
@@ -424,9 +420,9 @@ namespace savefiledecoder
             t.Rows.Add(row);
 
             // variables 
-            foreach (var varType in m_GameData.Variables.OrderBy((v) => v.Value.name))
+            foreach (var varType in m_GameData.GetVariables().OrderBy((v) => v.Value.Name))
             {
-                string varName = varType.Value.name.ToUpper();
+                string varName = varType.Value.Name.ToUpper();
                 if (!checkBoxE1.Checked && varName.StartsWith("E1_") && editModeActive == false)
                 {
                     continue;
@@ -444,12 +440,12 @@ namespace savefiledecoder
                     continue;
                 }
 
-                row[0] = varType.Value.name;
+                row[0] = varType.Value.Name;
                 for (int i = m_GameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     var checkpoint = m_GameSave.Checkpoints[i];
                     VariableState state;
-                    bool found = checkpoint.Variables.TryGetValue(varType.Value.name, out state);
+                    bool found = checkpoint.Variables.TryGetValue(varType.Value.Name, out state);
                     if (found)
                     {
                         row[m_GameSave.Checkpoints.Count - i] = state.Value;
@@ -555,7 +551,7 @@ namespace savefiledecoder
             bool successDataPath = false;
             try
             {
-                string dataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+                string dataPath = Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.InitialDataPath);
                 successDataPath = File.Exists(dataPath);
             }
             catch
@@ -671,18 +667,18 @@ namespace savefiledecoder
                 }
 
             using (StreamWriter file = new StreamWriter("variables.txt"))
-                foreach (var entry in m_GameData.Variables.OrderBy((v) => v.Value.name))
+                foreach (var entry in m_GameData.GetVariables().OrderBy((v) => v.Value.Name))
                 {
                     var checkpoint = m_GameSave.Checkpoints[m_GameSave.Checkpoints.Count - 1];
                     VariableState state;
-                    bool valFound = checkpoint.Variables.TryGetValue(entry.Value.name, out state);
+                    bool valFound = checkpoint.Variables.TryGetValue(entry.Value.Name, out state);
                     if (valFound)
                     {
-                        file.WriteLine("\"{0}\", {1}", entry.Value.name.ToUpper(), state.Value);
+                        file.WriteLine("\"{0}\", {1}", entry.Value.Name.ToUpper(), state.Value);
                     }
                     else if (Form.ModifierKeys == Keys.Control)
                     {
-                        file.WriteLine("\"{0}\"", entry.Value.name.ToUpper());
+                        file.WriteLine("\"{0}\"", entry.Value.Name.ToUpper());
                     }
                 }
             System.Diagnostics.Process.Start("variables.txt"); //open the text file
@@ -833,9 +829,8 @@ namespace savefiledecoder
                     browseForm.updateComboBox1();
                     browseForm.savenumber = 0;
                     browseForm.steamid = SteamIDFolders[0];
-                    byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
-                    DecodeEncode.SetKey(key);
-                    string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+                    DeckNineXorEncoder.ReadKeyFromFile(Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.CSharpAssemblyPath));
+                    string initiDataPath = Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.InitialDataPath);
                     m_GameData.Read(initiDataPath);
                     if (m_GameSave == null)
                     {
@@ -1131,9 +1126,8 @@ namespace savefiledecoder
             browseForm.savenumber = int.Parse(folder.Substring(folder.Length - 1));
             browseForm.steamid = Path.GetDirectoryName(folder).Remove(0, Path.GetDirectoryName(folder).LastIndexOf('\\')+1);
 
-            byte[] key = ReadKey(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
-            DecodeEncode.SetKey(key);
-            string initiDataPath = Path.Combine(textBoxLisPath.Text, c_DataPath);
+            DeckNineXorEncoder.ReadKeyFromFile(Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.CSharpAssemblyPath));
+            string initiDataPath = Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.InitialDataPath);
             m_GameData.Read(initiDataPath);
             if (m_GameSave == null)
             {
@@ -1152,7 +1146,7 @@ namespace savefiledecoder
             formExtras.savePath = textBoxSavePath.Text;
             formExtras.headerPath = Path.GetDirectoryName(textBoxSavePath.Text) + @"\Header.Save";
             formExtras.m_GameSave = m_GameSave;
-            formExtras.m_assFile = new AssFile(Path.Combine(textBoxLisPath.Text, c_AssemblyPath));
+            formExtras.m_assFile = new AssFile(Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.CSharpAssemblyPath));
             formExtras.ShowDialog(); //prevent the user from chaging things in main form while the extras is open
         }
 
