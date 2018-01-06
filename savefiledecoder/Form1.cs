@@ -722,7 +722,7 @@ namespace savefiledecoder
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.8.1\nTool by /u/DanielWe\nModified by Ladosha and IgelRM\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.8.2\nOriginal created by /u/DanielWe\nModified by Ladosha, IgelRM and VakhtinAndrey\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -781,7 +781,6 @@ namespace savefiledecoder
             try 
             {
                 textBoxLisPath.Text = localKey.GetValue("InstallLocation").ToString();
-                //Console.WriteLine(localKey.GetValue("InstallLocation").ToString());
             }
             catch
             {
@@ -860,7 +859,7 @@ namespace savefiledecoder
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
             m_GameSave.WriteData(textBoxSavePath.Text, m_GameSave.m_Data);
-            if (m_GameSave.editsSaved) MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (m_GameSave.editsSaved) MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             label4.Visible = false;
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -920,7 +919,7 @@ namespace savefiledecoder
         {
             if (!Properties.Settings.Default.editModeIntroShown)
             {
-                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Properties.Settings.Default.editModeIntroShown = true;
             }
 
@@ -932,7 +931,7 @@ namespace savefiledecoder
             {
                 if (!m_GameSave.editsSaved)
                 {
-                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
                     {
                         disableEditMode();
@@ -1273,7 +1272,7 @@ namespace savefiledecoder
             
             if (m_GameSave != null && !m_GameSave.editsSaved)
             {
-                DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (answer == DialogResult.Yes)
                 {
                     e.Cancel = false;
