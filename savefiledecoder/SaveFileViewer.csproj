@@ -96,7 +96,8 @@
     </Compile>
     <Compile Include="GameData.cs" />
     <Compile Include="GameSave.cs" />
-    <Compile Include="MyDecodeEncode.cs" />
+    <Compile Include="DeckNineXorEncoder.cs" />
+    <Compile Include="JsonConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
