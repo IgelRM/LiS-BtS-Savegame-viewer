@@ -35,19 +35,19 @@ namespace savefiledecoder
             string initiDataPath = Path.Combine(textBoxLisPath.Text, DeckNineXorEncoder.InitialDataPath);
             m_GameData.Read(initiDataPath);
             m_GameSave = new GameSave(m_GameData);
-            m_GameSave.Read(textBoxSavePath.Text);
+            m_GameSave.ReadSaveFromFile(textBoxSavePath.Text);
 #if DEBUG
             if (Form.ModifierKeys == Keys.Control)
             {
-                File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.Raw);
+                File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.RawSave);
                 File.WriteAllText(textBoxSavePath.Text + @"-initialdata.txt", m_GameData.Raw);
-                if (m_GameSave.m_Header != null)
+                if (m_GameSave.Header != null)
                 {
-                    File.WriteAllText(textBoxSavePath.Text + @"-header.txt", m_GameSave.h_Raw);
+                    File.WriteAllText(textBoxSavePath.Text + @"-header.txt", m_GameSave.RawHeader);
                 }
             }
 #endif
-            if (!m_GameSave.SaveEmpty) //handles the "Just Started" state.
+            if (!m_GameSave.SaveIsEmpty) //handles the "Just Started" state.
             {
                 UpdateEpsiodeBoxes();
                 UpdateFlagGrid();
@@ -84,7 +84,7 @@ namespace savefiledecoder
         private void UpdateEpsiodeBoxes()
         {
             // E1
-            if(m_GameSave.EpisodePlayed["E1"])
+            if(m_GameSave.PlayedEpisodes["E1"])
             {
                 checkBoxE1.Enabled = true;
             }
@@ -93,7 +93,7 @@ namespace savefiledecoder
                 checkBoxE1.Enabled = false; 
             }
             // E2
-            if (m_GameSave.EpisodePlayed["E2"])
+            if (m_GameSave.PlayedEpisodes["E2"])
             {
                 checkBoxE2.Enabled = true;
             }
@@ -102,7 +102,7 @@ namespace savefiledecoder
                 checkBoxE2.Enabled = false;
             }
             // E3
-            if (m_GameSave.EpisodePlayed["E3"])
+            if (m_GameSave.PlayedEpisodes["E3"])
             {
                 checkBoxE3.Enabled = true;
             }
@@ -111,7 +111,7 @@ namespace savefiledecoder
                 checkBoxE3.Enabled = false;
             }
             // E4
-            if (m_GameSave.EpisodePlayed["E4"])
+            if (m_GameSave.PlayedEpisodes["E4"])
             {
                 checkBoxE4.Enabled = true;
             }
@@ -172,10 +172,10 @@ namespace savefiledecoder
             dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            dataGridView1.Rows[0].Cells[2].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridView1.Rows[0].Cells[3].Value].ToString() : m_GameSave.pointNames[dataGridView1.Rows[0].Cells[2].Value].ToString();
+            dataGridView1.Rows[0].Cells[2].ToolTipText = m_GameSave.IsAtMidLevel ? "Middle of " + m_GameSave.PointNames[dataGridView1.Rows[0].Cells[3].Value].ToString() : m_GameSave.PointNames[dataGridView1.Rows[0].Cells[2].Value].ToString();
             for (int i = 3; i < dataGridView1.Rows[0].Cells.Count; i++)
             {
-                dataGridView1.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridView1.Rows[0].Cells[i].Value].ToString();
+                dataGridView1.Rows[0].Cells[i].ToolTipText = m_GameSave.PointNames[dataGridView1.Rows[0].Cells[i].Value].ToString();
             }
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -256,10 +256,10 @@ namespace savefiledecoder
             dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[3].Value].ToString() : m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[2].Value].ToString();
+            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = m_GameSave.IsAtMidLevel ? "Middle of " + m_GameSave.PointNames[dataGridViewFloats.Rows[0].Cells[3].Value].ToString() : m_GameSave.PointNames[dataGridViewFloats.Rows[0].Cells[2].Value].ToString();
             for (int i = 3; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFloats.Rows[0].Cells[i].Value].ToString();
+                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = m_GameSave.PointNames[dataGridViewFloats.Rows[0].Cells[i].Value].ToString();
             }
 
             for (int i = 0; i < dataGridViewFloats.RowCount; i++)
@@ -338,10 +338,10 @@ namespace savefiledecoder
             dataGridViewFlags.Rows[0].ReadOnly = true;
             dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
 
-            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = m_GameSave.isAtMidLevel ? "Middle of " + m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[2].Value].ToString() : m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[1].Value].ToString();
+            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = m_GameSave.IsAtMidLevel ? "Middle of " + m_GameSave.PointNames[dataGridViewFlags.Rows[0].Cells[2].Value].ToString() : m_GameSave.PointNames[dataGridViewFlags.Rows[0].Cells[1].Value].ToString();
             for (int i = 2; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = m_GameSave.pointNames[dataGridViewFlags.Rows[0].Cells[i].Value].ToString();
+                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = m_GameSave.PointNames[dataGridViewFlags.Rows[0].Cells[i].Value].ToString();
             }
 
             for (int i = 0; i < dataGridViewFlags.RowCount; i++)
@@ -489,7 +489,7 @@ namespace savefiledecoder
             t.Rows.Add(row);
 
             // floats
-            foreach (var flt in m_GameSave.m_Data.floatValuesDict)
+            foreach (var flt in m_GameSave.Data.floatValuesDict)
             {
                 if (flt.Name == "$type") continue;
                 row[0] = flt.Name;
@@ -532,7 +532,7 @@ namespace savefiledecoder
             t.Rows.Add(row);
 
             // flags
-            foreach (var flag in m_GameSave.m_Data.flags)
+            foreach (var flag in m_GameSave.Data.flags)
             {
                 row[0] = flag.Value;
                 for (int i = m_GameSave.Checkpoints.Count - 2; i >=0; i--)
@@ -858,8 +858,8 @@ namespace savefiledecoder
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
-            m_GameSave.WriteData(textBoxSavePath.Text, m_GameSave.m_Data);
-            if (m_GameSave.editsSaved) MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            m_GameSave.WriteSaveToFile(textBoxSavePath.Text, m_GameSave.Data);
+            if (m_GameSave.SaveChangesSaved) MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             label4.Visible = false;
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -911,7 +911,7 @@ namespace savefiledecoder
         public int? origCellValue, newCellValue;
         public float? origFloatValue, newFloatValue;
         public bool origFlagState, newFlagState;
-        private string cellType = "";
+        private VariableScope _editingVariableScope;
 
         public bool editModeActive = false;
 
@@ -929,7 +929,7 @@ namespace savefiledecoder
             }
             else
             {
-                if (!m_GameSave.editsSaved)
+                if (!m_GameSave.SaveChangesSaved)
                 {
                     DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
@@ -970,7 +970,7 @@ namespace savefiledecoder
         private void disableEditMode()
         {
             editModeActive = false;
-            m_GameSave.editsSaved = true;
+            m_GameSave.SaveChangesSaved = true;
             dataGridView1.ReadOnly = true;
             dataGridViewFlags.ReadOnly = true;
             dataGridViewFloats.ReadOnly = true;
@@ -988,7 +988,7 @@ namespace savefiledecoder
             buttonSaveEdits.Enabled = false;
             buttonExtras.Enabled = true;
             label4.Visible = false;
-            m_GameSave.Read(textBoxSavePath.Text);
+            m_GameSave.ReadSaveFromFile(textBoxSavePath.Text);
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
@@ -1006,10 +1006,18 @@ namespace savefiledecoder
             }
             switch (e.ColumnIndex)
             {
-                case 1: cellType = "global"; break;
-                case 2: cellType = "current"; break;
-                case 3: cellType = "last"; break;
-                default: cellType = "normal"; break;
+                case 1:
+                    _editingVariableScope = VariableScope.Global;
+                    break;
+                case 2:
+                    _editingVariableScope = VariableScope.CurrentCheckpoint;
+                    break;
+                case 3:
+                    _editingVariableScope = VariableScope.LastCheckpoint;
+                    break;
+                default:
+                    _editingVariableScope = VariableScope.RegularCheckpoint;
+                    break;
             }
         }
 
@@ -1025,10 +1033,18 @@ namespace savefiledecoder
             }
             switch (e.ColumnIndex)
             {
-                case 1: cellType = "global"; break;
-                case 2: cellType = "current"; break;
-                case 3: cellType = "last"; break;
-                default: cellType = "normal"; break;
+                case 1:
+                    _editingVariableScope = VariableScope.Global;
+                    break;
+                case 2:
+                    _editingVariableScope = VariableScope.CurrentCheckpoint;
+                    break;
+                case 3:
+                    _editingVariableScope = VariableScope.LastCheckpoint;
+                    break;
+                default:
+                    _editingVariableScope = VariableScope.RegularCheckpoint;
+                    break;
             }
         }
 
@@ -1040,14 +1056,7 @@ namespace savefiledecoder
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
             origFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-            if (e.ColumnIndex == 1)
-            {
-                cellType = "current";
-            }
-            else
-            {
-                cellType = "normal";
-            }
+            _editingVariableScope = e.ColumnIndex == 1 ? VariableScope.CurrentCheckpoint : VariableScope.RegularCheckpoint;
         }
 
         private void dataGridViewFlags_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -1060,7 +1069,7 @@ namespace savefiledecoder
                 var_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (m_GameSave.FindAndUpdateFlagValue(point_id, var_name, origFlagState, cellType))
+                if (m_GameSave.FindAndUpdateFlagValue(point_id, var_name, origFlagState, _editingVariableScope))
                 {
                     dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -1132,7 +1141,7 @@ namespace savefiledecoder
             {
                 m_GameSave = new GameSave(m_GameData);
             }
-            m_GameSave.Read(textBoxSavePath.Text);
+            m_GameSave.ReadSaveFromFile(textBoxSavePath.Text);
 
             browseForm.m_GameSave = m_GameSave;
             browseForm.ShowDialog();
@@ -1176,7 +1185,7 @@ namespace savefiledecoder
                 var_name = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newCellValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, cellType))
+                if (m_GameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, _editingVariableScope))
                 {
                     dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -1244,7 +1253,7 @@ namespace savefiledecoder
                 var_name = dataGridViewFloats.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFloatValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (m_GameSave.FindAndUpdateFloatValue(point_id, var_name, origFloatValue, newFloatValue, cellType))
+                if (m_GameSave.FindAndUpdateFloatValue(point_id, var_name, origFloatValue, newFloatValue, _editingVariableScope))
                 {
                     dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -1270,7 +1279,7 @@ namespace savefiledecoder
                 File.WriteAllText("settings.json", JsonConvert.SerializeObject(appSettings, Formatting.Indented));
             }
             
-            if (m_GameSave != null && !m_GameSave.editsSaved)
+            if (m_GameSave != null && !m_GameSave.SaveChangesSaved)
             {
                 DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (answer == DialogResult.Yes)
