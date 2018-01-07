@@ -49,23 +49,23 @@ namespace savefiledecoder
                 rewindNotesShown = true;
                 Properties.Settings.Default.rewindNotesShown = true;
             }
-            m_GameSave.Read(savePath);
+            m_GameSave.ReadSaveFromFile(savePath);
 
-            if (!m_GameSave.SaveEmpty) //handles the "Just Started" state.
+            if (!m_GameSave.SaveIsEmpty) //handles the "Just Started" state.
             {
-                for (int i=0; i<m_GameSave.list_EpStates.Count; i++)
+                for (int i=0; i<m_GameSave.EpisodeStates.Count; i++)
                 {
-                    if (m_GameSave.list_EpStates[i] == "kInProgress" || m_GameSave.list_EpStates[i] == "kFinished")
+                    if (m_GameSave.EpisodeStates[i] == "kInProgress" || m_GameSave.EpisodeStates[i] == "kFinished")
                     {
-                        comboBoxHeaderEp.Items.Add(m_GameSave.episodeNames[i]);
+                        comboBoxHeaderEp.Items.Add(m_GameSave.EpisodeNames[i]);
                     }
                 }
                 comboBoxHeaderEp.SelectedIndex = comboBoxHeaderEp.Items.Count - 1; //autoselect the last item
                 autoChange = true;
-                dateTimePicker1.Value = new DateTime(m_GameSave.dateofSave[2], m_GameSave.dateofSave[1], m_GameSave.dateofSave[0]);
+                dateTimePicker1.Value = new DateTime(m_GameSave.SaveDate[2], m_GameSave.SaveDate[1], m_GameSave.SaveDate[0]);
                 autoChange = false;
                 dateSelected = false; pointSelected = false;
-                if (m_GameSave.isAtMidLevel)
+                if (m_GameSave.IsAtMidLevel)
                 {
                     labelPointType.Text = "Type: Mid-level checkpoint";
                     labelPointType.ForeColor = Color.Red;
@@ -132,7 +132,7 @@ namespace savefiledecoder
             toolTip.SetToolTip(buttonLoadHeader, "Load the checkpoint data from selected save");
             toolTip.SetToolTip(buttonRewindCheckpoint, "Write changes to the save files");
 
-            if (m_GameSave.m_Header == null)
+            if (m_GameSave.Header == null)
             {
                 buttonManualBkpHeader.Enabled = false;
                 buttonLoadHeader.Enabled = false;
@@ -168,30 +168,30 @@ namespace savefiledecoder
                     case 2: pointOffset = 27; break;
                     case 3: break;
                 }
-                dynamic dest_point = m_GameSave.m_Data.checkpoints[comboBoxPoint.SelectedIndex + pointOffset]; //the point that we ARE reverting to
-                string var_Start = "";
-                m_GameSave.varStartDict.TryGetValue(dest_point.pointIdentifier.Value, out var_Start);
+                dynamic dest_point = m_GameSave.Data.checkpoints[comboBoxPoint.SelectedIndex + pointOffset]; //the point that we ARE reverting to
+                var variablePrefix = "";
+                m_GameSave.PointVariablePrefixes.TryGetValue(dest_point.pointIdentifier.Value, out variablePrefix);
 
-                m_GameSave.dateofSave[0] = dateTimePicker1.Value.Day;
-                m_GameSave.dateofSave[1] = dateTimePicker1.Value.Month;
-                m_GameSave.dateofSave[2] = dateTimePicker1.Value.Year;
+                m_GameSave.SaveDate[0] = dateTimePicker1.Value.Day;
+                m_GameSave.SaveDate[1] = dateTimePicker1.Value.Month;
+                m_GameSave.SaveDate[2] = dateTimePicker1.Value.Year;
 
                 if (dateSelected && pointSelected)
                 {
-                    m_GameSave.RestartFromCheckpoint(var_Start, dest_point, dest_epNumber);
-                    m_GameSave.WriteData(savePath, m_GameSave.m_Data);
-                    m_GameSave.WriteHeader(headerPath, m_GameSave.m_Header);
+                    m_GameSave.RestartFromCheckpoint(variablePrefix, dest_point, dest_epNumber);
+                    m_GameSave.WriteSaveToFile(savePath, m_GameSave.Data);
+                    m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else if (!dateSelected && pointSelected)
                 {
-                    m_GameSave.RestartFromCheckpoint(var_Start, dest_point, dest_epNumber);
-                    m_GameSave.WriteData(savePath, m_GameSave.m_Data);
-                    m_GameSave.WriteHeader(headerPath, m_GameSave.m_Header);
+                    m_GameSave.RestartFromCheckpoint(variablePrefix, dest_point, dest_epNumber);
+                    m_GameSave.WriteSaveToFile(savePath, m_GameSave.Data);
+                    m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else if (dateSelected && !pointSelected)
                 {
-                    m_GameSave.m_Header.saveDate = JArray.FromObject(m_GameSave.dateofSave);
-                    m_GameSave.WriteHeader(headerPath, m_GameSave.m_Header);
+                    m_GameSave.Header.saveDate = JArray.FromObject(m_GameSave.SaveDate);
+                    m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else
                 {
@@ -219,10 +219,10 @@ namespace savefiledecoder
                 case 1: start = 14; end = 27; break;
                 case 2: start = 27; break; //future-proof for ep3. case 3 unknown for now
             }
-            for (int i=start; i<m_GameSave.m_Data.checkpoints.Count; i++)
+            for (int i=start; i<m_GameSave.Data.checkpoints.Count; i++)
             {
                 if (i == end) break;
-                else comboBoxPoint.Items.Add(m_GameSave.pointNames[i]);
+                else comboBoxPoint.Items.Add(m_GameSave.PointNames[i]);
             }
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;

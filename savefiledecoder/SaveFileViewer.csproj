@@ -70,6 +70,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssFile.cs" />
+    <Compile Include="VariableScope.cs" />
     <Compile Include="FindForm.cs">
       <SubType>Form</SubType>
     </Compile>

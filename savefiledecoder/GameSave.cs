@@ -1,112 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
 using System.IO;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace savefiledecoder
 {
-
     public class VariableState
     {
         public string Name { get; set; }
+
         public int? Value { get; set; } //? is nullable. it means that the variable can be empty (without value)
     }
 
     public class FloatState
     {
         public string Name { get; set; }
+
         public float? Value { get; set; }
     }
 
     public class Checkpoint
     {
-        dynamic m_CheckPoint; //checkpoint object. possibly holding checkpoint name
-        private Dictionary<String, VariableState> m_Variables = null;
-        private Dictionary<String, FloatState> m_Floats = null;
-        private List<string> m_flags = null;
+        private readonly dynamic _checkooint; // Checkpoint object. Possibly holding checkpoint name.
 
-        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables, Dictionary<String, FloatState> floats)
-        {
-            m_CheckPoint = checkpoint;
-            m_Variables = variables;
-            m_Floats = floats;
-        }
+        public string PointIdentifier => _checkooint.pointIdentifier;
 
-        public Checkpoint(dynamic checkpoint, Dictionary<String, VariableState> variables, List<string> flags, Dictionary<String, FloatState> floats)
-        {
-            m_CheckPoint = checkpoint;
-            m_Variables = variables;
-            m_flags = flags;
-            m_Floats = floats;
-        }
-        public string PointIdentifier
-        {
-            get
-            {
-                return m_CheckPoint.pointIdentifier;
-            }
+        public string Objective => _checkooint.currentObjective;
 
-        }
-        public string Objective
-        {
-            get
-            {
-                return m_CheckPoint.currentObjective;
-            }
-        }
+        public Dictionary<string, VariableState> Variables { get; }
 
-        public Dictionary<String, VariableState> Variables
-        {
-            get
-            {
-                return m_Variables;
-            }
-        }
+        public Dictionary<string, FloatState> Floats { get; }
 
-        public Dictionary<String, FloatState> Floats
-        {
-            get
-            {
-                return m_Floats;
-            }
-        }
+        public List<string> Flags { get; }
 
-        public List<string> Flags
+        public Checkpoint(dynamic checkpoint, Dictionary<string, VariableState> variables, List<string> flags, Dictionary<string, FloatState> floats)
         {
-            get
-            {
-                return m_flags;
-            }
+            _checkooint = checkpoint;
+            Variables = variables;
+            Flags = flags;
+            Floats = floats;
         }
     }
 
     public class GameSave
     {
-        GameData m_GameData;
+        private readonly GameData _gameData;
 
-        public Dictionary<String, bool> EpisodePlayed { get; } = new Dictionary<String, bool>(); //string is the name of an episode, e.g E1, E2. bool is -played or not.
+        /// <summary>
+        /// Holds info about played episodes.
+        /// Key is a name of an episode, e.g E1, E2; Value is true if episode was played and false otherwise.
+        /// </summary>
+        public Dictionary<string, bool> PlayedEpisodes { get; } = new Dictionary<string, bool>();
 
         public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
-        public bool isAtMidLevel
+
+        public dynamic Data;
+
+        public dynamic Header;
+
+        public string RawData { get; set; }
+
+        public string RawHeader { get; set; }
+
+        public bool SaveChangesSaved { get; set; } = true;
+
+        public bool HeaderChangesSaved { get; set; } = true;
+
+        public bool SaveIsEmpty { get; set; }
+
+        public bool IsAtMidLevel
         {
             get
             {
-                return m_Data.currentCheckpoint.hasMidLevelData;
+                return Data.currentCheckpoint.hasMidLevelData;
             }
             set
             {
-                m_Data.currentCheckpoint.hasMidLevelData = value;
+                Data.currentCheckpoint.hasMidLevelData = value;
             }
         }
 
-        public List<string> list_EpStates = new List<string>();
-        public int[] dateofSave = new int[3];
+        public List<string> EpisodeStates = new List<string>();
+        public int[] SaveDate = new int[3];
 
-        public string[] episodeNames = new string[]
+        public readonly string[] EpisodeNames =
         {
             "Epsiode 1: Awake",
             "Episode 2: Brave New World",
@@ -114,9 +93,10 @@ namespace savefiledecoder
             "Bonus Episode: Farewell"
         };
 
-        public OrderedDictionary pointNames = new OrderedDictionary()
+        public readonly OrderedDictionary PointNames = new OrderedDictionary()
         {
-            {"E1_S01_A", "Old Mill - Exterior"}, //episode 1
+            // Episode 1
+            {"E1_S01_A", "Old Mill - Exterior"},
             {"E1_S01_B", "Old Mill - Interior"},
             {"E1_S02_BUILD_AB", "Price House - Upstairs"},
             {"E1_S02_BUILD_CD", "Price House - Downstairs"},
@@ -130,7 +110,9 @@ namespace savefiledecoder
             {"E1_S10_A", "Junkyard - Night"},
             {"E1_S10_B", "Overlook - Night"},
             {"Episode1End", "Episode 1 Ending"},
-            {"E2_S01_ABC", "Principal's Office"}, //episode 2
+
+            // Episode 2
+            {"E2_S01_ABC", "Principal's Office"},
             {"E2_S01_D", "Blackwell Parking Lot"},
             {"E2_S02_A", "Junkyard"},
             {"E2_S02_B", "Dream"},
@@ -143,7 +125,9 @@ namespace savefiledecoder
             {"E2_S06", "Neighborhood"},
             {"E2_S07", "Amber House"},
             {"Episode2End", "Episode 2 Ending"},
-            {"E3_S01_A", "Amber House"}, //episode 3
+
+            // Episode 3
+            {"E3_S01_A", "Amber House"},
             {"E3_S01_B", "Rachel's Room"},
             {"E3_S01_C", "Dream"},
             {"E3_S02_A", "Price House - Upstairs"},
@@ -158,9 +142,9 @@ namespace savefiledecoder
             {"Episode3End", "Episode 3 Ending"}
          };
 
-        public Dictionary<string, string> varStartDict = new Dictionary<string, string>()
+        public readonly Dictionary<string, string> PointVariablePrefixes = new Dictionary<string, string>()
         {
-            {"E1_S01_A", "E1_" },
+            {"E1_S01_A", "E1_"},
             {"E1_S01_B", "E1_S01B_"},
             {"E1_S02_BUILD_AB", "E1_S02B_"},
             {"E1_S02_BUILD_CD", "E1_S02C_"},
@@ -204,264 +188,257 @@ namespace savefiledecoder
 
         public GameSave(GameData gameData)
         {
-            m_GameData = gameData; //this is the initialdata, NOT savefile
+            _gameData = gameData; // This is the initialdata, NOT savefile
         }
 
-        public dynamic m_Data;
-        public dynamic m_Header;
-        public string Raw { get; set; }
-        public string h_Raw { get; set; }
-        public bool SaveEmpty {get; set;}
-        public void Read(string path)
+        public void ReadSaveFromFile(string savePath)
         {
-            SaveEmpty = false;
+            SaveIsEmpty = false;
             Checkpoints.Clear();
-            EpisodePlayed.Clear();
+            PlayedEpisodes.Clear();
 
-            // read and decode Data
-            var fileContent = File.ReadAllBytes(path);
+            // Read and decode Data
+            var fileContent = File.ReadAllBytes(savePath);
             try
             {
-                m_Data = JsonConverter.DecodeFileContentToJson(fileContent);
-                Raw = m_Data.ToString();
+                Data = JsonConverter.DecodeFileContentToJson(fileContent);
+                RawData = Data.ToString();
             }
             catch
             {
-                SaveEmpty = true;
+                SaveIsEmpty = true;
                 return;
             }
 
-            // add normal checkpoints
-            foreach (var checkpoint in m_Data.checkpoints)
+            Dictionary<string, VariableState> variables;
+            Dictionary<string, FloatState> floats;
+
+            // Add regular checkpoints
+            foreach (var checkpoint in Data.checkpoints)
             {
-                List<string> flags = new List<string>();
-                var vars = ReadVarsForCheckpoint(checkpoint);
-                var floats = ReadFloatsForCheckpoint(checkpoint);
-                foreach (var fl in checkpoint.flags)
+                var cpFlags = new List<string>();
+                variables = GetCheckpointVariables(checkpoint);
+                floats = GetCheckpointFloats(checkpoint);
+                foreach (var flag in checkpoint.flags)
                 {
-                    flags.Add(fl.Value);
+                    cpFlags.Add(flag.Value);
                 }
-                Checkpoints.Add(new Checkpoint(checkpoint, vars, flags, floats));
+                Checkpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats));
             }
 
-            // add currentcheckpoint (seems to be identical to latest checkpoint...)
-
-            Dictionary<string, VariableState> variables;
-            Dictionary<string, FloatState> floatvalues;
+            // Add currentcheckpoint (seems to be identical to latest checkpoint...)
             try
             {
-                List<string> flags = new List<string>();
-                foreach (var fl in m_Data.currentCheckpoint.stateCheckpoint.flags)
+                var currentCpFlags = new List<string>();
+                foreach (var fl in Data.currentCheckpoint.stateCheckpoint.flags)
                 {
-                    flags.Add(fl.Value);
+                    currentCpFlags.Add(fl.Value);
                 }
-                variables = ReadVarsForCheckpoint(m_Data.currentCheckpoint.stateCheckpoint);
-                floatvalues = ReadFloatsForCheckpoint(m_Data.currentCheckpoint.stateCheckpoint);
-                Checkpoints.Add(new Checkpoint(m_Data.currentCheckpoint.stateCheckpoint, variables, flags, floatvalues));
+                variables = GetCheckpointVariables(Data.currentCheckpoint.stateCheckpoint);
+                floats = GetCheckpointFloats(Data.currentCheckpoint.stateCheckpoint);
+                Checkpoints.Add(new Checkpoint(Data.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats));
             }
             catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
-                SaveEmpty = true;
+                SaveIsEmpty = true;
                 return;
             }
 
-            // add global variables as a last checkpoint.. // hack...
-            variables = ReadVarsForCheckpoint(m_Data);
-            floatvalues = ReadFloatsForCheckpoint(m_Data);
-            Checkpoints.Add(new Checkpoint(new { pointIdentifier = "Global Vars", currentObjective = m_Data.currentObjective }, variables, floatvalues));
+            // Add global variables as a last checkpoint.. // hack...
+            variables = GetCheckpointVariables(Data);
+            floats = GetCheckpointFloats(Data);
+            Checkpoints.Add(new Checkpoint(new
+            {
+                pointIdentifier = "Global Vars",
+                currentObjective = Data.currentObjective
+            }, variables, null, floats));
 
-            // fill episodeState (?)
-            foreach (var episode in m_Data.episodes)
+            // Fill episodeState (?)
+            foreach (var episode in Data.episodes)
             {
-                string name = episode.name;
-                string stateStr = episode.episodeState;
-                bool played = false;
-                if (stateStr == "kFinished" || stateStr == "kInProgress")
-                {
-                    played = true;
-                }
-                EpisodePlayed[name] = played;
+                string episodeName = episode.name;
+                string episodeState = episode.episodeState;
+                var isPlayed = episodeState == "kFinished" || episodeState == "kInProgress";
+                PlayedEpisodes[episodeName] = isPlayed;
             }
-            if (File.Exists(Path.GetDirectoryName(path) + @"\Header.Save"))
+            if (File.Exists(Path.GetDirectoryName(savePath) + @"\Header.Save"))
             {
-                ReadHeader(Path.GetDirectoryName(path) + @"\Header.Save");
+                ReadHeaderFromFile(Path.GetDirectoryName(savePath) + @"\Header.Save");
             }
             else
             {
-                m_Header = null;
+                Header = null;
             }
         }
 
-        public void ReadHeader (string h_path)
+        public void ReadHeaderFromFile(string headerPath)
         {
-            //read and decode data
-            var fileContent = File.ReadAllBytes(h_path);
+            // Read and decode data
+            var fileContent = File.ReadAllBytes(headerPath);
             try
             {
-                m_Header = JsonConverter.DecodeFileContentToJson(fileContent);
-                Raw = m_Header.ToString();
+                Header = JsonConverter.DecodeFileContentToJson(fileContent);
+                RawHeader = Header.ToString();
             }
             catch
             {
-                SaveEmpty = true;
+                SaveIsEmpty = true;
             }
 
-            //fill episodestates
-            list_EpStates.Clear();
-            foreach (var episode in m_Header.cachedEpisodes)
+            // Fill episodestates
+            EpisodeStates.Clear();
+            foreach (var episode in Header.cachedEpisodes)
             {
-                list_EpStates.Add(episode.Value);
+                EpisodeStates.Add(episode.Value);
             }
 
-            //read the date of the save
-            for (int i = 0; i < m_Header.saveDate.Count; i++)
+            // Read the date of the save
+            for (var i = 0; i < Header.saveDate.Count; i++)
             {
-                dateofSave[i] = m_Header.saveDate[i]; //need to test if it's possible to write to this dynamic array without an intermediate one
+                SaveDate[i] = Header.saveDate[i]; // Need to test if it's possible to write to this dynamic array without an intermediate one
             }
         }
 
-        public bool editsSaved = true, h_editsSaved = true;
-        public void WriteData (string path, dynamic json_data)
+        public void WriteSaveToFile(string savePath, dynamic saveJsonObject)
         {
-            var fileContent = JsonConverter.EncodeJsonToFileContent(json_data);
-            
-            if (!File.Exists(path + @".bkp"))
-            {
-                File.Copy(path, path + @".bkp", false);
-            }
-            
-            File.WriteAllBytes(path, fileContent); // Write changes to Data.Save
-            editsSaved = true;
-        }
+            var fileContent = JsonConverter.EncodeJsonToFileContent(saveJsonObject);
 
-        public void WriteHeader (string h_path, dynamic h_json_data)
-        {
-            var fileContent = JsonConverter.EncodeJsonToFileContent(h_json_data);
-
-            if (!File.Exists(h_path + @".bkp"))
+            if (!File.Exists(savePath + @".bkp"))
             {
-                File.Copy(h_path, h_path + @".bkp", false);
+                File.Copy(savePath, savePath + @".bkp", false);
             }
 
-            File.WriteAllBytes(h_path, fileContent); // Write changes to Header.Save
-            h_editsSaved = true;
+            File.WriteAllBytes(savePath, fileContent); // Write changes to Data.Save
+            SaveChangesSaved = true;
         }
 
-        public Dictionary<String, VariableState> ReadVarsForCheckpoint(dynamic checkpoint)
+        public void WriteHeaderToFile(string headerPath, dynamic headerJsonObject)
         {
-            var variablesInPoint = new Dictionary<String, VariableState>(); //string is the variable name, VariableState is a name-value pair
-        
-            
-            List<dynamic> checkpoints = new List<dynamic>(m_Data.checkpoints);
-            dynamic variables = checkpoint.variables;
+            var fileContent = JsonConverter.EncodeJsonToFileContent(headerJsonObject);
 
-            foreach (var variable in variables)
+            if (!File.Exists(headerPath + @".bkp"))
+            {
+                File.Copy(headerPath, headerPath + @".bkp", false);
+            }
+
+            File.WriteAllBytes(headerPath, fileContent); // Write changes to Header.Save
+            HeaderChangesSaved = true;
+        }
+
+        private Dictionary<string, VariableState> GetCheckpointVariables(dynamic checkpoint)
+        {
+            var pointVariables = new Dictionary<string, VariableState>(); // Key is a variable name; Value is a name-value pair
+
+            foreach (var variable in checkpoint.variables)
             {
                 int value = variable.currentValue;
                 string gameVariableId = variable.storyVariable;
-                string name = m_GameData.GetOrCreateVariableNameById(gameVariableId);
-                variablesInPoint[name]= (new VariableState() { Value = value, Name = name });
+                string name = _gameData.GetOrCreateVariableNameById(gameVariableId);
+                pointVariables[name] = new VariableState {Name = name, Value = value};
             }
 
-            return variablesInPoint;
+            return pointVariables;
         }
 
-        public Dictionary<String, FloatState> ReadFloatsForCheckpoint(dynamic checkpoint)
+        private Dictionary<string, FloatState> GetCheckpointFloats(dynamic checkpoint)
         {
-            var floatsInPoint = new Dictionary<String, FloatState>(); //string is the variable name, VariableState is a name-value pair
+            var pointFloats = new Dictionary<string, FloatState>(); // Key is a variable name; Value is a name-value pair
 
             foreach (var flt in checkpoint.floatValuesDict)
             {
-                if (flt.Name == "$type") continue;
-                float? value = (float)flt.Value;
+                if (flt.Name == "$type")
+                {
+                    continue;
+                }
+                var value = (float?) flt.Value;
                 string name = flt.Name;
-                floatsInPoint[name] = (new FloatState() { Value = value, Name = name });
+                pointFloats[name] = new FloatState {Name = name, Value = value};
             }
 
-            return floatsInPoint;
+            return pointFloats;
         }
 
-        public bool FindAndUpdateVarValue (string checkpoint_id, string var_name, int? orig_value, int? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
+        // Value gets updated inside JSON object (m_Data)
+        public bool FindAndUpdateVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
         {
-            dynamic goodpoint;
-            string var_id = m_GameData.GetVariableIdByName(var_name);
-            bool pointFound = false, success = false;
+            dynamic editingPoint;
+            var varId = _gameData.GetVariableIdByName(varName);
+            var pointFound = false;
+            var success = false;
              
-            if (cell_type == "global")
+            switch (varScope)
             {
-                goodpoint = m_Data;
-                pointFound = true;
-                
-            }
-            else if (cell_type == "current")
-            {
-                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
-                pointFound = true;
-            }
-            
-            else
-            {
-                goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
-                foreach (var checkpoint in m_Data.checkpoints)
-                {
-                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
+                case VariableScope.Global:
+                    editingPoint = Data;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentCheckpoint:
+                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
+                    foreach (var checkpoint in Data.checkpoints)
                     {
-                        goodpoint = checkpoint;
-                        pointFound = true;
-                        break;
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
                     }
-                }
+                    break;
             }
             
             if (pointFound)
             {
-                if (orig_value == null) //add new variable
+                // Add new variable
+                if (origValue == null)
                 {
-                    string guid = Guid.NewGuid().ToString();
-                    if (cell_type == "current")
+                    var guid = Guid.NewGuid().ToString();
+                    if (varScope == VariableScope.CurrentCheckpoint)
                     {
-                        foreach (var variable in m_Data.checkpoints[m_Data.checkpoints.Count-1].variables)
+                        foreach (var variable in Data.checkpoints[Data.checkpoints.Count-1].variables)
                         {
-                            if (variable.storyVariable.Value == var_id)
+                            if (variable.storyVariable.Value == varId)
                             {
                                 guid = variable.uniqueId.Value;
                             }
                         }
                     }
-                    Dictionary<string, object> var_body = new Dictionary<string, object>()
+                    var varBody = new Dictionary<string, object>
                     {
                         {"uniqueId", guid},
-                        {"storyVariable", var_id},
-                        {"currentValue", new_value},
+                        {"storyVariable", varId},
+                        {"currentValue", newValue},
                         {"$type", "GameStateVariableModel"}
                     };
 
-                    JObject fresh_var = JObject.FromObject(var_body);
-                    ((JArray)goodpoint.variables).Add(fresh_var);
+                    var freshVar = JObject.FromObject(varBody);
+                    ((JArray) editingPoint.variables).Add(freshVar);
                     success = true;
                 }
-                else if (new_value == null) //remove variable
+                // Remove variable
+                else if (newValue == null)
                 {
-
-                    JObject delvar = new JObject();
-                    foreach (var variable in goodpoint.variables)
+                    foreach (var variable in editingPoint.variables)
                     {
-                        if (variable.storyVariable.Value == var_id)
+                        if (variable.storyVariable.Value == varId)
                         {
-                            delvar = variable;
+                            ((JArray) editingPoint.variables).Remove(variable);
+                            success = true;
                             break;
                         }
                     }
-                    ((JArray)goodpoint.variables).Remove(delvar);
-                    success = true;
                 }
-                else //change variable value
+                // Change variable value
+                else
                 {
-                    foreach (var variable in goodpoint.variables)
+                    foreach (var variable in editingPoint.variables)
                     {
-                        if (variable.storyVariable.Value == var_id)
+                        if (variable.storyVariable.Value == varId)
                         {
-                            variable.currentValue.Value = new_value;
+                            variable.currentValue.Value = newValue;
                             success = true;
                             break;
                         }
@@ -470,44 +447,97 @@ namespace savefiledecoder
             }
             else
             {
-                MessageBox.Show("Could not find checkpoint with pointid" + checkpoint_id + "!");
+                MessageBox.Show("Could not find checkpoint with poinId " + checkpointId + "!");
+                return false;
             }
+
             if (!success)
             {
-                MessageBox.Show("Could not find and replace variable with ID " + var_id + "!");
+                MessageBox.Show("Could not find and replace variable with ID " + varId + "!");
             }
             else
             {
-                editsSaved = false;
+                SaveChangesSaved = false;
             }
+
             return success;
         }
 
-        public bool FindAndUpdateFloatValue(string checkpoint_id, string var_name, float? orig_value, float? new_value, string cell_type) //value gets updated inside JSON object (m_Data)
+        // Value gets updated inside JSON object (m_Data)
+        public bool FindAndUpdateFloatValue(string checkpointId, string floatName, float? origValue, float? newValue,
+            VariableScope varScope)
         {
-            dynamic goodpoint;
-            bool pointFound = false, success = false;
+            dynamic editingPoint;
+            var pointFound = false;
 
-            if (cell_type == "global")
+            switch (varScope)
             {
-                goodpoint = m_Data;
-                pointFound = true;
-
+                case VariableScope.Global:
+                    editingPoint = Data;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentCheckpoint:
+                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
+                    foreach (var checkpoint in Data.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
             }
-            else if (cell_type == "current")
+
+            if (pointFound)
             {
-                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
-                pointFound = true;
+                // Add new float value
+                if (origValue == null)
+                {
+                    ((JObject) editingPoint.floatValuesDict).Add(floatName, newValue);
+                }
+                // Remove float value
+                else if (newValue == null)
+                {
+                    ((JObject) editingPoint.floatValuesDict).Remove(floatName);
+                }
+                // Change float value
+                else
+                {
+                    editingPoint.floatValuesDict[floatName].Value = newValue;
+                }
+
+                SaveChangesSaved = false;
+                return true;
             }
 
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
+        }
+
+        public bool FindAndUpdateFlagValue(string checkpointId, string flagName, bool origValue, VariableScope varScope)
+        {
+            dynamic editingPoint;
+            var pointFound = false;
+
+            if (varScope == VariableScope.CurrentCheckpoint)
+            {
+                editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                pointFound = true;
+            }
             else
             {
-                goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
-                foreach (var checkpoint in m_Data.checkpoints)
+                editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
+                foreach (var checkpoint in Data.checkpoints)
                 {
-                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
+                    if (checkpoint.pointIdentifier.Value == checkpointId)
                     {
-                        goodpoint = checkpoint;
+                        editingPoint = checkpoint;
                         pointFound = true;
                         break;
                     }
@@ -516,93 +546,33 @@ namespace savefiledecoder
 
             if (pointFound)
             {
-                if (orig_value == null) //add new floatval
+                // Add new flag
+                if (origValue == false)
                 {
-                    ((JObject)goodpoint.floatValuesDict).Add(var_name, new_value);
+                    ((JArray) editingPoint.flags).Add(flagName);
                 }
-                else if (new_value == null) //remove floatval
+                // Remove one of the existing flags
+                else
                 {
-                    ((JObject)goodpoint.floatValuesDict).Remove(var_name);
+                    ((JArray) editingPoint.flags).Remove(flagName);
                 }
-                else //change floatval value
-                {
-                    goodpoint.floatValuesDict[var_name].Value = new_value;
-                }
-                success = true;
+
+                SaveChangesSaved = false;
+                return true;
             }
-            else
-            {
-                MessageBox.Show("Could not find checkpoint with pointid" + checkpoint_id + "!");
-            }
-            if (!success)
-            {
-                MessageBox.Show("Could not find and replace float with name " + var_name + "!");
-            }
-            else
-            {
-                editsSaved = false;
-            }
-            return success;
+
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
         }
 
-        public bool FindAndUpdateFlagValue(string checkpoint_id, string flag_name, bool origValue, string cell_type)
+        public void RestartFromCheckpoint(string variablePrefix, dynamic destPoint, int epNumber)
         {
-            dynamic goodpoint;
-            bool pointFound = false, success = false;
-            if (cell_type == "current")
-            {
-                goodpoint = m_Data.currentCheckpoint.stateCheckpoint;
-                pointFound = true;
-            }
+            // Remove variables of future scenes from the minor and major variable list
+            FillMinorAndMajorVars(variablePrefix);
 
-            else
-            {
-                goodpoint = m_Data.checkpoints[0]; //assign some value to the variable;
-                foreach (var checkpoint in m_Data.checkpoints)
-                {
-                    if (checkpoint.pointIdentifier.Value == checkpoint_id)
-                    {
-                        goodpoint = checkpoint;
-                        pointFound = true;
-                        break;
-                    }
-                }
-            }
-            if (pointFound)
-            {
-                if (origValue == false) //add new flag
-                {
-                    ((JArray)goodpoint.flags).Add(flag_name);
-                }
-                else //remove one of the existing flags
-                {
-                    ((JArray)goodpoint.flags).Remove(flag_name);
-                }
-
-                success = true;
-            }
-            else
-            {
-                MessageBox.Show("Could not find checkpoint with pointid" + checkpoint_id + "!");
-            }
-            if (!success)
-            {
-                MessageBox.Show("Could not find and update flag with ID " + flag_name + "!");
-            }
-            else
-            {
-                editsSaved = false;
-            }
-            return success;
-        }
-        
-        public void RestartFromCheckpoint (string varStart, dynamic destPoint, int epNumber)
-        {
-            rw_CleanMinorAndMajorVars(varStart); //remove variables of future scenes from the minor and major variable list
-
-            //erase future checkpoints from the checkpoint list
-            List<JObject> checkpointsList = new List<JObject>();
-            foreach (var checkpoint in m_Data.checkpoints)
+            // Erase future checkpoints from the checkpoint list
+            var checkpointsList = new List<JObject>();
+            foreach (var checkpoint in Data.checkpoints)
             {
                 checkpointsList.Add(checkpoint);
                 if (checkpoint == destPoint)
@@ -610,145 +580,151 @@ namespace savefiledecoder
                     break;
                 }
             }
-            m_Data.checkpoints = JArray.FromObject(checkpointsList);
+            Data.checkpoints = JArray.FromObject(checkpointsList);
 
-            ((JToken)m_Data.flags).Replace(destPoint.flags); //copy flags from last checkpoint to global flags
-            ((JToken)m_Data.floatValuesDict).Replace(destPoint.floatValuesDict); ; //copy floatvalues from last checkpoint to global floatvalues
+            // Copy flags from last checkpoint to global flags
+            ((JToken) Data.flags).Replace(destPoint.flags);
+            // Copy float values from last checkpoint to global float values
+            ((JToken) Data.floatValuesDict).Replace(destPoint.floatValuesDict);
 
-            //set episodestates
-            string destPointID = destPoint.pointIdentifier;
-            for (int i=0; i<m_Data.episodes.Count; i++)
+            // Set episode states
+            string destPointId = destPoint.pointIdentifier;
+            for (var i = 0; i < Data.episodes.Count; i++)
             {
                 if (i < epNumber)
                 {
-                    m_Data.episodes[i].episodeState = "kFinished";
-                    continue;
+                    Data.episodes[i].episodeState = "kFinished";
                 }
-                else if (i == epNumber && !destPointID.Contains("End"))
+                else if (i == epNumber && !destPointId.EndsWith("End"))
                 {
-                    m_Data.episodes[i].episodeState = "kInProgress";
-                    continue;
+                    Data.episodes[i].episodeState = "kInProgress";
                 }
-                else if (i > epNumber && m_Data.episodes[i].episodeState != "kUnavailable")
+                else if (i > epNumber && Data.episodes[i].episodeState != "kUnavailable")
                 {
-                    m_Data.episodes[i].episodeState = "kNotPlayed";
-                    continue;
+                    Data.episodes[i].episodeState = "kNotPlayed";
                 }
             }
-            //syncronise last checkpoint and global variables
-            foreach (var globalvar in m_Data.variables)
+
+            // Syncronise last checkpoint and global variables
+            foreach (var globalVar in Data.variables)
             {
                 foreach (var variable in destPoint.variables)
                 {
-                    if (variable.storyVariable == globalvar.storyVariable)
+                    if (variable.storyVariable == globalVar.storyVariable)
                     {
-                        globalvar.currentValue = variable.currentValue;
+                        globalVar.currentValue = variable.currentValue;
                         break;
                     }
-                    else if (rw_ShouldGlobalVarBeAltered(globalvar.storyVariable.Value, destPointID))
+
+                    if (ShouldGlobalVarBeReseted(globalVar.storyVariable.Value, destPointId))
                     {
-                        globalvar.currentValue = 0;
+                        globalVar.currentValue = 0;
                     }
                 }
             }
 
-            rw_SyncLastAndCurrent(destPoint, epNumber);
-            m_Data.uniqueId = System.Guid.NewGuid();
-            m_Data.currentObjective = destPoint.currentObjective;
+            SyncLastAndCurrentCheckpoints(destPoint, epNumber);
+            Data.uniqueId = Guid.NewGuid();
+            Data.currentObjective = destPoint.currentObjective;
 
             RewindHeader();
         }
 
         public void RewindHeader()
         {
-            m_Header.uniqueId.Value = Guid.NewGuid();
-            for (int i=0; i< m_Data.episodes.Count; i++)
+            Header.uniqueId.Value = Guid.NewGuid();
+            for (int i = 0; i < Data.episodes.Count; i++)
             {
-                m_Header.cachedEpisodes[i] = m_Data.episodes[i].episodeState;
+                Header.cachedEpisodes[i] = Data.episodes[i].episodeState;
             }
-            m_Header.saveDate = JArray.FromObject(dateofSave);
-            if (m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
+
+            Header.saveDate = JArray.FromObject(SaveDate);
+
+            if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || 
+                Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
             {
-                m_Header.currentScene = "GLOBAL_CODE_READYTOSTARTEPISODE";
-                m_Header.currentEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
+                Header.currentScene = "GLOBAL_CODE_READYTOSTARTEPISODE";
+                Header.currentEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
             }
-            else if (m_Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
+            else if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
             {
-                m_Header.currentScene = "GLOBAL_CODE_STORYCOMPLETE";
-                m_Header.currentEpisode = "GLOBAL_CODE_STORYCOMPLETE";
+                Header.currentScene = "GLOBAL_CODE_STORYCOMPLETE";
+                Header.currentEpisode = "GLOBAL_CODE_STORYCOMPLETE";
             }
             else
             {
-                m_Header.currentScene = m_Data.currentCheckpoint.currentScene;
-                m_Header.currentEpisode = m_Data.currentCheckpoint.currentEpisode;
+                Header.currentScene = Data.currentCheckpoint.currentScene;
+                Header.currentEpisode = Data.currentCheckpoint.currentEpisode;
             }
         }
 
-        //sub-functions
-        private void rw_CleanMinorAndMajorVars (string varStart)
+        #region Sub-functions
+        private void FillMinorAndMajorVars(string variablePrefix)
         {
-            List<string> minorVarList = new List<string>();
-            List<string> majorVarList = new List<string>();
+            var minorVarList = new List<string>();
+            var majorVarList = new List<string>();
 
-            if (varStart == "E1_")
+            if (variablePrefix == "E1_")
             {
-                m_Data.minorChoiceVariables = new JArray();
-                m_Data.majorChoiceVariables = new JArray();
+                Data.minorChoiceVariables = new JArray();
+                Data.majorChoiceVariables = new JArray();
             }
             else
             {
-                foreach (string variable in m_Data.minorChoiceVariables)
+                foreach (string variable in Data.minorChoiceVariables)
                 {
-                    if (variable.StartsWith(varStart))
+                    if (variable.StartsWith(variablePrefix))
                     {
                         break;
                     }
-                    else minorVarList.Add(variable);
+
+                    minorVarList.Add(variable);
                 }
-                foreach (string variable in m_Data.majorChoiceVariables)
+                foreach (string variable in Data.majorChoiceVariables)
                 {
-                    if (variable.StartsWith(varStart))
+                    if (variable.StartsWith(variablePrefix))
                     {
                         break;
                     }
-                    else majorVarList.Add(variable);
+
+                    majorVarList.Add(variable);
                 }
-                m_Data.minorChoiceVariables = JArray.FromObject(minorVarList);
-                m_Data.majorChoiceVariables = JArray.FromObject(majorVarList);
+                Data.minorChoiceVariables = JArray.FromObject(minorVarList);
+                Data.majorChoiceVariables = JArray.FromObject(majorVarList);
             }
         }
 
-        private void rw_SyncLastAndCurrent (dynamic destPoint, int epNumber)
+        private void SyncLastAndCurrentCheckpoints(dynamic destPoint, int epNumber)
         {
-            m_Data.currentCheckpoint.stateCheckpoint = destPoint;
-            if (isAtMidLevel)
+            Data.currentCheckpoint.stateCheckpoint = destPoint;
+            if (IsAtMidLevel)
             {
-                isAtMidLevel = false;
-                ((JArray)m_Data.currentCheckpoint.visitedNodes).Replace(new JArray());
+                IsAtMidLevel = false;
+                ((JArray) Data.currentCheckpoint.visitedNodes).Replace(new JArray());
             }
 
             if (destPoint.pointIdentifier == "Episode1End")
             {
-                m_Data.currentCheckpoint.currentScene = "e1_s10_b";
+                Data.currentCheckpoint.currentScene = "e1_s10_b";
             }
             else if (destPoint.pointIdentifier == "Episode2End")
             {
-                m_Data.currentCheckpoint.currentScene = "e2_s07";
+                Data.currentCheckpoint.currentScene = "e2_s07";
             }
             else if (destPoint.pointIdentifier == "Episode3End")
             {
-                m_Data.currentCheckpoint.currentScene = "e3_s08";
+                Data.currentCheckpoint.currentScene = "e3_s08";
             }
-
             else
             {
                 string id = destPoint.pointIdentifier;
-                m_Data.currentCheckpoint.currentScene = id.ToLowerInvariant();
+                Data.currentCheckpoint.currentScene = id.ToLowerInvariant();
             }
-            m_Data.currentCheckpoint.currentEpisode = "E" + (epNumber+1).ToString();
+            Data.currentCheckpoint.currentEpisode = "E" + (epNumber + 1);
         }
 
-        public Dictionary<string, string> globalVarStartDict = new Dictionary<string, string>() //for graffiti variables
+        // For graffiti variables
+        private readonly Dictionary<string, string> _globalVarPrefixes = new Dictionary<string, string>
         {
             {"E1_S01_A", "E1_"},
             {"E1_S01_B", "E1_S01B_"},
@@ -790,10 +766,9 @@ namespace savefiledecoder
             {"E3_S07_B", "E4_ "},
             {"E3_S08", " E4_"},
             {"Episode3End", "E4_"}
-
         };
 
-        string[] grafiitiVars = new string[]
+        private readonly string[] _graffitiVars =
         {
             "E1_S01A_GRAFFITIRV",
             "E1_S01B_BLANKSPOT",
@@ -818,30 +793,33 @@ namespace savefiledecoder
             "E3_S07_CARVE"
         };
 
-        private bool rw_ShouldGlobalVarBeAltered (string storyID, string pointID)
+        private bool ShouldGlobalVarBeReseted(string storyVarId, string pointId)
         {
-            string limit = String.Empty;
-            List<string> notouchVars = new List<string>();
-
-            globalVarStartDict.TryGetValue(pointID, out limit);
-            foreach (string variable in grafiitiVars)
+            var untouchableVars = new List<string>();
+            string prefix;
+            if (!_globalVarPrefixes.TryGetValue(pointId, out prefix))
             {
-                if (variable.StartsWith(limit))
+                return false;
+            }
+
+            foreach (var graffitiVar in _graffitiVars)
+            {
+                if (graffitiVar.StartsWith(prefix))
                 {
                     break;
                 }
-                else notouchVars.Add(variable);
+
+                untouchableVars.Add(graffitiVar);
             }
 
-            if (storyID == m_GameData.GetVariableIdByName("E1_S01_CI_PUNKJACKET") || storyID == m_GameData.GetVariableIdByName("E1_S06_CHLOESTICKSUPFORHERSELF"))
+            if (storyVarId == _gameData.GetVariableIdByName("E1_S01_CI_PUNKJACKET") || 
+                storyVarId == _gameData.GetVariableIdByName("E1_S06_CHLOESTICKSUPFORHERSELF"))
             {
                 return false;
             }
-            else if (notouchVars.Contains(m_GameData.GetOrCreateVariableNameById(storyID)))
-            {
-                return false;
-            }
-            else return true;
+
+            return !untouchableVars.Contains(_gameData.GetOrCreateVariableNameById(storyVarId));
         }
+        #endregion
     }
 }

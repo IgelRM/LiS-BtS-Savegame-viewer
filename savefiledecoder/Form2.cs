@@ -88,45 +88,45 @@ namespace savefiledecoder
                 return;
             }
 
-            m_GameSave.ReadHeader(h_path);
+            m_GameSave.ReadHeaderFromFile(h_path);
             int ep = 0;
             string text = "";
             labelStatus.ForeColor = SystemColors.ControlText;
-            for (int i = 0; i < m_GameSave.list_EpStates.Count; i++)
+            for (int i = 0; i < m_GameSave.EpisodeStates.Count; i++)
             {
-                if (m_GameSave.list_EpStates[i] == "kInProgress" || m_GameSave.list_EpStates[i] == "kFinished")
+                if (m_GameSave.EpisodeStates[i] == "kInProgress" || m_GameSave.EpisodeStates[i] == "kFinished")
                 {
                     ep = i;
                 }
                 else break;
             }
 
-            if (m_GameSave.m_Header.currentEpisode == "GLOBAL_CODE_READYTOSTARTEPISODE")
+            if (m_GameSave.Header.currentEpisode == "GLOBAL_CODE_READYTOSTARTEPISODE")
             {
                 text += "Ready to start Episode " + (ep+2);
             }
-            else if (m_GameSave.m_Header.currentEpisode == "GLOBAL_CODE_STORYCOMPLETE")
+            else if (m_GameSave.Header.currentEpisode == "GLOBAL_CODE_STORYCOMPLETE")
             {
                 text += "Story Complete";
                 labelStatus.ForeColor = Color.Green;
             }
-            else if (m_GameSave.m_Header.currentEpisode == "GLOBAL_CODE_SAVEJUSTSTARTED")
+            else if (m_GameSave.Header.currentEpisode == "GLOBAL_CODE_SAVEJUSTSTARTED")
             {
                 text += "Just Started";
                 labelStatus.ForeColor = Color.Red;
             }
             else
             {
-                text += m_GameSave.episodeNames[ep];
+                text += m_GameSave.EpisodeNames[ep];
             }
             text += "\n";
 
-            if  (m_GameSave.m_Header.currentScene != "GLOBAL_CODE_READYTOSTARTEPISODE")
+            if  (m_GameSave.Header.currentScene != "GLOBAL_CODE_READYTOSTARTEPISODE")
             {
-                text += m_GameSave.pointNames[m_GameSave.m_Header.currentScene.Value.ToUpper()];
+                text += m_GameSave.PointNames[m_GameSave.Header.currentScene.Value.ToUpper()];
             }
             text += "\n";
-            text += String.Format("{1}/{0}/{2}", m_GameSave.dateofSave[0], m_GameSave.dateofSave[1], m_GameSave.dateofSave[2]);
+            text += String.Format("{1}/{0}/{2}", m_GameSave.SaveDate[0], m_GameSave.SaveDate[1], m_GameSave.SaveDate[2]);
 
             labelStatus.Text = text;
             labelStatus.Visible = true;
