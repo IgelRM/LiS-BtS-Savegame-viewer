@@ -60,7 +60,7 @@ namespace savefiledecoder
 
         public dynamic Header;
 
-        public string RawData { get; set; }
+        public string RawSave { get; set; }
 
         public string RawHeader { get; set; }
 
@@ -202,7 +202,7 @@ namespace savefiledecoder
             try
             {
                 Data = JsonConverter.DecodeFileContentToJson(fileContent);
-                RawData = Data.ToString();
+                RawSave = Data.ToString();
             }
             catch
             {

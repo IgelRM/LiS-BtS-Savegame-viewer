@@ -39,7 +39,7 @@ namespace savefiledecoder
 #if DEBUG
             if (Form.ModifierKeys == Keys.Control)
             {
-                File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.RawData);
+                File.WriteAllText(textBoxSavePath.Text + @".txt", m_GameSave.RawSave);
                 File.WriteAllText(textBoxSavePath.Text + @"-initialdata.txt", m_GameData.Raw);
                 if (m_GameSave.Header != null)
                 {
