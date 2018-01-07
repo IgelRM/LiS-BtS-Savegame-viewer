@@ -23,11 +23,11 @@ namespace savefiledecoder
 
     public class Checkpoint
     {
-        private readonly dynamic _checkooint; // Checkpoint object. Possibly holding checkpoint name.
+        private readonly dynamic _checkpoint; // Checkpoint object. Possibly holding checkpoint name.
 
-        public string PointIdentifier => _checkooint.pointIdentifier;
+        public string PointIdentifier => _checkpoint.pointIdentifier;
 
-        public string Objective => _checkooint.currentObjective;
+        public string Objective => _checkpoint.currentObjective;
 
         public Dictionary<string, VariableState> Variables { get; }
 
@@ -37,7 +37,7 @@ namespace savefiledecoder
 
         public Checkpoint(dynamic checkpoint, Dictionary<string, VariableState> variables, List<string> flags, Dictionary<string, FloatState> floats)
         {
-            _checkooint = checkpoint;
+            _checkpoint = checkpoint;
             Variables = variables;
             Flags = flags;
             Floats = floats;
@@ -447,7 +447,7 @@ namespace savefiledecoder
             }
             else
             {
-                MessageBox.Show("Could not find checkpoint with poinId " + checkpointId + "!");
+                MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
                 return false;
             }
 
