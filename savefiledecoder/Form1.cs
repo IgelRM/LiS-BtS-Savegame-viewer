@@ -722,7 +722,7 @@ namespace savefiledecoder
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.8.2\nOriginal created by /u/DanielWe\nModified by Ladosha, IgelRM and VakhtinAndrey\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Version 0.8.2\nInitially created by /u/DanielWe\nModified by Ladosha, IgelRM and VakhtinAndrey\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Form1_Load(object sender, EventArgs e)
