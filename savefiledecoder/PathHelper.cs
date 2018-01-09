@@ -10,6 +10,10 @@ namespace savefiledecoder
         private const string InitialDataRelativePath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
         private const string SteamIdFoldersRelativePath = @"AppData\LocalLow\Square Enix\Life Is Strange_ Before The Storm\Saves";
 
+        public const string ExportObjectivesFileName = "export_objectives.txt";
+        public const string ExportCheckpointsFileName = "export_checkpoints.txt";
+        public const string ExportVariablesFileName = "export_variables.txt";
+
         /// <summary>
         /// Default save header file name
         /// </summary>

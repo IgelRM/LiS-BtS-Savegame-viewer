@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
+using System.Text;
 
 namespace savefiledecoder
 {
@@ -665,38 +666,44 @@ namespace savefiledecoder
             ValidatePaths();
         }
 
-        //export
+        // Export
         private void buttonExport_Click(object sender, EventArgs e)
         {
-            using (StreamWriter file = new StreamWriter("objectives.txt"))
-                for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            using (var file = new StreamWriter(PathHelper.ExportObjectivesFileName))
+            {
+                for (var i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     file.WriteLine("\"{0}\"", _gameSave.Checkpoints[i].Objective);
                 }
+            }
 
-            using (StreamWriter file = new StreamWriter("checkpoints.txt"))
-                for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            using (var file = new StreamWriter(PathHelper.ExportCheckpointsFileName))
+            {
+                for (var i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     file.WriteLine("\"{0}\"", _gameSave.Checkpoints[i].PointIdentifier);
                 }
+            }
 
-            using (StreamWriter file = new StreamWriter("variables.txt"))
-                foreach (var entry in _initialData.GetVariables().OrderBy((v) => v.Value.Name))
+            using (var file = new StreamWriter(PathHelper.ExportVariablesFileName))
+            {
+                foreach (var entry in _initialData.GetVariables().OrderBy(v => v.Value.Name))
                 {
                     var checkpoint = _gameSave.Checkpoints[_gameSave.Checkpoints.Count - 1];
                     VariableState state;
-                    bool valFound = checkpoint.Variables.TryGetValue(entry.Value.Name, out state);
-                    if (valFound)
+                    if (checkpoint.Variables.TryGetValue(entry.Value.Name, out state))
                     {
                         file.WriteLine("\"{0}\", {1}", entry.Value.Name.ToUpper(), state.Value);
                     }
-                    else if (Form.ModifierKeys == Keys.Control)
+                    else if (ModifierKeys == Keys.Control)
                     {
                         file.WriteLine("\"{0}\"", entry.Value.Name.ToUpper());
                     }
                 }
-            System.Diagnostics.Process.Start("variables.txt"); //open the text file
-
+            }
+            //System.Diagnostics.Process.Start("export_variables.txt"); // Open the text file
+            MessageBox.Show($"The following files were created in application folder:{Environment.NewLine}{Environment.NewLine}* {PathHelper.ExportObjectivesFileName}{Environment.NewLine}* {PathHelper.ExportCheckpointsFileName}{Environment.NewLine}* {PathHelper.ExportVariablesFileName}{Environment.NewLine}", "Export completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            System.Diagnostics.Process.Start(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         }
         //browse for Data.Save
         private void button5_Click(object sender, EventArgs e)
@@ -736,11 +743,20 @@ namespace savefiledecoder
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Version 0.8.2\nInitially created by /u/DanielWe\nModified by Ladosha, IgelRM and VakhtinAndrey\nhttps://github.com/IgelRM/LiS-BtS-Savegame-viewer", "About Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var sb = new StringBuilder();
+            sb.AppendLine($"Version {Program.GetApplicationVersionStr()}");
+            sb.AppendLine();
+            sb.AppendLine("Initially created by /u/DanielWe");
+            sb.AppendLine("Modified by Ladosha, IgelRM and VakhtinAndrey");
+            sb.AppendLine();
+            sb.AppendLine("https://github.com/IgelRM/LiS-BtS-Savegame-viewer");
+            MessageBox.Show(sb.ToString(), "About Program", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            Text = $"LiS BtS Savegame Editor v{Program.GetApplicationVersionStr()}";
+
             if (File.Exists("settings.json"))
             {
                 string file = File.ReadAllText("settings.json");

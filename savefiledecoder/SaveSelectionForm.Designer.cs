@@ -19,6 +19,7 @@ namespace savefiledecoder
             this.lblStatus = new System.Windows.Forms.Label();
             this.gbActiveSlots = new System.Windows.Forms.GroupBox();
             this.btnOk = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.gbActiveSlots.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -69,7 +70,7 @@ namespace savefiledecoder
             this.cbSteamIds.Location = new System.Drawing.Point(12, 25);
             this.cbSteamIds.Name = "cbSteamIds";
             this.cbSteamIds.Size = new System.Drawing.Size(127, 21);
-            this.cbSteamIds.TabIndex = 6;
+            this.cbSteamIds.TabIndex = 3;
             this.cbSteamIds.SelectedIndexChanged += new System.EventHandler(this.cbSteamIds_SelectedIndexChanged);
             // 
             // lblSteamId
@@ -78,7 +79,7 @@ namespace savefiledecoder
             this.lblSteamId.Location = new System.Drawing.Point(12, 9);
             this.lblSteamId.Name = "lblSteamId";
             this.lblSteamId.Size = new System.Drawing.Size(51, 13);
-            this.lblSteamId.TabIndex = 8;
+            this.lblSteamId.TabIndex = 2;
             this.lblSteamId.Text = "SteamID:";
             // 
             // lblStatus
@@ -87,7 +88,7 @@ namespace savefiledecoder
             this.lblStatus.Location = new System.Drawing.Point(12, 60);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(47, 13);
-            this.lblStatus.TabIndex = 9;
+            this.lblStatus.TabIndex = 4;
             this.lblStatus.Text = "<status>";
             // 
             // gbActiveSlots
@@ -98,26 +99,38 @@ namespace savefiledecoder
             this.gbActiveSlots.Location = new System.Drawing.Point(145, 12);
             this.gbActiveSlots.Name = "gbActiveSlots";
             this.gbActiveSlots.Size = new System.Drawing.Size(80, 90);
-            this.gbActiveSlots.TabIndex = 10;
+            this.gbActiveSlots.TabIndex = 5;
             this.gbActiveSlots.TabStop = false;
             this.gbActiveSlots.Text = "Active slot";
             // 
             // btnOk
             // 
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(150, 108);
+            this.btnOk.Location = new System.Drawing.Point(69, 108);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 11;
+            this.btnOk.TabIndex = 0;
             this.btnOk.Text = "OK";
             this.btnOk.UseVisualStyleBackColor = true;
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Location = new System.Drawing.Point(150, 108);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 1;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // SaveSelectionForm
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(237, 142);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.gbActiveSlots);
             this.Controls.Add(this.lblStatus);
@@ -146,5 +159,6 @@ namespace savefiledecoder
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.GroupBox gbActiveSlots;
         private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnCancel;
     }
 }
