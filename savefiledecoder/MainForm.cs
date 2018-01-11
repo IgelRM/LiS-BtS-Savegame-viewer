@@ -702,7 +702,15 @@ namespace savefiledecoder
                 }
             }
             //System.Diagnostics.Process.Start("export_variables.txt"); // Open the text file
-            MessageBox.Show($"The following files were created in application folder:{Environment.NewLine}{Environment.NewLine}* {PathHelper.ExportObjectivesFileName}{Environment.NewLine}* {PathHelper.ExportCheckpointsFileName}{Environment.NewLine}* {PathHelper.ExportVariablesFileName}{Environment.NewLine}", "Export completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("The following files were created in application folder:" +
+                            Environment.NewLine + 
+                            Environment.NewLine +
+                            "* " + PathHelper.ExportObjectivesFileName +
+                            Environment.NewLine +
+                            "* " + PathHelper.ExportCheckpointsFileName +
+                            Environment.NewLine +
+                            "* " + PathHelper.ExportVariablesFileName,
+                "Export completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
             System.Diagnostics.Process.Start(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         }
         //browse for Data.Save

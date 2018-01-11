@@ -10,7 +10,7 @@ namespace savefiledecoder
 {
     public partial class SaveSelectionForm : Form
     {
-        private readonly string[] _steamIdFolders;
+        private readonly string[] _steamIdFolderNames;
 
         private readonly string _selectedDataFilePath;
 
@@ -26,10 +26,10 @@ namespace savefiledecoder
 
         public SaveSelectionForm(GameSave gameSave, string selectedDataFilePath = null)
         {
-            _steamIdFolders = PathHelper.GetSteamIdFolders();
-            if (_steamIdFolders == null || _steamIdFolders.Length == 0)
+            _steamIdFolderNames = PathHelper.GetSteamIdFolderNames();
+            if (_steamIdFolderNames == null || _steamIdFolderNames.Length == 0)
             {
-                throw new Exception($"Could not find any save folder ({nameof(_steamIdFolders)} is empty).");
+                throw new Exception($"Could not find any save folder (variable \"{nameof(_steamIdFolderNames)}\" is empty).");
             }
 
             _selectedDataFilePath = selectedDataFilePath;
@@ -47,9 +47,9 @@ namespace savefiledecoder
             }
 
             cbSteamIds.Items.Clear();
-            foreach (var folder in _steamIdFolders.OrderBy(f => f))
+            foreach (var folderName in _steamIdFolderNames.OrderBy(f => f))
             {
-                cbSteamIds.Items.Add(PathHelper.GetSteamIdFromPath(folder));
+                cbSteamIds.Items.Add(folderName);
             }
 
             if (SelectedSteamId != null && cbSteamIds.Items.Contains(SelectedSteamId))
@@ -134,18 +134,17 @@ namespace savefiledecoder
             if (rbSlot1.Checked)
             {
                 SelectedSlot = SaveSlot.First;
-                InterpretHeader();
             }
             else if (rbSlot2.Checked)
             {
                 SelectedSlot = SaveSlot.Second;
-                InterpretHeader();
             }
             else if (rbSlot3.Checked)
             {
                 SelectedSlot = SaveSlot.Third;
-                InterpretHeader();
             }
+
+            InterpretHeader();
         }
 
         private void InterpretHeader()
@@ -181,16 +180,16 @@ namespace savefiledecoder
                 }
             }
 
-            if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.GlobalCodeReadyToStartEpisode)
+            if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.ReadyToStartEpisode)
             {
                 text.Append("Ready to start Episode " + (activeEpisode + 2));
             }
-            else if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.GlobalCodeStoryComplete)
+            else if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.StoryComplete)
             {
                 text.Append("Story Complete");
                 lblStatus.ForeColor = Color.Green;
             }
-            else if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.GlobalCodeSaveJustStarted)
+            else if (_gameSave.Header.currentEpisode == Consts.GlobalCodes.SaveJustStarted)
             {
                 text.Append("Just Started");
                 lblStatus.ForeColor = Color.Red;
@@ -201,8 +200,8 @@ namespace savefiledecoder
             }
             text.Append(Environment.NewLine);
 
-            if (_gameSave.Header.currentScene != Consts.GlobalCodes.GlobalCodeReadyToStartEpisode &&
-                _gameSave.Header.currentScene != Consts.GlobalCodes.GlobalCodeStoryComplete)
+            if (_gameSave.Header.currentScene != Consts.GlobalCodes.ReadyToStartEpisode &&
+                _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete)
             {
                 text.Append(_gameSave.PointNames[_gameSave.Header.currentScene.Value.ToUpper()]);
             }

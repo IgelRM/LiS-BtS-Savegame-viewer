@@ -12,9 +12,9 @@
 
         public static class GlobalCodes
         {
-            public const string GlobalCodeReadyToStartEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
-            public const string GlobalCodeStoryComplete = "GLOBAL_CODE_STORYCOMPLETE";
-            public const string GlobalCodeSaveJustStarted = "GLOBAL_CODE_SAVEJUSTSTARTED";
+            public const string ReadyToStartEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
+            public const string StoryComplete = "GLOBAL_CODE_STORYCOMPLETE";
+            public const string SaveJustStarted = "GLOBAL_CODE_SAVEJUSTSTARTED";
         }
     }
 }

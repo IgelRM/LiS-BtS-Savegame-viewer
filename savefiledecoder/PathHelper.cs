@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace savefiledecoder
@@ -69,8 +70,16 @@ namespace savefiledecoder
 
         public static string[] GetSteamIdFolders()
         {
-            return Directory.GetDirectories(
+            var dirs = Directory.GetDirectories(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), SteamIdFoldersRelativePath));
+            return dirs.Where(p => GetSteamIdFromPath(p) != null).ToArray();
+        }
+
+        public static string[] GetSteamIdFolderNames()
+        {
+            var dirs = Directory.GetDirectories(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), SteamIdFoldersRelativePath));
+            return dirs.Select(GetSteamIdFromPath).Where(d => d != null).ToArray();
         }
 
         public static string GetSteamIdFolderBySteamId(string steamId)
@@ -87,7 +96,7 @@ namespace savefiledecoder
 
         public static string GetSteamIdFromPath(string path)
         {
-            var re = new Regex(@".*\\Saves\\(?<steamId>\d*).*");
+            var re = new Regex(@".*\\Saves\\(?<steamId>\d+).*");
             var result = re.Match(path);
             if (result.Success)
             {
@@ -98,7 +107,7 @@ namespace savefiledecoder
 
         public static SaveSlot? GetSlotFromPath(string path)
         {
-            var re = new Regex(@".*\\Saves\\\d*\\SLOT_0(?<slotNumber>\d).*");
+            var re = new Regex(@".*\\Saves\\\d+\\SLOT_0(?<slotNumber>\d{1}).*");
             var result = re.Match(path);
             if (result.Success)
             {
