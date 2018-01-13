@@ -8,3 +8,5 @@ Life is Strange: Before the Storm, Savegame viewer and editor, initially created
 * [Variables for Chloe and Joyce relationship by /u/TheSerendipitist](https://www.reddit.com/r/lifeisstrange/comments/7k02tm/bts_e2_variable_for_chloe_and_joyce_relationship/)
 
 ![tool screenshot](https://i.imgur.com/iBHFj8l.png)
+
+*Please note that the creators of this program are not in any way affiliated with Deck Nine or Square Enix.*
