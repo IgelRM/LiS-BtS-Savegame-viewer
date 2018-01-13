@@ -29,7 +29,7 @@ namespace savefiledecoder
 
                     var currentVersion = Program.GetApplicationVersion();
 
-                    // latest available version is higher than the current
+                    // Latest available version is higher than the current one
                     if (latestVersion.CompareTo(currentVersion) == 1)
                     {
                         var message = new StringBuilder();
@@ -48,9 +48,8 @@ namespace savefiledecoder
                     }
                 }
                 // Unable to retrieve latest version from server
-                catch (WebException ex)
+                catch (WebException)
                 {
-                    MessageBox.Show(ex.Message);
                 }
             });
         }
