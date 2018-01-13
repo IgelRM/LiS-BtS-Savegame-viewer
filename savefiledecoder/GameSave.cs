@@ -361,7 +361,7 @@ namespace savefiledecoder
         // Value gets updated inside JSON object (m_Data)
         public bool FindAndUpdateVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
         {
-            dynamic editingPoint;
+            dynamic editingPoint = null;
             var varId = _gameData.GetVariableIdByName(varName);
             var pointFound = false;
             var success = false;
@@ -377,7 +377,6 @@ namespace savefiledecoder
                     pointFound = true;
                     break;
                 default:
-                    editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
                     foreach (var checkpoint in Data.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
@@ -467,7 +466,7 @@ namespace savefiledecoder
         public bool FindAndUpdateFloatValue(string checkpointId, string floatName, float? origValue, float? newValue,
             VariableScope varScope)
         {
-            dynamic editingPoint;
+            dynamic editingPoint = null;
             var pointFound = false;
 
             switch (varScope)
@@ -481,7 +480,6 @@ namespace savefiledecoder
                     pointFound = true;
                     break;
                 default:
-                    editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
                     foreach (var checkpoint in Data.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
@@ -522,7 +520,7 @@ namespace savefiledecoder
 
         public bool FindAndUpdateFlagValue(string checkpointId, string flagName, bool origValue, VariableScope varScope)
         {
-            dynamic editingPoint;
+            dynamic editingPoint = null;
             var pointFound = false;
 
             if (varScope == VariableScope.CurrentCheckpoint)
@@ -532,7 +530,6 @@ namespace savefiledecoder
             }
             else
             {
-                editingPoint = Data.checkpoints[0]; // Assign some value to the variable; TODO: do we really need this init?
                 foreach (var checkpoint in Data.checkpoints)
                 {
                     if (checkpoint.pointIdentifier.Value == checkpointId)

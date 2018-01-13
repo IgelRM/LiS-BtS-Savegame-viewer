@@ -17,7 +17,7 @@ namespace savefiledecoder
             InitializeComponent();
         }
 
-        public Form1 form1;
+        public MainForm form1;
         public int tab_num;
 
         private void buttonFind_Click(object sender, EventArgs e)

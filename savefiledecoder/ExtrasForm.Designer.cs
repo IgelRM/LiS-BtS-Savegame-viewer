@@ -1,6 +1,6 @@
 ﻿namespace savefiledecoder
 {
-    partial class FormExtras
+    partial class ExtrasForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormExtras));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExtrasForm));
             this.buttonManualBkpSave = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.buttonManualBkpHeader = new System.Windows.Forms.Button();

@@ -34,7 +34,7 @@ namespace savefiledecoder
 
         public string Raw { get; set; }
 
-        public void Read(string path)
+        public void ReadFromFile(string path)
         {
             var fileContent = File.ReadAllBytes(path);
             dynamic json = JsonConverter.DecodeFileContentToJson(fileContent);

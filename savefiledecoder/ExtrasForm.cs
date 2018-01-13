@@ -13,9 +13,9 @@ using Newtonsoft.Json.Linq;
 
 namespace savefiledecoder
 {
-    public partial class FormExtras : Form
+    public partial class ExtrasForm : Form
     {
-        public FormExtras()
+        public ExtrasForm()
         {
             InitializeComponent();
         }

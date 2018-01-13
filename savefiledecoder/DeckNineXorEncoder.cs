@@ -9,8 +9,6 @@ namespace savefiledecoder
     {
         private static readonly MD5 ContentHash = MD5.Create();
 
-        public const string InitialDataPath = @"Life is Strange - Before the Storm_Data\StreamingAssets\Data\InitialData.et.bytes";
-        public const string CSharpAssemblyPath = @"Life is Strange - Before the Storm_Data\Managed\Assembly-CSharp.dll";
         public static byte[] Key { get; private set; } = { 0 };
         public static readonly byte[] EncryptedFileSignature = {81, 55, 110, 170};
         public static readonly int ContentlessHeaderLength = EncryptedFileSignature.Length + ContentHash.HashSize/8;
