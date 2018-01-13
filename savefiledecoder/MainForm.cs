@@ -763,6 +763,8 @@ namespace savefiledecoder
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            UpdateChecker.CheckForUpdates(this);
+
             Text = $"LiS BtS Savegame Editor v{Program.GetApplicationVersionStr()}";
 
             if (File.Exists("settings.json"))

@@ -73,6 +73,7 @@
     <Compile Include="Consts.cs" />
     <Compile Include="PathHelper.cs" />
     <Compile Include="SaveSlot.cs" />
+    <Compile Include="UpdateChecker.cs" />
     <Compile Include="VariableScope.cs" />
     <Compile Include="FindForm.cs">
       <SubType>Form</SubType>
