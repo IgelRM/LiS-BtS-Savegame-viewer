@@ -188,10 +188,12 @@ namespace savefiledecoder
             dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            dataGridView1.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel ? "Middle of " + _gameSave.PointNames[dataGridView1.Rows[0].Cells[3].Value].ToString() : _gameSave.PointNames[dataGridView1.Rows[0].Cells[2].Value].ToString();
+            dataGridView1.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[3].Value.ToString())?.Name 
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[2].Value.ToString())?.Name;
             for (int i = 3; i < dataGridView1.Rows[0].Cells.Count; i++)
             {
-                dataGridView1.Rows[0].Cells[i].ToolTipText = _gameSave.PointNames[dataGridView1.Rows[0].Cells[i].Value].ToString();
+                dataGridView1.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -272,10 +274,12 @@ namespace savefiledecoder
             dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
 
 
-            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel ? "Middle of " + _gameSave.PointNames[dataGridViewFloats.Rows[0].Cells[3].Value].ToString() : _gameSave.PointNames[dataGridViewFloats.Rows[0].Cells[2].Value].ToString();
+            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[3].Value.ToString())?.Name
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[2].Value.ToString())?.Name;
             for (int i = 3; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = _gameSave.PointNames[dataGridViewFloats.Rows[0].Cells[i].Value].ToString();
+                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             for (int i = 0; i < dataGridViewFloats.RowCount; i++)
@@ -354,10 +358,12 @@ namespace savefiledecoder
             dataGridViewFlags.Rows[0].ReadOnly = true;
             dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
 
-            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = _gameSave.IsAtMidLevel ? "Middle of " + _gameSave.PointNames[dataGridViewFlags.Rows[0].Cells[2].Value].ToString() : _gameSave.PointNames[dataGridViewFlags.Rows[0].Cells[1].Value].ToString();
+            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = _gameSave.IsAtMidLevel 
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[2].Value.ToString())?.Name 
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[1].Value.ToString())?.Name;
             for (int i = 2; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = _gameSave.PointNames[dataGridViewFlags.Rows[0].Cells[i].Value].ToString();
+                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             for (int i = 0; i < dataGridViewFlags.RowCount; i++)

@@ -55,9 +55,10 @@ namespace savefiledecoder
             {
                 for (int i=0; i<m_GameSave.EpisodeStates.Count; i++)
                 {
-                    if (m_GameSave.EpisodeStates[i] == "kInProgress" || m_GameSave.EpisodeStates[i] == "kFinished")
+                    if (m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.InProgress || 
+                        m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.Finished)
                     {
-                        comboBoxHeaderEp.Items.Add(m_GameSave.EpisodeNames[i]);
+                        comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[(Episode) i]);
                     }
                 }
                 comboBoxHeaderEp.SelectedIndex = comboBoxHeaderEp.Items.Count - 1; //autoselect the last item
@@ -222,7 +223,7 @@ namespace savefiledecoder
             for (int i=start; i<m_GameSave.Data.checkpoints.Count; i++)
             {
                 if (i == end) break;
-                else comboBoxPoint.Items.Add(m_GameSave.PointNames[i]);
+                //else comboBoxPoint.Items.Add(Consts.PointNames[i]);
             }
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;

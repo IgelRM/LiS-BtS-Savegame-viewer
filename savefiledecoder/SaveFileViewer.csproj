@@ -71,9 +71,8 @@
   <ItemGroup>
     <Compile Include="AssFile.cs" />
     <Compile Include="Consts.cs" />
+    <Compile Include="Enums.cs" />
     <Compile Include="PathHelper.cs" />
-    <Compile Include="SaveSlot.cs" />
-    <Compile Include="VariableScope.cs" />
     <Compile Include="FindForm.cs">
       <SubType>Form</SubType>
     </Compile>
