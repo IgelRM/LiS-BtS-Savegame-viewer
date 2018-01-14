@@ -15,9 +15,14 @@ namespace savefiledecoder
             Application.Run(new MainForm());
         }
 
+        public static Version GetApplicationVersion()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
+        }
+
         public static string GetApplicationVersionStr()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var version = GetApplicationVersion();
             var sb = new StringBuilder();
             sb.Append($"{version.Major}.{version.Minor}");
             if (version.Build != 0)
