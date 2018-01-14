@@ -33,9 +33,9 @@ namespace savefiledecoder
                     if (latestVersion.CompareTo(currentVersion) == 1)
                     {
                         var message = new StringBuilder();
-                        message.AppendLine($"New version {latestVersionStr} is available.");
+                        message.AppendLine($"A newer version ({latestVersionStr}) is available.");
                         message.AppendLine();
-                        message.AppendLine("Would you like to visit our site and download it?");
+                        message.AppendLine("Would you like to go the release download page?");
 
                         form.Invoke(new Action(() =>
                         {
