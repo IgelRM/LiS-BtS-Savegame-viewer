@@ -551,7 +551,12 @@ namespace savefiledecoder
                 // Remove one of the existing flags
                 else
                 {
-                    ((JArray) editingPoint.flags).Remove(flagName);
+                    JToken flagToDelete = null;
+                    foreach (var flag in editingPoint.flags)
+                    {
+                        if (flag.Value == flagName) flagToDelete = flag;
+                    }
+                    flagToDelete.Remove();
                 }
 
                 SaveChangesSaved = false;
