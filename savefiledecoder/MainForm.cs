@@ -507,7 +507,11 @@ namespace savefiledecoder
             // floats
             foreach (var flt in _gameSave.Data.floatValuesDict)
             {
-                if (flt.Name == "$type") continue;
+                if (flt.Name == "$type")
+                {
+                    continue;
+                }
+
                 row[0] = flt.Name;
                 for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
@@ -707,7 +711,6 @@ namespace savefiledecoder
                 foreach (var flag in _gameSave.Data.flags)
                 {
                     file.WriteLine("\"{0}\"", flag.Value);
-
                 }
             }
 
@@ -715,7 +718,10 @@ namespace savefiledecoder
             {
                 foreach (var floatValue in _gameSave.Data.floatValuesDict)
                 {
-                    if (floatValue.Name == "$type") continue;
+                    if (floatValue.Name == "$type")
+                    {
+                        continue;
+                    }
 
                     file.WriteLine("\"{0}\", {1}", floatValue.Name, floatValue.Value);
                 }

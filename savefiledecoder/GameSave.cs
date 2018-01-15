@@ -554,7 +554,10 @@ namespace savefiledecoder
                     JToken flagToDelete = null;
                     foreach (var flag in editingPoint.flags)
                     {
-                        if (flag.Value == flagName) flagToDelete = flag;
+                        if (flag.Value == flagName)
+                        {
+                            flagToDelete = flag;
+                        }
                     }
                     flagToDelete.Remove();
                 }
