@@ -9,7 +9,6 @@ namespace savefiledecoder
 {
     public static class UpdateChecker
     {
-        //private const string GetVersionUrl = @"..\..\..\LatestVersion.txt";
         private const string GetVersionUrl = "https://raw.githubusercontent.com/IgelRM/LiS-BtS-Savegame-viewer/master/LatestVersion.txt";
         private const string DownloadUpdateUrl = "https://github.com/IgelRM/LiS-BtS-Savegame-viewer/releases";
 
@@ -35,7 +34,7 @@ namespace savefiledecoder
                         var message = new StringBuilder();
                         message.AppendLine($"A newer version ({latestVersionStr}) is available.");
                         message.AppendLine();
-                        message.AppendLine("Would you like to go the release download page?");
+                        message.AppendLine("Would you like to go to the release download page?");
 
                         form.Invoke(new Action(() =>
                         {

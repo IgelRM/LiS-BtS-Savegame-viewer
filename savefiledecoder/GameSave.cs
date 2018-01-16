@@ -85,63 +85,6 @@ namespace savefiledecoder
         public List<string> EpisodeStates = new List<string>();
         public int[] SaveDate = new int[3];
 
-        public readonly string[] EpisodeNames =
-        {
-            "Epsiode 1: Awake",
-            "Episode 2: Brave New World",
-            "Epsiode 3: Hell is Empty",
-            "Bonus Episode: Farewell"
-        };
-
-        public readonly OrderedDictionary PointNames = new OrderedDictionary()
-        {
-            // Episode 1
-            {"E1_S01_A", "Old Mill - Exterior"},
-            {"E1_S01_B", "Old Mill - Interior"},
-            {"E1_S02_BUILD_AB", "Price House - Upstairs"},
-            {"E1_S02_BUILD_CD", "Price House - Downstairs"},
-            {"E1_S03", "First Dream"},
-            {"E1_S04_A", "School Campus"},
-            {"E1_S04_D", "School Drama Lab"},
-            {"E1_S05", "Train"},
-            {"E1_S06", "Overlook"},
-            {"E1_S08", "Junkyard"},
-            {"E1_S09", "Second Dream"},
-            {"E1_S10_A", "Junkyard - Night"},
-            {"E1_S10_B", "Overlook - Night"},
-            {"Episode1End", "Episode 1 Ending"},
-
-            // Episode 2
-            {"E2_S01_ABC", "Principal's Office"},
-            {"E2_S01_D", "Blackwell Parking Lot"},
-            {"E2_S02_A", "Junkyard"},
-            {"E2_S02_B", "Dream"},
-            {"E2_S02_C", "Junkyard - Later"},
-            {"E2_S03", "Frank's RV"},
-            {"E2_S04_A", "Dormitories (Outside)"},
-            {"E2_S04_B", "Boys' Dormitories"},
-            {"E2_S05_A", "Campus - Backstage"},
-            {"E2_S05_B", "The Tempest"},
-            {"E2_S06", "Neighborhood"},
-            {"E2_S07", "Amber House"},
-            {"Episode2End", "Episode 2 Ending"},
-
-            // Episode 3
-            {"E3_S01_A", "Amber House"},
-            {"E3_S01_B", "Rachel's Room"},
-            {"E3_S01_C", "Dream"},
-            {"E3_S02_A", "Price House - Upstairs"},
-            {"E3_S02_B", "Price House - Downstairs"},
-            {"E3_S03_AC", "Junkyard"},
-            {"E3_S04_AEBC", "Hospital"},
-            {"E3_S04_D", "Hospital - Rachel's Room"},
-            {"E3_S05", "Amber House - Office"},
-            {"E3_S06", "Burned Forest"},
-            {"E3_S07_B", "Old Mill"},
-            {"E3_S08", "Hospital - Rachel's Room"},
-            {"Episode3End", "Episode 3 Ending"}
-         };
-
         public readonly Dictionary<string, string> PointVariablePrefixes = new Dictionary<string, string>()
         {
             {"E1_S01_A", "E1_"},
@@ -258,7 +201,8 @@ namespace savefiledecoder
             {
                 string episodeName = episode.name;
                 string episodeState = episode.episodeState;
-                var isPlayed = episodeState == "kFinished" || episodeState == "kInProgress";
+                var isPlayed = episodeState == Consts.EpisodeStates.Finished ||
+                               episodeState == Consts.EpisodeStates.InProgress;
                 PlayedEpisodes[episodeName] = isPlayed;
             }
             if (File.Exists(Path.GetDirectoryName(savePath) + @"\Header.Save"))
@@ -598,15 +542,15 @@ namespace savefiledecoder
             {
                 if (i < epNumber)
                 {
-                    Data.episodes[i].episodeState = "kFinished";
+                    Data.episodes[i].episodeState = Consts.EpisodeStates.Finished;
                 }
                 else if (i == epNumber && !destPointId.EndsWith("End"))
                 {
-                    Data.episodes[i].episodeState = "kInProgress";
+                    Data.episodes[i].episodeState = Consts.EpisodeStates.InProgress;
                 }
-                else if (i > epNumber && Data.episodes[i].episodeState != "kUnavailable")
+                else if (i > epNumber && Data.episodes[i].episodeState != Consts.EpisodeStates.Unavailable)
                 {
-                    Data.episodes[i].episodeState = "kNotPlayed";
+                    Data.episodes[i].episodeState = Consts.EpisodeStates.NotPlayed;
                 }
             }
 
@@ -648,13 +592,13 @@ namespace savefiledecoder
             if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || 
                 Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
             {
-                Header.currentScene = "GLOBAL_CODE_READYTOSTARTEPISODE";
-                Header.currentEpisode = "GLOBAL_CODE_READYTOSTARTEPISODE";
+                Header.currentScene = Consts.GlobalCodes.ReadyToStartEpisode;
+                Header.currentEpisode = Consts.GlobalCodes.ReadyToStartEpisode;
             }
             else if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
             {
-                Header.currentScene = "GLOBAL_CODE_STORYCOMPLETE";
-                Header.currentEpisode = "GLOBAL_CODE_STORYCOMPLETE";
+                Header.currentScene = Consts.GlobalCodes.StoryComplete;
+                Header.currentEpisode = Consts.GlobalCodes.StoryComplete;
             }
             else
             {
@@ -773,31 +717,6 @@ namespace savefiledecoder
             {"Episode3End", "E4_"}
         };
 
-        private readonly string[] _graffitiVars =
-        {
-            "E1_S01A_GRAFFITIRV",
-            "E1_S01B_BLANKSPOT",
-            "E1_S06_GRAFFITISTATUE",
-            "E1_S08_SIGNGRAFFITI",
-            "E2_S02_GRAFFITITRUCK",
-            "E2_S02_HOODGRAFFITI",
-            "E2_S02_SHACKGRAFFITO",
-            "E2_S03_RVGRAFFITI",
-            "E2_S04A_GRAFFITICONCRETE",
-            "E2_S05_MIRRORGRAFFITI",
-            "E2_S07_JAMESGRAFFITI",
-            "E3_S01_PLANNERGRAFFITI",
-            "E3_S01B_MAPGRAFFITI",
-            "E3_S02A_GRAFFITIPHOTO",
-            "E3_S02C_GRAFFITICALENDAR",
-            "E3_S03_GOBULEGRAFFITI",
-            "E3_S04_GRAFFITINORTHCAST",
-            "E3_S04A_GRAFFITIPOSTER",
-            "E3_S04A_VENDINGMACHINEGRAFFITI",
-            "E3_S05_GRAFFITI",
-            "E3_S07_CARVE"
-        };
-
         private bool ShouldGlobalVarBeReseted(string storyVarId, string pointId)
         {
             var untouchableVars = new List<string>();
@@ -807,7 +726,7 @@ namespace savefiledecoder
                 return false;
             }
 
-            foreach (var graffitiVar in _graffitiVars)
+            foreach (var graffitiVar in Consts.GraffitiVariableNames)
             {
                 if (graffitiVar.StartsWith(prefix))
                 {
