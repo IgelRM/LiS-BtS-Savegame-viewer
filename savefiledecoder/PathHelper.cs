@@ -14,6 +14,8 @@ namespace savefiledecoder
         public const string ExportObjectivesFileName = "export_objectives.txt";
         public const string ExportCheckpointsFileName = "export_checkpoints.txt";
         public const string ExportVariablesFileName = "export_variables.txt";
+        public const string ExportFlagsFileName = "export_flags.txt";
+        public const string ExportFloatsFileName = "export_floats.txt";
 
         /// <summary>
         /// Default save header file name

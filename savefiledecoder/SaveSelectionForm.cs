@@ -201,7 +201,8 @@ namespace savefiledecoder
             text.Append(Environment.NewLine);
 
             if (_gameSave.Header.currentScene != Consts.GlobalCodes.ReadyToStartEpisode &&
-                _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete)
+                _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete &&
+                _gameSave.Header.currentScene != Consts.GlobalCodes.SaveJustStarted)
             {
                 text.Append(_gameSave.PointNames[_gameSave.Header.currentScene.Value.ToUpper()]);
             }

@@ -507,7 +507,11 @@ namespace savefiledecoder
             // floats
             foreach (var flt in _gameSave.Data.floatValuesDict)
             {
-                if (flt.Name == "$type") continue;
+                if (flt.Name == "$type")
+                {
+                    continue;
+                }
+
                 row[0] = flt.Name;
                 for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
@@ -701,7 +705,28 @@ namespace savefiledecoder
                     }
                 }
             }
-            //System.Diagnostics.Process.Start("export_variables.txt"); // Open the text file
+
+            using (var file = new StreamWriter(PathHelper.ExportFlagsFileName))
+            {
+                foreach (var flag in _gameSave.Data.flags)
+                {
+                    file.WriteLine("\"{0}\"", flag.Value);
+                }
+            }
+
+            using (var file = new StreamWriter(PathHelper.ExportFloatsFileName))
+            {
+                foreach (var floatValue in _gameSave.Data.floatValuesDict)
+                {
+                    if (floatValue.Name == "$type")
+                    {
+                        continue;
+                    }
+
+                    file.WriteLine("\"{0}\", {1}", floatValue.Name, floatValue.Value);
+                }
+            }
+
             MessageBox.Show("The following files were created in application folder:" +
                             Environment.NewLine + 
                             Environment.NewLine +
@@ -709,7 +734,11 @@ namespace savefiledecoder
                             Environment.NewLine +
                             "* " + PathHelper.ExportCheckpointsFileName +
                             Environment.NewLine +
-                            "* " + PathHelper.ExportVariablesFileName,
+                            "* " + PathHelper.ExportVariablesFileName +
+                            Environment.NewLine +
+                            "* " + PathHelper.ExportFlagsFileName +
+                            Environment.NewLine +
+                            "* " + PathHelper.ExportFloatsFileName,
                 "Export completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
             System.Diagnostics.Process.Start(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         }
