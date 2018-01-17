@@ -196,14 +196,15 @@ namespace savefiledecoder
             }
             else
             {
-                text.Append(_gameSave.EpisodeNames[activeEpisode]);
+                text.Append(Consts.EpisodeNames[(Episode) activeEpisode]);
             }
             text.Append(Environment.NewLine);
 
             if (_gameSave.Header.currentScene != Consts.GlobalCodes.ReadyToStartEpisode &&
-                _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete)
+                _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete &&
+                _gameSave.Header.currentScene != Consts.GlobalCodes.SaveJustStarted)
             {
-                text.Append(_gameSave.PointNames[_gameSave.Header.currentScene.Value.ToUpper()]);
+                text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(_gameSave.Header.currentScene.Value.ToUpper()));
             }
             text.Append(Environment.NewLine);
             text.Append($"{_gameSave.SaveDate[0]}/{_gameSave.SaveDate[1]}/{_gameSave.SaveDate[2]}");

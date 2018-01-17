@@ -55,9 +55,10 @@ namespace savefiledecoder
             {
                 for (int i=0; i<m_GameSave.EpisodeStates.Count; i++)
                 {
-                    if (m_GameSave.EpisodeStates[i] == "kInProgress" || m_GameSave.EpisodeStates[i] == "kFinished")
+                    if (m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.InProgress || 
+                        m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.Finished)
                     {
-                        comboBoxHeaderEp.Items.Add(m_GameSave.EpisodeNames[i]);
+                        comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[(Episode) i]);
                     }
                 }
                 comboBoxHeaderEp.SelectedIndex = comboBoxHeaderEp.Items.Count - 1; //autoselect the last item
@@ -212,17 +213,22 @@ namespace savefiledecoder
         private void UpdatePointList()
         {
             comboBoxPoint.Items.Clear();
-            int start = 99, end = 100;
+            Episode selectedEpisode = 0;
             switch(comboBoxHeaderEp.SelectedIndex)
             {
-                case 0: start = 0; end = 14; break;
-                case 1: start = 14; end = 27; break;
-                case 2: start = 27; break; //future-proof for ep3. case 3 unknown for now
+                case 0:
+                    selectedEpisode = Episode.First;
+                    break;
+                case 1:
+                    selectedEpisode = Episode.Second;
+                    break;
+                case 2:
+                    selectedEpisode = Episode.Third;
+                    break;
             }
-            for (int i=start; i<m_GameSave.Data.checkpoints.Count; i++)
+            foreach (var checkpoint in Consts.CheckPointDescriptorCollection.GetCheckPointDescriptors(selectedEpisode))
             {
-                if (i == end) break;
-                else comboBoxPoint.Items.Add(m_GameSave.PointNames[i]);
+                comboBoxPoint.Items.Add(checkpoint.Name);
             }
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;
