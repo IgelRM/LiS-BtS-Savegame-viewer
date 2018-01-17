@@ -204,7 +204,8 @@ namespace savefiledecoder
                 _gameSave.Header.currentScene != Consts.GlobalCodes.StoryComplete &&
                 _gameSave.Header.currentScene != Consts.GlobalCodes.SaveJustStarted)
             {
-                text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(_gameSave.Header.currentScene.Value.ToUpper()));
+                string cpCode = _gameSave.Header.currentScene.Value.ToUpper();
+                text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(cpCode)?.Name ?? cpCode);
             }
             text.Append(Environment.NewLine);
             text.Append($"{_gameSave.SaveDate[0]}/{_gameSave.SaveDate[1]}/{_gameSave.SaveDate[2]}");

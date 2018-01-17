@@ -9,12 +9,14 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace savefiledecoder
 {
     public partial class MainForm : Form
     {
+        private const string CheckForUpdatesAtStartupSettingName = "CheckForUpdatesAtStartup";
+
         private readonly GameData _initialData = new GameData();
         private GameSave _gameSave;
         private string _saveDataFilePath;
@@ -786,19 +788,43 @@ namespace savefiledecoder
 
         private void buttonAbout_Click(object sender, EventArgs e)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Version {Program.GetApplicationVersionStr()}");
-            sb.AppendLine();
-            sb.AppendLine("Initially created by /u/DanielWe");
-            sb.AppendLine("Modified by Ladosha, IgelRM and VakhtinAndrey");
-            sb.AppendLine();
-            sb.AppendLine("https://github.com/IgelRM/LiS-BtS-Savegame-viewer");
-            MessageBox.Show(sb.ToString(), "About Program", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var aboutForm = new AboutForm())
+            {
+                aboutForm.ShowDialog();
+            }
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            UpdateChecker.CheckForUpdates(this);
+            #region Update checking at startup
+            if (SettingManager.Get(CheckForUpdatesAtStartupSettingName, true))
+            {
+                Task.Run(async () =>
+                {
+                    var result = await UpdateChecker.CheckForUpdates();
+                    if (result == null || !result.CanBeUpdated)
+                    {
+                        return;
+                    }
+
+                    this.InvokeEx(() =>
+                    {
+                        using (var updateForm = new UpdateForm(result))
+                        {
+                            if (updateForm.ShowDialog() == DialogResult.Yes)
+                            {
+                                UpdateChecker.VisitDownloadPage();
+                            }
+
+                            if (updateForm.DontShowAgainIsChecked)
+                            {
+                                SettingManager.Set(CheckForUpdatesAtStartupSettingName, bool.FalseString.ToLower());
+                            }
+                        }
+                    });
+                });
+            }
+            #endregion
 
             Text = $"LiS BtS Savegame Editor v{Program.GetApplicationVersionStr()}";
 
