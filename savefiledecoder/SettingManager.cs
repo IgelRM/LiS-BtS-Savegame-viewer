@@ -25,20 +25,7 @@ namespace savefiledecoder
 
         public static T Get<T>(string settingName)
         {
-            var value = ConfigurationManager.AppSettings[settingName];
-            if (string.IsNullOrEmpty(value))
-            {
-                return Get(settingName, default(T));
-            }
-
-            try
-            {
-                return (T) Convert.ChangeType(value, typeof (T));
-            }
-            catch (Exception)
-            {
-                return Get(settingName, default(T));
-            }
+            return Get(settingName, default(T));
         }
 
         public static void Set(string settingName, string value)
