@@ -15,9 +15,13 @@ namespace SaveGameEditor
 {
     public partial class ExtrasForm : Form
     {
-        public ExtrasForm()
+        private SettingManager _settingManager;
+
+        public ExtrasForm(SettingManager settingManager)
         {
             InitializeComponent();
+
+            _settingManager = settingManager;
         }
         public string savePath, headerPath;
 
@@ -34,7 +38,7 @@ namespace SaveGameEditor
             }
             saveFileDialog1.FileName = String.Empty;
         }
-        bool rewindNotesShown = SettingManager.Get("rewindNotesShown", false);
+
         private void buttonLoadHeader_Click(object sender, EventArgs e)
         {
             comboBoxHeaderEp.Enabled = true;
@@ -42,12 +46,11 @@ namespace SaveGameEditor
             dateTimePicker1.Enabled = true;
             comboBoxHeaderEp.Items.Clear();
             comboBoxPoint.Items.Clear();
-
-            if (!rewindNotesShown)
+            
+            if (_settingManager.Settings.RewindNotesShown)
             {
                 MessageBox.Show("A few notes on the Checkpoint Rewind feature:\n\n1. It has not been extensively tested and may cause unintended consequences. Users are advised to make backups of their data before proceeding further.\n2. If you are on a mid-level checkpoint, then selecting the last item in the checkpoint list will still cause the game to start from the beginning of that point.\n3. If you want to change only the date of the save, don't touch the checkpoint list at all. To reset the state of the list, click \"Load\" again.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                rewindNotesShown = true;
-                SettingManager.Set(Consts.SettingNames.rewindNotesShown, bool.TrueString);
+                _settingManager.Settings.RewindNotesShown = true;
             }
             m_GameSave.ReadSaveFromFile(savePath);
 
