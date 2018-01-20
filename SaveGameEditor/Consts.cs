@@ -141,5 +141,17 @@ namespace SaveGameEditor
             public const string SaveJustStarted = "GLOBAL_CODE_SAVEJUSTSTARTED";
         }
         #endregion
+
+        #region Setting Names
+        public static class SettingNames
+        {
+            public const string SavePath = "SavePath";
+            public const string BTSpath = "BTSpath";
+            public const string editModeIntroShown = "EditModeIntroShown";
+            public const string rewindNotesShown = "rewindNotesShown";
+            public const string findHintShown = "findHintShown";
+            public const string CheckForUpdatesAtStartup = "CheckForUpdatesAtStartup";
+        }
+        #endregion
     }
 }
