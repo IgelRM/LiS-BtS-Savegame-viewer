@@ -25,7 +25,7 @@ namespace SaveGameEditor
                 {
                     this.InvokeEx(() =>
                     {
-                        lblNoUpdatesWasFound.Visible = true;
+                        lblNoUpdatesWereFound.Visible = true;
                     });
                     return;
                 }
