@@ -6,18 +6,14 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Win32;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
-using SaveGameEditor.Properties;
 
 namespace SaveGameEditor
 {
     public partial class MainForm : Form
     {
-        private const string CheckForUpdatesAtStartupSettingName = "CheckForUpdatesAtStartup";
-
+        private readonly SettingManager _settingManager = new SettingManager();
         private readonly GameData _initialData = new GameData();
         private GameSave _gameSave;
         private string _saveDataFilePath;
@@ -36,11 +32,9 @@ namespace SaveGameEditor
             {
                 _saveDataFilePath = value;
                 textBoxSavePath.Text = SaveDataFilePath;
-                Settings.Default.SavePath = textBoxSavePath.Text;
+                _settingManager.Settings.SavePath = textBoxSavePath.Text;
             }
         }
-
-        dynamic appSettings = new JObject();
 
         public MainForm()
         {
@@ -76,8 +70,8 @@ namespace SaveGameEditor
                 buttonExport.Enabled = true; //allow exporting
                 buttonExtras.Enabled = true;
                 checkBoxEditMode.Enabled = true;
-                Settings.Default.BTSpath = textBoxLisPath.Text;
-                Settings.Default.SavePath = textBoxSavePath.Text;
+                _settingManager.Settings.GamePath = textBoxLisPath.Text;
+                _settingManager.Settings.SavePath = textBoxSavePath.Text;
 
                 if (!resizeHelpShown)
                 {
@@ -87,10 +81,10 @@ namespace SaveGameEditor
                     resizeHelpShown = true;
                 }
 
-                if (!Settings.Default.findHintShown)
+                if (!_settingManager.Settings.FindHintShown)
                 {
-                    MessageBox.Show("Press Ctrl+F to search the table!", "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Settings.Default.findHintShown = true;
+                    MessageBox.Show("Press Ctrl+F to search in the table!", "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _settingManager.Settings.FindHintShown = true;
                 }
             }
             else
@@ -763,7 +757,7 @@ namespace SaveGameEditor
                 DialogResult result = openFileDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    Settings.Default.SavePath = openFileDialog1.FileName;
+                    _settingManager.Settings.SavePath = openFileDialog1.FileName;
                     textBoxSavePath.Text = openFileDialog1.FileName;
                 }
             }
@@ -781,7 +775,7 @@ namespace SaveGameEditor
                 DialogResult result = folderBrowserDialog1.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    Settings.Default.BTSpath = folderBrowserDialog1.SelectedPath;
+                    _settingManager.Settings.GamePath = folderBrowserDialog1.SelectedPath;
                     textBoxLisPath.Text = folderBrowserDialog1.SelectedPath;
                 }
             }
@@ -798,7 +792,7 @@ namespace SaveGameEditor
         private void MainForm_Load(object sender, EventArgs e)
         {
             #region Update checking at startup
-            if (SettingManager.Get(CheckForUpdatesAtStartupSettingName, true))
+            if (_settingManager.Settings.CheckForUpdatesAtStartup)
             {
                 Task.Run(async () =>
                 {
@@ -819,7 +813,7 @@ namespace SaveGameEditor
 
                             if (updateForm.DontShowAgainIsChecked)
                             {
-                                SettingManager.Set(CheckForUpdatesAtStartupSettingName, bool.FalseString.ToLower());
+                                _settingManager.Settings.CheckForUpdatesAtStartup = false;
                             }
                         }
                     });
@@ -829,40 +823,21 @@ namespace SaveGameEditor
 
             Text = $"LiS BtS Savegame Editor v{Program.GetApplicationVersionStr()}";
 
-            if (File.Exists("settings.json"))
-            {
-                string file = File.ReadAllText("settings.json");
-                try
-                {
-                    appSettings = JsonConvert.DeserializeObject(file);
-                }
-                catch
-                {
-
-                }
-
-                Settings.Default.SavePath = appSettings.SavePath ?? "Undefined";
-                Settings.Default.BTSpath = appSettings.BTSpath ?? "Undefined";
-                Settings.Default.rewindNotesShown = appSettings.rewindNotesShown ?? false;
-                Settings.Default.editModeIntroShown = appSettings.editModeIntroShown ?? false;
-                Settings.Default.findHintShown = appSettings.findHintShown ?? false;
-            }
-
-            SaveDataFilePath = Settings.Default.SavePath;
+            SaveDataFilePath = _settingManager.Settings.SavePath;
 
             ToolTip toolTip = new ToolTip();
             toolTip.BackColor = System.Drawing.SystemColors.InfoText;
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(buttonExport, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
 
-            if (Settings.Default.BTSpath == "Undefined")
+            if (_settingManager.Settings.GamePath == null)
             {
-                DetectBtsPath();
+                DetectGamePath();
             }
             else
             {
-                textBoxLisPath.Text = Settings.Default.BTSpath;
-                folderBrowserDialog1.SelectedPath = Settings.Default.BTSpath;
+                textBoxLisPath.Text = _settingManager.Settings.GamePath;
+                folderBrowserDialog1.SelectedPath = _settingManager.Settings.GamePath;
             }
 
             DetectSavePath();
@@ -878,7 +853,7 @@ namespace SaveGameEditor
 
         }
 
-        private void DetectBtsPath ()
+        private void DetectGamePath ()
         {
             RegistryKey localKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64); //https://social.msdn.microsoft.com/Forums/vstudio/en-US/ef0de98a-18db-43e1-b9b9-b52c3b5f3d4c/registry-issue-getting-install-location-and-saving-its-path-c?forum=csharpgeneral
             localKey = localKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 554620");
@@ -906,7 +881,7 @@ namespace SaveGameEditor
             {
                 _steamIdFolders.RemoveAt(_steamIdFolders.Count - 1); //remove the preferences from the list
             }
-            if (Settings.Default.SavePath == "Undefined")
+            if (String.IsNullOrEmpty(_settingManager.Settings.SavePath))
             {
                 if (_steamIdFolders.Count == 1)
                 {
@@ -916,7 +891,7 @@ namespace SaveGameEditor
                         if (File.Exists(_steamIdFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save"))
                         {
                             textBoxSavePath.Text = _steamIdFolders[0].ToString() + @"\SLOT_0" + i.ToString() + @"\Data.Save";
-                            Settings.Default.SavePath = textBoxSavePath.Text;
+                            _settingManager.Settings.SavePath = textBoxSavePath.Text;
                             found = true;
                             break;
                         }
@@ -950,7 +925,7 @@ namespace SaveGameEditor
             }
             else
             {
-                textBoxSavePath.Text = Settings.Default.SavePath;
+                textBoxSavePath.Text = _settingManager.Settings.SavePath;
             }
         }
 
@@ -1015,10 +990,10 @@ namespace SaveGameEditor
 
         private void checkBoxEditMode_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!Settings.Default.editModeIntroShown)
+            if (!_settingManager.Settings.EditModeIntroShown)
             {
                 MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Settings.Default.editModeIntroShown = true;
+                _settingManager.Settings.EditModeIntroShown = true;
             }
 
             if (checkBoxEditMode.Checked)
@@ -1232,7 +1207,7 @@ namespace SaveGameEditor
 
         private void buttonExtras_Click(object sender, EventArgs e)
         {
-            ExtrasForm formExtras = new ExtrasForm();
+            ExtrasForm formExtras = new ExtrasForm(_settingManager);
             formExtras.savePath = textBoxSavePath.Text;
             formExtras.headerPath = Path.GetDirectoryName(textBoxSavePath.Text) + @"\Header.Save";
             formExtras.m_GameSave = _gameSave;
@@ -1347,22 +1322,8 @@ namespace SaveGameEditor
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (appSettings.BTSpath != Settings.Default.BTSpath ||
-            appSettings.SavePath != Settings.Default.SavePath ||
-            appSettings.editModeIntroShown != Settings.Default.editModeIntroShown ||
-            appSettings.rewindNotesShown != Settings.Default.rewindNotesShown ||
-            appSettings.findHintShown != Settings.Default.findHintShown)
-            {
-                appSettings.BTSpath = Settings.Default.BTSpath;
-                appSettings.SavePath = Settings.Default.SavePath;
-                appSettings.editModeIntroShown = Settings.Default.editModeIntroShown;
-                appSettings.rewindNotesShown = Settings.Default.rewindNotesShown;
-                appSettings.findHintShown = Settings.Default.findHintShown;
-                File.WriteAllText("settings.json", JsonConvert.SerializeObject(appSettings, Formatting.Indented));
-                Settings.Default.Save();
-                Settings.Default.Upgrade();
-            }
-            
+            _settingManager.SaveSettings();
+
             if (_gameSave != null && !_gameSave.SaveChangesSaved)
             {
                 DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);

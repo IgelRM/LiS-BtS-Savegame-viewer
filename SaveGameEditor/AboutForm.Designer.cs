@@ -34,7 +34,7 @@
             this.llProjectHomepage = new System.Windows.Forms.LinkLabel();
             this.lblCredits2 = new System.Windows.Forms.Label();
             this.llNewVersionIsAvailable = new System.Windows.Forms.LinkLabel();
-            this.lblNoUpdatesWasFound = new System.Windows.Forms.Label();
+            this.lblNoUpdatesWereFound = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnOk
@@ -97,15 +97,15 @@
             this.llNewVersionIsAvailable.Visible = false;
             this.llNewVersionIsAvailable.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llNewVersionIsAvailable_LinkClicked);
             // 
-            // lblNoUpdatesWasFound
+            // lblNoUpdatesWereFound
             // 
-            this.lblNoUpdatesWasFound.AutoSize = true;
-            this.lblNoUpdatesWasFound.Location = new System.Drawing.Point(28, 41);
-            this.lblNoUpdatesWasFound.Name = "lblNoUpdatesWasFound";
-            this.lblNoUpdatesWasFound.Size = new System.Drawing.Size(118, 13);
-            this.lblNoUpdatesWasFound.TabIndex = 7;
-            this.lblNoUpdatesWasFound.Text = "No updates were found";
-            this.lblNoUpdatesWasFound.Visible = false;
+            this.lblNoUpdatesWereFound.AutoSize = true;
+            this.lblNoUpdatesWereFound.Location = new System.Drawing.Point(28, 41);
+            this.lblNoUpdatesWereFound.Name = "lblNoUpdatesWereFound";
+            this.lblNoUpdatesWereFound.Size = new System.Drawing.Size(118, 13);
+            this.lblNoUpdatesWereFound.TabIndex = 7;
+            this.lblNoUpdatesWereFound.Text = "No updates were found";
+            this.lblNoUpdatesWereFound.Visible = false;
             // 
             // AboutForm
             // 
@@ -113,7 +113,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(372, 200);
-            this.Controls.Add(this.lblNoUpdatesWasFound);
+            this.Controls.Add(this.lblNoUpdatesWereFound);
             this.Controls.Add(this.llNewVersionIsAvailable);
             this.Controls.Add(this.lblCredits2);
             this.Controls.Add(this.llProjectHomepage);
@@ -140,6 +140,6 @@
         private System.Windows.Forms.LinkLabel llProjectHomepage;
         private System.Windows.Forms.Label lblCredits2;
         private System.Windows.Forms.LinkLabel llNewVersionIsAvailable;
-        private System.Windows.Forms.Label lblNoUpdatesWasFound;
+        private System.Windows.Forms.Label lblNoUpdatesWereFound;
     }
 }

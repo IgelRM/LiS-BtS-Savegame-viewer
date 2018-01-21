@@ -1,36 +1,64 @@
 ﻿using System;
 using System.Configuration;
+using System.Reflection;
 
 namespace SaveGameEditor
 {
-    public static class SettingManager
+    public class SettingManager
     {
-        public static T Get<T>(string settingName, T defaultValue)
-        {
-            var value = ConfigurationManager.AppSettings[settingName];
-            if (string.IsNullOrEmpty(value))
-            {
-                return defaultValue;
-            }
+        private readonly Configuration _config;
 
-            try
+        public Settings Settings { get; set; }
+
+        public SettingManager()
+        {
+            _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            Settings = new Settings();
+            var props = Settings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
             {
-                return (T) Convert.ChangeType(value, typeof (T));
-            }
-            catch (Exception)
-            {
-                return defaultValue;
+                var value = _config.AppSettings.Settings[prop.Name]?.Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    try
+                    {
+                        prop.SetValue(Settings, Convert.ChangeType(value, prop.PropertyType));
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
             }
         }
 
-        public static T Get<T>(string settingName)
+        public void SaveSettings()
         {
-            return Get(settingName, default(T));
-        }
+            _config.AppSettings.Settings.Clear();
 
-        public static void Set(string settingName, string value)
-        {
-            ConfigurationManager.AppSettings[settingName] = value;
+            var props = Settings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var prop in props)
+            {
+                object value;
+                try
+                {
+                    value = prop.GetValue(Settings);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (value == null)
+                {
+                    continue;
+                }
+                _config.AppSettings.Settings.Add(prop.Name, value.ToString());
+            }
+            
+            _config.Save(ConfigurationSaveMode.Full);
+            ConfigurationManager.RefreshSection(_config.AppSettings.SectionInformation.SectionName);
         }
     }
 }
