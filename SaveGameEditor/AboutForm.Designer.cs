@@ -81,9 +81,9 @@
             this.lblCredits2.AutoSize = true;
             this.lblCredits2.Location = new System.Drawing.Point(28, 100);
             this.lblCredits2.Name = "lblCredits2";
-            this.lblCredits2.Size = new System.Drawing.Size(238, 13);
+            this.lblCredits2.Size = new System.Drawing.Size(246, 13);
             this.lblCredits2.TabIndex = 4;
-            this.lblCredits2.Text = "Modified by Ladosha, IgelRM and VakhtinAndrey";
+            this.lblCredits2.Text = "Continued by Ladosha, IgelRM and VakhtinAndrey";
             // 
             // llNewVersionIsAvailable
             // 
