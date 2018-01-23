@@ -6,13 +6,12 @@ namespace SaveGameEditor
 {
     public class SettingManager
     {
-        private readonly Configuration _config;
 
         public Settings Settings { get; set; }
 
         public SettingManager()
         {
-            _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            Configuration _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
             Settings = new Settings();
             var props = Settings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -35,6 +34,8 @@ namespace SaveGameEditor
 
         public void SaveSettings()
         {
+            Configuration _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
             _config.AppSettings.Settings.Clear();
 
             var props = Settings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -57,14 +58,7 @@ namespace SaveGameEditor
                 _config.AppSettings.Settings.Add(prop.Name, value.ToString());
             }
 
-            try
-            {
                 _config.Save(ConfigurationSaveMode.Full);
-            }
-            catch
-            {
-
-            }
             
             ConfigurationManager.RefreshSection(_config.AppSettings.SectionInformation.SectionName);
         }
