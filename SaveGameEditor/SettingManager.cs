@@ -56,8 +56,16 @@ namespace SaveGameEditor
                 }
                 _config.AppSettings.Settings.Add(prop.Name, value.ToString());
             }
+
+            try
+            {
+                _config.Save(ConfigurationSaveMode.Full);
+            }
+            catch
+            {
+
+            }
             
-            _config.Save(ConfigurationSaveMode.Full);
             ConfigurationManager.RefreshSection(_config.AppSettings.SectionInformation.SectionName);
         }
     }

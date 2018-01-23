@@ -232,6 +232,10 @@ namespace SaveGameEditor
             foreach (var checkpoint in Consts.CheckPointDescriptorCollection.GetCheckPointDescriptors(selectedEpisode))
             {
                 comboBoxPoint.Items.Add(checkpoint.Name);
+                if (checkpoint.Code == m_GameSave.Data.checkpoints.Last.pointIdentifier.Value)
+                {
+                    break;
+                }
             }
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;
