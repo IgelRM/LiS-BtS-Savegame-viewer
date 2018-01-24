@@ -19,7 +19,7 @@ namespace SaveGameEditor.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -61,6 +61,32 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Note that the &apos;Edit Mode&apos; is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.
+        ///
+        ///Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
+        ///
+        ///Flags: Simply check or uncheck the respective boxes in the table. You can use  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string EditModeHelpFirst {
+            get {
+                return ResourceManager.GetString("EditModeHelpFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
+        ///
+        ///Flags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).
+        ///
+        ///Newly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permit [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string EditModeHelpIcon {
+            get {
+                return ResourceManager.GetString("EditModeHelpIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap Help {
@@ -76,6 +102,34 @@ namespace SaveGameEditor.Properties {
         public static string ProjectHomepage {
             get {
                 return ResourceManager.GetString("ProjectHomepage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A few notes on the Checkpoint Rewind feature:
+        ///
+        ///1. It has not been extensively tested and may cause unintended consequences. Users are advised to make backups of their data before proceeding further.
+        ///
+        ///2. If you are on a mid-level checkpoint, then selecting the last item in the checkpoint list will still cause the game to start from the beginning of that point.
+        ///
+        ///3. If you want to change only the date of the save, don&apos;t touch the checkpoint list at all. To reset the state of the list, click &quot;Load&quot; again..
+        /// </summary>
+        public static string RewindHelpFirst {
+            get {
+                return ResourceManager.GetString("RewindHelpFirst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press Load to display the list of available checkpoints. Select the one that you would like to restart from and press Save. You can optionally change the &quot;save date&quot; that is displayed when switching between save slots.
+        ///
+        ///If you are on a mid-level checkpoint, then selecting the last item in the checkpoint list will still cause the game to start from the beginning of that point.
+        ///
+        ///If you want to change only the date of the save, don&apos;t touch the checkpoint list at all. To reset the state of the list, click &quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string RewindHelpIcon {
+            get {
+                return ResourceManager.GetString("RewindHelpIcon", resourceCulture);
             }
         }
     }

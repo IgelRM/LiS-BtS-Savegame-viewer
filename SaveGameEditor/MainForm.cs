@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using SaveGameEditor.Properties;
 
 namespace SaveGameEditor
 {
@@ -932,7 +933,11 @@ namespace SaveGameEditor
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
             _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.Data);
-            if (_gameSave.SaveChangesSaved) MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (_gameSave.SaveChangesSaved)
+            {
+                MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            
             label4.Visible = false;
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -992,7 +997,7 @@ namespace SaveGameEditor
         {
             if (!_settingManager.Settings.EditModeIntroShown)
             {
-                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.EditModeHelpFirst, "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _settingManager.Settings.EditModeIntroShown = true;
             }
 
@@ -1121,9 +1126,9 @@ namespace SaveGameEditor
             }
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void pictureBoxHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show(Resources.EditModeHelpIcon, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
