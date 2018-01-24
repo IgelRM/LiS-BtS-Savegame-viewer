@@ -84,13 +84,13 @@ namespace SaveGameEditor
 
                 if (!_settingManager.Settings.FindHintShown)
                 {
-                    MessageBox.Show("Press Ctrl+F to search in the table!", "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(Resources.SearchHelpMessage, "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _settingManager.Settings.FindHintShown = true;
                 }
             }
             else
             {
-                MessageBox.Show("Save file is empty or corrupt! Please specify a different one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Resources.CorruptSaveMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }  
         }
 
@@ -935,7 +935,7 @@ namespace SaveGameEditor
             _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.Data);
             if (_gameSave.SaveChangesSaved)
             {
-                MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.EditsSuccessfullySavedMessage, "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             
             label4.Visible = false;
@@ -1009,7 +1009,8 @@ namespace SaveGameEditor
             {
                 if (!_gameSave.SaveChangesSaved)
                 {
-                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage.Insert(34, " Edit Mode"), 
+                        "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
                     {
                         disableEditMode();
@@ -1128,7 +1129,7 @@ namespace SaveGameEditor
 
         private void pictureBoxHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(Resources.EditModeHelpIcon, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show(Resources.EditModeHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1235,7 +1236,7 @@ namespace SaveGameEditor
                 }
                 else
                 {
-                    MessageBox.Show("Variable value contains non-numeric characters! Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Resources.BadVariableValueMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     newCellValue = origCellValue;
                     dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origCellValue;
                 }
@@ -1303,7 +1304,7 @@ namespace SaveGameEditor
                 }
                 else
                 {
-                    MessageBox.Show("Variable value contains non-numeric characters! Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Resources.BadVariableValueMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     newFloatValue = origFloatValue;
                     dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFloatValue;
                 }
@@ -1331,7 +1332,8 @@ namespace SaveGameEditor
 
             if (_gameSave != null && !_gameSave.SaveChangesSaved)
             {
-                DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage, 
+                    "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (answer == DialogResult.Yes)
                 {
                     e.Cancel = false;

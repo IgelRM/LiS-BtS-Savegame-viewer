@@ -61,6 +61,33 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Variable value contains non-numeric characters! Please try again..
+        /// </summary>
+        public static string BadVariableValueMessage {
+            get {
+                return ResourceManager.GetString("BadVariableValueMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save file is empty or corrupt! Please specify a different one..
+        /// </summary>
+        public static string CorruptSaveMessage {
+            get {
+                return ResourceManager.GetString("CorruptSaveMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while saving DLL!.
+        /// </summary>
+        public static string DLLSaveErrorMessage {
+            get {
+                return ResourceManager.GetString("DLLSaveErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Note that the &apos;Edit Mode&apos; is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.
         ///
         ///Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
@@ -80,9 +107,18 @@ namespace SaveGameEditor.Properties {
         ///
         ///Newly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permit [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string EditModeHelpIcon {
+        public static string EditModeHelpIconMessage {
             get {
-                return ResourceManager.GetString("EditModeHelpIcon", resourceCulture);
+                return ResourceManager.GetString("EditModeHelpIconMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved successfully!.
+        /// </summary>
+        public static string EditsSuccessfullySavedMessage {
+            get {
+                return ResourceManager.GetString("EditsSuccessfullySavedMessage", resourceCulture);
             }
         }
         
@@ -106,6 +142,19 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have chosen the following date:
+        ///
+        ///{0}
+        ///
+        ///Do you want to proceed with the changes ?.
+        /// </summary>
+        public static string RewindDateOnlyMessage {
+            get {
+                return ResourceManager.GetString("RewindDateOnlyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A few notes on the Checkpoint Rewind feature:
         ///
         ///1. It has not been extensively tested and may cause unintended consequences. Users are advised to make backups of their data before proceeding further.
@@ -114,9 +163,9 @@ namespace SaveGameEditor.Properties {
         ///
         ///3. If you want to change only the date of the save, don&apos;t touch the checkpoint list at all. To reset the state of the list, click &quot;Load&quot; again..
         /// </summary>
-        public static string RewindHelpFirst {
+        public static string RewindHelpFirstMessage {
             get {
-                return ResourceManager.GetString("RewindHelpFirst", resourceCulture);
+                return ResourceManager.GetString("RewindHelpFirstMessage", resourceCulture);
             }
         }
         
@@ -127,9 +176,61 @@ namespace SaveGameEditor.Properties {
         ///
         ///If you want to change only the date of the save, don&apos;t touch the checkpoint list at all. To reset the state of the list, click &quot; [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string RewindHelpIcon {
+        public static string RewindHelpIconMessage {
             get {
-                return ResourceManager.GetString("RewindHelpIcon", resourceCulture);
+                return ResourceManager.GetString("RewindHelpIconMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning! ALL your progress after the checkpoint specified
+        ///below will be lost! The target checkpoint is:
+        ///
+        ///{0}
+        ///{1}
+        ///
+        ///Are you sure you want to continue?.
+        /// </summary>
+        public static string RewindProgressLostMessage {
+            get {
+                return ResourceManager.GetString("RewindProgressLostMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The changes have been successfully written to the save files!
+        ///Do you want to do something else?.
+        /// </summary>
+        public static string RewindSuccessfullySavedMessage {
+            get {
+                return ResourceManager.GetString("RewindSuccessfullySavedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press Ctrl+F to search in the table!.
+        /// </summary>
+        public static string SearchHelpMessage {
+            get {
+                return ResourceManager.GetString("SearchHelpMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The backup was successful!.
+        /// </summary>
+        public static string SuccessfulBackupMessage {
+            get {
+                return ResourceManager.GetString("SuccessfulBackupMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are unsaved edits left! Exit without saving?.
+        /// </summary>
+        public static string UnsavedEditsWarningMessage {
+            get {
+                return ResourceManager.GetString("UnsavedEditsWarningMessage", resourceCulture);
             }
         }
     }

@@ -35,7 +35,7 @@ namespace SaveGameEditor
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(headerPath, saveFileDialog1.FileName);
-                MessageBox.Show("The backup was successful!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
         }
@@ -50,7 +50,7 @@ namespace SaveGameEditor
             
             if (!_settingManager.Settings.RewindNotesShown)
             {
-                MessageBox.Show(Resources.RewindHelpFirst, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.RewindHelpFirstMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _settingManager.Settings.RewindNotesShown = true;
             }
             m_GameSave.ReadSaveFromFile(savePath);
@@ -90,7 +90,7 @@ namespace SaveGameEditor
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(savePath, saveFileDialog1.FileName, true);
-                MessageBox.Show("The backup was successful!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
         }
@@ -147,34 +147,23 @@ namespace SaveGameEditor
 
         private void pictureBoxHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(Resources.RewindHelpIcon, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show(Resources.RewindHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void buttonRewindCheckpoint_Click(object sender, EventArgs e)
         {
             DialogResult answer = DialogResult.No;
-            StringBuilder sb = new StringBuilder();
 
             if (pointSelected)
             {
-                sb.AppendLine("Warning! ALL your progress after the checkpoint specified");
-                sb.AppendLine("below will be lost! The target checkpoint is:");
-                sb.AppendLine();
-                sb.AppendLine(comboBoxHeaderEp.SelectedItem.ToString());
-                sb.AppendLine(comboBoxPoint.SelectedItem.ToString());
-                sb.AppendLine(dateTimePicker1.Value.ToShortDateString());
-                sb.AppendLine();
-                sb.AppendLine("Are you sure you want to continue?");
-                answer = MessageBox.Show(sb.ToString(), "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                answer = MessageBox.Show(String.Format(Resources.RewindProgressLostMessage, 
+                    comboBoxPoint.SelectedItem.ToString(), dateTimePicker1.Value.ToShortDateString()), 
+                    "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             }
             else
             {
-                sb.AppendLine("You have chosen the following date:");
-                sb.AppendLine();
-                sb.AppendLine(dateTimePicker1.Value.ToLongDateString());
-                sb.AppendLine();
-                sb.AppendLine("Do you want to proceed with the changes ?");
-                answer = MessageBox.Show(sb.ToString(), "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                answer = MessageBox.Show(String.Format(Resources.RewindDateOnlyMessage, dateTimePicker1.Value.ToLongDateString()), 
+                "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             }
             
             if (answer == DialogResult.Yes)
@@ -218,10 +207,8 @@ namespace SaveGameEditor
                     MessageBox.Show("You didn't change anything!"); //this should never execute in normal circumstances
                 }
 
-                sb.Clear();
-                sb.Append("The changes have been successfully written to the save files!");
-                sb.Append("Do you want to do something else?");
-                DialogResult dontQuit = MessageBox.Show(sb.ToString(), "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult dontQuit = MessageBox.Show(Resources.RewindSuccessfullySavedMessage, 
+                    "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if ( dontQuit == DialogResult.Yes)
                 {
                     Application.Restart();
@@ -283,11 +270,11 @@ namespace SaveGameEditor
         {
             if(m_assFile.Write())
             {
-                MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.EditsSuccessfullySavedMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show("Error while saving DLL!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Resources.DLLSaveErrorMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
