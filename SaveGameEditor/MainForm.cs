@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using SaveGameEditor.Properties;
 
 namespace SaveGameEditor
 {
@@ -83,13 +84,13 @@ namespace SaveGameEditor
 
                 if (!_settingManager.Settings.FindHintShown)
                 {
-                    MessageBox.Show("Press Ctrl+F to search in the table!", "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(Resources.SearchHelpMessage, "Hint", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _settingManager.Settings.FindHintShown = true;
                 }
             }
             else
             {
-                MessageBox.Show("Save file is empty or corrupt! Please specify a different one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Resources.CorruptSaveMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }  
         }
 
@@ -932,7 +933,11 @@ namespace SaveGameEditor
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
             _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.Data);
-            if (_gameSave.SaveChangesSaved) MessageBox.Show("Saved successfully!", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (_gameSave.SaveChangesSaved)
+            {
+                MessageBox.Show(Resources.EditsSuccessfullySavedMessage, "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            
             label4.Visible = false;
 
             for (int i = 0; i < dataGridView1.RowCount; i++)
@@ -992,7 +997,7 @@ namespace SaveGameEditor
         {
             if (!_settingManager.Settings.EditModeIntroShown)
             {
-                MessageBox.Show("Note that the 'Edit Mode' is experimental. In some cases, it might make the game crash unexpectedly, or even completely refuse to save to or load from the modified file, not to mention causing tornados in and around Arcadia Bay.\n\nVariables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.EditModeHelpFirst, "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _settingManager.Settings.EditModeIntroShown = true;
             }
 
@@ -1004,7 +1009,8 @@ namespace SaveGameEditor
             {
                 if (!_gameSave.SaveChangesSaved)
                 {
-                    DialogResult answer = MessageBox.Show("There are unsaved edits left!\nExit 'Edit Mode' without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage.Insert(34, " Edit Mode"), 
+                        "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (answer == DialogResult.Yes)
                     {
                         disableEditMode();
@@ -1121,9 +1127,9 @@ namespace SaveGameEditor
             }
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void pictureBoxHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.\n\nFlags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).\n\nNewly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show(Resources.EditModeHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1230,7 +1236,7 @@ namespace SaveGameEditor
                 }
                 else
                 {
-                    MessageBox.Show("Variable value contains non-numeric characters! Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Resources.BadVariableValueMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     newCellValue = origCellValue;
                     dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origCellValue;
                 }
@@ -1298,7 +1304,7 @@ namespace SaveGameEditor
                 }
                 else
                 {
-                    MessageBox.Show("Variable value contains non-numeric characters! Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Resources.BadVariableValueMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     newFloatValue = origFloatValue;
                     dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFloatValue;
                 }
@@ -1326,7 +1332,8 @@ namespace SaveGameEditor
 
             if (_gameSave != null && !_gameSave.SaveChangesSaved)
             {
-                DialogResult answer = MessageBox.Show("There are unsaved edits left! Exit without saving?", "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage, 
+                    "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (answer == DialogResult.Yes)
                 {
                     e.Cancel = false;

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SaveGameEditor.Properties;
 
 namespace SaveGameEditor
 {
@@ -34,7 +35,7 @@ namespace SaveGameEditor
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(headerPath, saveFileDialog1.FileName);
-                MessageBox.Show("The backup was successful!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
         }
@@ -47,9 +48,9 @@ namespace SaveGameEditor
             comboBoxHeaderEp.Items.Clear();
             comboBoxPoint.Items.Clear();
             
-            if (_settingManager.Settings.RewindNotesShown)
+            if (!_settingManager.Settings.RewindNotesShown)
             {
-                MessageBox.Show("A few notes on the Checkpoint Rewind feature:\n\n1. It has not been extensively tested and may cause unintended consequences. Users are advised to make backups of their data before proceeding further.\n2. If you are on a mid-level checkpoint, then selecting the last item in the checkpoint list will still cause the game to start from the beginning of that point.\n3. If you want to change only the date of the save, don't touch the checkpoint list at all. To reset the state of the list, click \"Load\" again.", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.RewindHelpFirstMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _settingManager.Settings.RewindNotesShown = true;
             }
             m_GameSave.ReadSaveFromFile(savePath);
@@ -89,7 +90,7 @@ namespace SaveGameEditor
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(savePath, saveFileDialog1.FileName, true);
-                MessageBox.Show("The backup was successful!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
         }
@@ -144,21 +145,25 @@ namespace SaveGameEditor
             }
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void pictureBoxHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Press Load to display the list of available checkpoints. Select the one that you would like to restart from and press Save. You can optionally change the \"save date\" that is displayed when switching between save slots.\n\nIf you are on a mid-level checkpoint, then selecting the last item in the checkpoint list will still cause the game to start from the beginning of that point.\n\nIf you want to change only the date of the save, don't touch the checkpoint list at all. To reset the state of the list, click \"Load\" again.", "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            MessageBox.Show(Resources.RewindHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void buttonRewindCheckpoint_Click(object sender, EventArgs e)
         {
             DialogResult answer = DialogResult.No;
+
             if (pointSelected)
             {
-                answer = MessageBox.Show("Warning! ALL your progress after the checkpoint specified\nbelow will be lost! The target checkpoint is:\n\n" + comboBoxHeaderEp.SelectedItem.ToString() + "\n" + comboBoxPoint.SelectedItem.ToString() + "\n" + dateTimePicker1.Value.ToShortDateString() + "\n\nAre you sure you want to continue?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                answer = MessageBox.Show(String.Format(Resources.RewindProgressLostMessage, 
+                    comboBoxPoint.SelectedItem.ToString(), dateTimePicker1.Value.ToShortDateString()), 
+                    "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             }
             else
             {
-                answer = MessageBox.Show("You have chosen the following date:\n\n" + dateTimePicker1.Value.ToLongDateString() + "\n\nDo you want to proceed with the changes?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                answer = MessageBox.Show(String.Format(Resources.RewindDateOnlyMessage, dateTimePicker1.Value.ToLongDateString()), 
+                "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             }
             
             if (answer == DialogResult.Yes)
@@ -201,7 +206,9 @@ namespace SaveGameEditor
                 {
                     MessageBox.Show("You didn't change anything!"); //this should never execute in normal circumstances
                 }
-                DialogResult dontQuit = MessageBox.Show("The changes have been successfully written to the save files! Do you want to do something else?", "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                DialogResult dontQuit = MessageBox.Show(Resources.RewindSuccessfullySavedMessage, 
+                    "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if ( dontQuit == DialogResult.Yes)
                 {
                     Application.Restart();
@@ -232,6 +239,10 @@ namespace SaveGameEditor
             foreach (var checkpoint in Consts.CheckPointDescriptorCollection.GetCheckPointDescriptors(selectedEpisode))
             {
                 comboBoxPoint.Items.Add(checkpoint.Name);
+                if (checkpoint.Code == m_GameSave.Data.checkpoints.Last.pointIdentifier.Value)
+                {
+                    break;
+                }
             }
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;
@@ -259,11 +270,11 @@ namespace SaveGameEditor
         {
             if(m_assFile.Write())
             {
-                MessageBox.Show("Saved successfully!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Resources.EditsSuccessfullySavedMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show("Error while saving DLL!", "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Resources.DLLSaveErrorMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
