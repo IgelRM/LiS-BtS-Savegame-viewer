@@ -123,6 +123,55 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 0618b7e56989495b9196add8c4d9aa0b
+        ///132043c0013d4f9fb5f43f6f4fa5d2d3
+        ///25a31f6308ef4d0894bfe54888033f76
+        ///299b95eb1e12419f9d814ee65beed089
+        ///2b63b02392c04edfb2d2a83f9cb86d4e
+        ///2cb44bb95e4742ae85a7e4a9d3095729
+        ///371e9787bc0c47bcacf152ad60227465
+        ///3c0ffd68526f418e93141666d764f786
+        ///3dc3a39bc34e4bb9a9dcd511c1c221c2
+        ///4015612092e3417898097e5c6327b94a
+        ///47730ac35c6e4d8dad00ab4f74447cbf
+        ///55218e9784644c6ca277b73e35000dc6
+        ///5bae5f16a9004041a88de217f77167cc
+        ///68e6607764984ea282a97cf3f121ef3d
+        ///6c2d3340acc74414a748039f1f013304
+        ///6d [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string FlagList {
+            get {
+                return ResourceManager.GetString("FlagList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BurnerSMSIndex
+        ///BurnerSMSOrder_e3_s05_damon_1
+        ///BurnerSMSOrder_e3_s05_damon_12
+        ///BurnerSMSOrder_e3_s05_damon_14
+        ///BurnerSMSOrder_e3_s05_damon_15
+        ///BurnerSMSOrder_e3_s05_damon_16
+        ///BurnerSMSOrder_e3_s05_damon_17
+        ///BurnerSMSOrder_e3_s05_damon_18
+        ///BurnerSMSOrder_e3_s05_damon_19
+        ///BurnerSMSOrder_e3_s05_damon_2
+        ///BurnerSMSOrder_e3_s05_damon_20
+        ///BurnerSMSOrder_e3_s05_damon_21
+        ///BurnerSMSOrder_e3_s05_damon_22
+        ///BurnerSMSOrder_e3_s05_damon_3
+        ///BurnerSMSOrder_e3_s05_damon_4
+        ///BurnerSMSOrder_e3_s05_damon_5
+        ///BurnerSMSOrder_e3_s05 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string FloatList {
+            get {
+                return ResourceManager.GetString("FloatList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap Help {
