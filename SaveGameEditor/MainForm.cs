@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using SaveGameEditor.Properties;
-using System.Text.RegularExpressions;
 using System.Drawing;
 
 namespace SaveGameEditor
@@ -501,7 +500,7 @@ namespace SaveGameEditor
             t.Rows.Add(row);
 
             // floats
-            foreach (string flt in Regex.Split(Resources.FloatList, "[\r\n]+"))
+            foreach (var flt in Resources.FloatList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 row[0] = flt;
                 for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
@@ -553,7 +552,7 @@ namespace SaveGameEditor
             t.Rows.Add(row);
 
             // flags
-            foreach (string flag in Regex.Split(Resources.FlagList, "[\r\n]+"))
+            foreach (var flag in Resources.FlagList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 row[0] = flag;
                 for (int i = _gameSave.Checkpoints.Count - 1; i >=0; i--)
