@@ -193,6 +193,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\FloatList.txt" />
+    <None Include="Resources\FlagList.txt" />
     <None Include="Help.png" />
     <Content Include="Icon.ico" />
   </ItemGroup>

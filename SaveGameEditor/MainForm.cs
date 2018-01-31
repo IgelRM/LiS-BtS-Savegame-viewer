@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using SaveGameEditor.Properties;
+using System.Drawing;
 
 namespace SaveGameEditor
 {
@@ -194,21 +195,19 @@ namespace SaveGameEditor
                 dataGridView1.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
-            for (int i = 0; i < dataGridView1.RowCount; i++)
+            if (editModeActive)
             {
-                for (int j = 0; j < dataGridView1.ColumnCount; j++)
-                { 
-                    if (dataGridView1.Rows[i].Cells[j].ReadOnly && editModeActive)
-                    {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
-                    }
-                }
+                dataGridView1.Columns["Key"].DefaultCellStyle.BackColor = Color.LightGray;
+                dataGridView1.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
+                dataGridView1.Rows[1].DefaultCellStyle.BackColor = Color.LightGray;
             }
-            
+            else
+            {
+                dataGridView1.Columns["Key"].DefaultCellStyle.BackColor = Color.White;
+                dataGridView1.Rows[0].DefaultCellStyle.BackColor = Color.White;
+                dataGridView1.Rows[1].DefaultCellStyle.BackColor = Color.White;
+            }
+
             for (int i = 0; i < dataGridView1.ColumnCount; i++)
             {
                 dataGridView1.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -280,19 +279,15 @@ namespace SaveGameEditor
                 dataGridViewFloats.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
-            for (int i = 0; i < dataGridViewFloats.RowCount; i++)
+            if (editModeActive)
             {
-                for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
-                {
-                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly && editModeActive)
-                    {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
-                    }
-                }
+                dataGridViewFloats.Columns["Key"].DefaultCellStyle.BackColor = Color.LightGray;
+                dataGridViewFloats.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
+            }
+            else
+            {
+                dataGridViewFloats.Columns["Key"].DefaultCellStyle.BackColor = Color.White;
+                dataGridViewFloats.Rows[0].DefaultCellStyle.BackColor = Color.White;
             }
 
             for (int i = 0; i < dataGridViewFloats.ColumnCount; i++)
@@ -354,29 +349,25 @@ namespace SaveGameEditor
             dataGridViewFlags.Columns["Key"].ReadOnly = true;
             dataGridViewFlags.Rows[0].Frozen = true;
             dataGridViewFlags.Rows[0].ReadOnly = true;
-            dataGridViewFlags.Columns[1].HeaderText = "CurrentCheckpoint";
+            dataGridViewFlags.Columns[2].HeaderText = "CurrentCheckpoint";
 
-            dataGridViewFlags.Rows[0].Cells[1].ToolTipText = _gameSave.IsAtMidLevel 
-                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[2].Value.ToString())?.Name 
-                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[1].Value.ToString())?.Name;
-            for (int i = 2; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
+            dataGridViewFlags.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[3].Value.ToString())?.Name 
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[2].Value.ToString())?.Name;
+            for (int i = 3; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
             {
                 dataGridViewFlags.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
-            for (int i = 0; i < dataGridViewFlags.RowCount; i++)
+            if (editModeActive)
             {
-                for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
-                {
-                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly && editModeActive)
-                    {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
-                    }
-                }
+                dataGridViewFlags.Columns["Key"].DefaultCellStyle.BackColor = Color.LightGray;
+                dataGridViewFlags.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
+            }
+            else
+            {
+                dataGridViewFlags.Columns["Key"].DefaultCellStyle.BackColor = Color.White;
+                dataGridViewFlags.Rows[0].DefaultCellStyle.BackColor = Color.White;
             }
 
             for (int i = 1; i < dataGridViewFlags.RowCount; i++)
@@ -509,19 +500,14 @@ namespace SaveGameEditor
             t.Rows.Add(row);
 
             // floats
-            foreach (var flt in _gameSave.Data.floatValuesDict)
+            foreach (var flt in Resources.FloatList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (flt.Name == "$type")
-                {
-                    continue;
-                }
-
-                row[0] = flt.Name;
+                row[0] = flt;
                 for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
                 {
                     var checkpoint = _gameSave.Checkpoints[i];
                     FloatState state;
-                    bool found = checkpoint.Floats.TryGetValue(flt.Name, out state);
+                    bool found = checkpoint.Floats.TryGetValue(flt, out state);
                     if (found)
                     {
                         row[_gameSave.Checkpoints.Count - i] = state.Value;
@@ -541,28 +527,38 @@ namespace SaveGameEditor
         {
             DataTable t = new DataTable();
             t.Columns.Add("Key");
-            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+
+            bool first = true;
+            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
             {
-                t.Columns.Add("Checkpoint " + (i+1).ToString());
+                if (first)
+                {
+                    t.Columns.Add("Global");
+                    first = false;
+                }
+                else
+                {
+                    t.Columns.Add("Checkpoint " + (i + 1).ToString());
+                }
             }
 
             // current point
             object[] row = new object[t.Columns.Count];
             row[0] = "PointIdentifier";
-            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i-1] = _gameSave.Checkpoints[i].PointIdentifier;
+                row[_gameSave.Checkpoints.Count - i] = _gameSave.Checkpoints[i].PointIdentifier;
             }
             t.Rows.Add(row);
 
             // flags
-            foreach (var flag in _gameSave.Data.flags)
+            foreach (var flag in Resources.FlagList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
-                row[0] = flag.Value;
-                for (int i = _gameSave.Checkpoints.Count - 2; i >=0; i--)
+                row[0] = flag;
+                for (int i = _gameSave.Checkpoints.Count - 1; i >=0; i--)
                 {
                     int rownum = _gameSave.Checkpoints.Count - i;
-                    row[rownum-1] = _gameSave.Checkpoints[i].Flags.Contains(flag.Value);
+                    row[rownum] = _gameSave.Checkpoints[i].Flags.Contains(flag);
                 }
                 t.Rows.Add(row);
             }
@@ -583,11 +579,11 @@ namespace SaveGameEditor
             }
             if (successDataPath)
             {
-                textBoxLisPath.BackColor = System.Drawing.SystemColors.Window;
+                textBoxLisPath.BackColor = SystemColors.Window;
             }
             else
             {
-                textBoxLisPath.BackColor = System.Drawing.Color.Red;
+                textBoxLisPath.BackColor = Color.Red;
             }
 
             bool successSavePath = false;
@@ -605,11 +601,11 @@ namespace SaveGameEditor
             }
             if (successSavePath)
             {
-                textBoxSavePath.BackColor = System.Drawing.SystemColors.Window;
+                textBoxSavePath.BackColor = SystemColors.Window;
             }
             else
             {
-                textBoxSavePath.BackColor = System.Drawing.Color.Red;
+                textBoxSavePath.BackColor = Color.Red;
             }
             if (successDataPath && successSavePath)
             {
@@ -827,7 +823,7 @@ namespace SaveGameEditor
             SaveDataFilePath = _settingManager.Settings.SavePath;
 
             ToolTip toolTip = new ToolTip();
-            toolTip.BackColor = System.Drawing.SystemColors.InfoText;
+            toolTip.BackColor = SystemColors.InfoText;
             toolTip.IsBalloon = true;
             toolTip.SetToolTip(buttonExport, "Click to export variables with a value into a text file.\nCtrl+Click to export all variables.");
 
@@ -944,13 +940,13 @@ namespace SaveGameEditor
             {
                 for (int j = 0; j < dataGridView1.ColumnCount; j++)
                 {
-                    if (dataGridView1.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    if (dataGridView1.Rows[i].Cells[j].ReadOnly)
                     {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                        dataGridView1.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
                     }
                     else
                     {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                        dataGridView1.Rows[i].Cells[j].Style.BackColor = Color.White;
                     }
                 }
             }
@@ -959,13 +955,13 @@ namespace SaveGameEditor
             {
                 for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
                 {
-                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly)
                     {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
                     }
                     else
                     {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = Color.White;
                     }
                 }
             }
@@ -974,13 +970,13 @@ namespace SaveGameEditor
             {
                 for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
                 {
-                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly && editModeActive)
+                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly)
                     {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.LightGray;
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
                     }
                     else
                     {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = System.Drawing.Color.White;
+                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = Color.White;
                     }
                 }
             }
@@ -1135,7 +1131,21 @@ namespace SaveGameEditor
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
             origFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-            _editingVariableScope = e.ColumnIndex == 1 ? VariableScope.CurrentCheckpoint : VariableScope.RegularCheckpoint;
+            switch (e.ColumnIndex)
+            {
+                case 1:
+                    _editingVariableScope = VariableScope.Global;
+                    break;
+                case 2:
+                    _editingVariableScope = VariableScope.CurrentCheckpoint;
+                    break;
+                case 3:
+                    _editingVariableScope = VariableScope.LastCheckpoint;
+                    break;
+                default:
+                    _editingVariableScope = VariableScope.RegularCheckpoint;
+                    break;
+            }
         }
 
         private void dataGridViewFlags_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -1150,7 +1160,7 @@ namespace SaveGameEditor
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (_gameSave.FindAndUpdateFlagValue(point_id, var_name, origFlagState, _editingVariableScope))
                 {
-                    dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                    dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
@@ -1250,7 +1260,7 @@ namespace SaveGameEditor
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (_gameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, _editingVariableScope))
                 {
-                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
@@ -1318,7 +1328,7 @@ namespace SaveGameEditor
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (_gameSave.FindAndUpdateFloatValue(point_id, var_name, origFloatValue, newFloatValue, _editingVariableScope))
                 {
-                    dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = System.Drawing.Color.LightGoldenrodYellow;
+                    dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
                     label4.Visible = true;
                 }
@@ -1368,7 +1378,12 @@ namespace SaveGameEditor
             for (int i = (tab_num == 0) ? 2 : 1; i < target_grid.RowCount; i++)
             {
                 string value = target_grid[0, i].Value.ToString();
-                if (value.StartsWith(find_Starts, !CaseSensitive, CultureInfo.InvariantCulture) && (value.IndexOf(find_Contains, strcomp) != -1) && value.EndsWith(find_Ends, !CaseSensitive, CultureInfo.InvariantCulture)) find_results.Add(target_grid[0, i]);
+                if (value.StartsWith(find_Starts, !CaseSensitive, CultureInfo.InvariantCulture) &&
+                    (value.IndexOf(find_Contains, strcomp) != -1) &&
+                    value.EndsWith(find_Ends, !CaseSensitive, CultureInfo.InvariantCulture))
+                {
+                    find_results.Add(target_grid[0, i]);
+                }
             }
 
             if (find_results.Count > 0)

@@ -173,9 +173,9 @@ namespace SaveGameEditor
             try
             {
                 var currentCpFlags = new List<string>();
-                foreach (var fl in Data.currentCheckpoint.stateCheckpoint.flags)
+                foreach (var flag in Data.currentCheckpoint.stateCheckpoint.flags)
                 {
-                    currentCpFlags.Add(fl.Value);
+                    currentCpFlags.Add(flag.Value);
                 }
                 variables = GetCheckpointVariables(Data.currentCheckpoint.stateCheckpoint);
                 floats = GetCheckpointFloats(Data.currentCheckpoint.stateCheckpoint);
@@ -190,11 +190,16 @@ namespace SaveGameEditor
             // Add global variables as a last checkpoint.. // hack...
             variables = GetCheckpointVariables(Data);
             floats = GetCheckpointFloats(Data);
+            var globalFlags = new List<string>();
+            foreach (var flag in Data.flags)
+                {
+                    globalFlags.Add(flag.Value);
+                }
             Checkpoints.Add(new Checkpoint(new
             {
                 pointIdentifier = "Global Vars",
                 currentObjective = Data.currentObjective
-            }, variables, null, floats));
+            }, variables, globalFlags, floats));
 
             // Fill episodeState (?)
             foreach (var episode in Data.episodes)
@@ -467,22 +472,27 @@ namespace SaveGameEditor
             dynamic editingPoint = null;
             var pointFound = false;
 
-            if (varScope == VariableScope.CurrentCheckpoint)
+            switch (varScope)
             {
-                editingPoint = Data.currentCheckpoint.stateCheckpoint;
-                pointFound = true;
-            }
-            else
-            {
-                foreach (var checkpoint in Data.checkpoints)
-                {
-                    if (checkpoint.pointIdentifier.Value == checkpointId)
+                case VariableScope.Global:
+                    editingPoint = Data;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentCheckpoint:
+                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in Data.checkpoints)
                     {
-                        editingPoint = checkpoint;
-                        pointFound = true;
-                        break;
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
                     }
-                }
+                    break;
             }
 
             if (pointFound)
