@@ -67,6 +67,7 @@ namespace SaveGameEditor
                 UpdateEpsiodeBoxes();
                 UpdateFlagGrid();
                 UpdateFloatGrid();
+                UpdateItemGrid();
                 UpdateDataGrid();
                 label4.Visible = false; //hide save file warning
                 buttonExport.Enabled = true; //allow exporting
@@ -137,7 +138,6 @@ namespace SaveGameEditor
         }
 
         int visible_row = 2, visible_column = 1;
-        int f_visible_row = 0, f_visible_column = 1;
 
         private void UpdateDataGrid()
         {
@@ -324,23 +324,23 @@ namespace SaveGameEditor
 
             if (dataGridViewFlags.FirstDisplayedScrollingRowIndex <= 0)
             {
-                f_visible_row = 0;
+                visible_row = 0;
             }
             else
             {
-                f_visible_row = dataGridViewFlags.FirstDisplayedScrollingRowIndex;
+                visible_row = dataGridViewFlags.FirstDisplayedScrollingRowIndex;
             }
             if (dataGridViewFlags.FirstDisplayedScrollingColumnIndex <= 1)
             {
-                f_visible_column = 1;
+                visible_column = 1;
             }
             else if (dataGridViewFlags.FirstDisplayedScrollingColumnHiddenWidth > 60)
             {
-                f_visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex + 1;
+                visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex + 1;
             }
             else
             {
-                f_visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex;
+                visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex;
             }
             dataGridViewFlags.Columns.Clear();
             DataTable table = BuildFlagTable();
@@ -386,14 +386,103 @@ namespace SaveGameEditor
             }
             try
             {
-                dataGridViewFlags.FirstDisplayedScrollingRowIndex = f_visible_row;
-                dataGridViewFlags.FirstDisplayedScrollingColumnIndex = f_visible_column;
+                dataGridViewFlags.FirstDisplayedScrollingRowIndex = visible_row;
+                dataGridViewFlags.FirstDisplayedScrollingColumnIndex = visible_column;
             }
             catch
             {
 
             }
             dataGridViewFlags.Columns[0].Width = keyColWidth;
+        }
+
+        private void UpdateItemGrid()
+        {
+            if (_gameSave == null)
+                return;
+
+            int keyColWidth = 100;
+            try
+            {
+                keyColWidth = dataGridViewItems.Columns[0].Width;
+            }
+            catch
+            {
+
+            }
+
+            if (dataGridViewItems.FirstDisplayedScrollingRowIndex <= 0)
+            {
+                visible_row = 0;
+            }
+            else
+            {
+                visible_row = dataGridViewItems.FirstDisplayedScrollingRowIndex;
+            }
+            if (dataGridViewItems.FirstDisplayedScrollingColumnIndex <= 1)
+            {
+                visible_column = 1;
+            }
+            else if (dataGridViewItems.FirstDisplayedScrollingColumnHiddenWidth > 60)
+            {
+                visible_column = dataGridViewItems.FirstDisplayedScrollingColumnIndex + 1;
+            }
+            else
+            {
+                visible_column = dataGridViewItems.FirstDisplayedScrollingColumnIndex;
+            }
+            dataGridViewItems.Columns.Clear();
+            DataTable table = BuildItemTable();
+            dataGridViewItems.DataSource = table.DefaultView;
+            dataGridViewItems.Columns["Key"].Frozen = true;
+            dataGridViewItems.Columns["Key"].ReadOnly = true;
+            dataGridViewItems.Rows[0].Frozen = true;
+            dataGridViewItems.Rows[0].ReadOnly = true;
+            dataGridViewItems.Columns[1].HeaderText = "CurrentCheckpoint";
+
+            dataGridViewItems.Rows[0].Cells[1].ToolTipText = _gameSave.IsAtMidLevel
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[2].Value.ToString())?.Name
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[1].Value.ToString())?.Name;
+            for (int i = 2; i < dataGridViewItems.Rows[0].Cells.Count; i++)
+            {
+                dataGridViewItems.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[i].Value.ToString())?.Name;
+            }
+
+            if (editModeActive)
+            {
+                dataGridViewItems.Columns["Key"].DefaultCellStyle.BackColor = Color.LightGray;
+                dataGridViewItems.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
+            }
+            else
+            {
+                dataGridViewItems.Columns["Key"].DefaultCellStyle.BackColor = Color.White;
+                dataGridViewItems.Rows[0].DefaultCellStyle.BackColor = Color.White;
+            }
+
+            for (int i = 1; i < dataGridViewItems.RowCount; i++)
+            {
+                for (int j = 1; j < dataGridViewItems.ColumnCount; j++)
+                {
+                    DataGridViewCheckBoxCell CheckBoxCell = new DataGridViewCheckBoxCell();
+                    CheckBoxCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    dataGridViewItems.Rows[i].Cells[j] = CheckBoxCell;
+                }
+            }
+
+            for (int i = 0; i < dataGridViewItems.ColumnCount; i++)
+            {
+                dataGridViewItems.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            try
+            {
+                dataGridViewItems.FirstDisplayedScrollingRowIndex = visible_row;
+                dataGridViewItems.FirstDisplayedScrollingColumnIndex = visible_column;
+            }
+            catch
+            {
+
+            }
+            dataGridViewItems.Columns[0].Width = keyColWidth;
         }
 
         private DataTable BuildDataTable()
@@ -559,6 +648,52 @@ namespace SaveGameEditor
                 {
                     int rownum = _gameSave.Checkpoints.Count - i;
                     row[rownum] = _gameSave.Checkpoints[i].Flags.Contains(flag);
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        private DataTable BuildItemTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+
+            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i + 1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+            {
+                row[_gameSave.Checkpoints.Count - i-1] = _gameSave.Checkpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // items
+            foreach (var kvp in _initialData.GetItems().OrderBy((v) => v.Value.Name))
+            {
+                string itemName = kvp.Value.Name.ToUpper();
+
+                row[0] = kvp.Value.Name;
+                for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+                {
+                    var checkpoint = _gameSave.Checkpoints[i];
+                    ItemState state;
+                    bool found = checkpoint.Items.TryGetValue(kvp.Value.Name, out state);
+                    if (found)
+                    {
+                        row[_gameSave.Checkpoints.Count - i - 1] = (state.Owner == Consts.ChloeUID);
+                    }
+                    else
+                    {
+                        row[_gameSave.Checkpoints.Count - i - 1] = false;
+                    }
+                    
                 }
                 t.Rows.Add(row);
             }
@@ -841,12 +976,14 @@ namespace SaveGameEditor
             label4.Visible = false;
             tabControl1.SelectedTab = tabPageFlags;
             tabControl1.SelectedTab = tabPageFloats;
+            tabControl1.SelectedTab = tabPageItems;
             tabControl1.SelectedTab = tabPageVars;
 
             //double buffering
             typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridView1, new object[] { true });
             typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewFlags, new object[] { true });
             typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewFloats, new object[] { true });
+            typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, null, dataGridViewItems, new object[] { true });
 
         }
 
@@ -936,47 +1073,22 @@ namespace SaveGameEditor
             
             label4.Visible = false;
 
-            for (int i = 0; i < dataGridView1.RowCount; i++)
+            //Reset the colors of all cells in all DataGrids
+            foreach (TabPage tab in tabControl1.Controls)
             {
-                for (int j = 0; j < dataGridView1.ColumnCount; j++)
+                DataGridView grid = (DataGridView)tab.Controls[0];
+                for (int i = 0; i < grid.RowCount; i++)
                 {
-                    if (dataGridView1.Rows[i].Cells[j].ReadOnly)
+                    for (int j = 0; j < grid.ColumnCount; j++)
                     {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = Color.White;
-                    }
-                }
-            }
-
-            for (int i = 0; i < dataGridViewFloats.RowCount; i++)
-            {
-                for (int j = 0; j < dataGridViewFloats.ColumnCount; j++)
-                {
-                    if (dataGridViewFloats.Rows[i].Cells[j].ReadOnly)
-                    {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridViewFloats.Rows[i].Cells[j].Style.BackColor = Color.White;
-                    }
-                }
-            }
-
-            for (int i = 0; i < dataGridViewFlags.RowCount; i++)
-            {
-                for (int j = 0; j < dataGridViewFlags.ColumnCount; j++)
-                {
-                    if (dataGridViewFlags.Rows[i].Cells[j].ReadOnly)
-                    {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
-                    }
-                    else
-                    {
-                        dataGridViewFlags.Rows[i].Cells[j].Style.BackColor = Color.White;
+                        if (grid.Rows[i].Cells[j].ReadOnly)
+                        {
+                            grid.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
+                        }
+                        else
+                        {
+                            grid.Rows[i].Cells[j].Style.BackColor = Color.White;
+                        }
                     }
                 }
             }
@@ -1026,6 +1138,7 @@ namespace SaveGameEditor
             dataGridView1.ReadOnly = false;
             dataGridViewFlags.ReadOnly = false;
             dataGridViewFloats.ReadOnly = false;
+            dataGridViewItems.ReadOnly = false;
             buttonShowContent.Enabled = false;
             buttonManualBrowseBts.Enabled = false;
             buttonManualBrowseSave.Enabled = false;
@@ -1041,6 +1154,7 @@ namespace SaveGameEditor
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
+            UpdateItemGrid();
         }
         private void disableEditMode()
         {
@@ -1049,6 +1163,7 @@ namespace SaveGameEditor
             dataGridView1.ReadOnly = true;
             dataGridViewFlags.ReadOnly = true;
             dataGridViewFloats.ReadOnly = true;
+            dataGridViewItems.ReadOnly = true;
             buttonShowContent.Enabled = true;
             buttonManualBrowseBts.Enabled = true;
             buttonManualBrowseSave.Enabled = true;
@@ -1067,6 +1182,7 @@ namespace SaveGameEditor
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
+            UpdateItemGrid();
         }
 
         private void dataGridView1_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1167,6 +1283,44 @@ namespace SaveGameEditor
                 else dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
             }
         }
+
+        private void dataGridViewItems_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            origFlagState = Convert.ToBoolean(dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+            switch (e.ColumnIndex)
+            {
+                case 1:
+                    _editingVariableScope = VariableScope.CurrentCheckpoint;
+                    break;
+                case 2:
+                    _editingVariableScope = VariableScope.LastCheckpoint;
+                    break;
+                default:
+                    _editingVariableScope = VariableScope.RegularCheckpoint;
+                    break;
+            }
+        }
+
+        private void dataGridViewItems_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            newFlagState = Convert.ToBoolean(dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+
+            if (newFlagState != origFlagState)
+            {
+                point_id = dataGridViewItems.Rows[0].Cells[e.ColumnIndex].Value.ToString();
+                var_name = dataGridViewItems.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (_gameSave.FindAndUpdateItemValue(point_id, var_name, origFlagState, _editingVariableScope))
+                {
+                    dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
+                    label4.Text = "Press 'Save' to write changes to the save file.";
+                    label4.Visible = true;
+                }
+                else dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+        }
+
         bool firstEdit = true;
         private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
@@ -1199,6 +1353,18 @@ namespace SaveGameEditor
             else if (e.KeyChar == 'F')
             {
                 fillCellsWithValue(dataGridViewFlags.SelectedCells, false);
+            }
+        }
+
+        private void dataGridViewItems_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 'T')
+            {
+                fillCellsWithValue(dataGridViewItems.SelectedCells, true);
+            }
+            else if (e.KeyChar == 'F')
+            {
+                fillCellsWithValue(dataGridViewItems.SelectedCells, false);
             }
         }
 

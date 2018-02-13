@@ -58,6 +58,8 @@
             this.dataGridViewFlags = new System.Windows.Forms.DataGridView();
             this.tabPageFloats = new System.Windows.Forms.TabPage();
             this.dataGridViewFloats = new System.Windows.Forms.DataGridView();
+            this.tabPageItems = new System.Windows.Forms.TabPage();
+            this.dataGridViewItems = new System.Windows.Forms.DataGridView();
             this.buttonAbout = new System.Windows.Forms.Button();
             this.buttonExport = new System.Windows.Forms.Button();
             this.buttonShowContent = new System.Windows.Forms.Button();
@@ -75,6 +77,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFlags)).BeginInit();
             this.tabPageFloats.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFloats)).BeginInit();
+            this.tabPageItems.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewItems)).BeginInit();
             this.SuspendLayout();
             // 
             // openFileDialog1
@@ -398,6 +402,7 @@
             this.tabControl1.Controls.Add(this.tabPageVars);
             this.tabControl1.Controls.Add(this.tabPageFlags);
             this.tabControl1.Controls.Add(this.tabPageFloats);
+            this.tabControl1.Controls.Add(this.tabPageItems);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(3, 96);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
@@ -502,6 +507,38 @@
             this.dataGridViewFloats.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFloats_CellBeginEdit);
             this.dataGridViewFloats.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFloats_CellEndEdit);
             this.dataGridViewFloats.CellParsing += new System.Windows.Forms.DataGridViewCellParsingEventHandler(this.dataGridViewFloats_CellParsing);
+            // 
+            // tabPageItems
+            // 
+            this.tabPageItems.Controls.Add(this.dataGridViewItems);
+            this.tabPageItems.Location = new System.Drawing.Point(4, 22);
+            this.tabPageItems.Name = "tabPageItems";
+            this.tabPageItems.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageItems.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageItems.TabIndex = 3;
+            this.tabPageItems.Text = "Items";
+            this.tabPageItems.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewItems
+            // 
+            this.dataGridViewItems.AllowUserToAddRows = false;
+            this.dataGridViewItems.AllowUserToDeleteRows = false;
+            this.dataGridViewItems.AllowUserToResizeRows = false;
+            this.dataGridViewItems.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewItems.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dataGridViewItems.Location = new System.Drawing.Point(1, 2);
+            this.dataGridViewItems.Margin = new System.Windows.Forms.Padding(0);
+            this.dataGridViewItems.Name = "dataGridViewItems";
+            this.dataGridViewItems.ReadOnly = true;
+            this.dataGridViewItems.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dataGridViewItems.ShowEditingIcon = false;
+            this.dataGridViewItems.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridViewItems.TabIndex = 3;
+            this.dataGridViewItems.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewItems_CellBeginEdit);
+            this.dataGridViewItems.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewItems_CellEndEdit);
+            this.dataGridViewItems.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.dataGridViewItems_KeyPress);
             // 
             // buttonAbout
             // 
@@ -616,6 +653,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFlags)).EndInit();
             this.tabPageFloats.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFloats)).EndInit();
+            this.tabPageItems.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewItems)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -656,6 +695,8 @@
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.TabPage tabPageFloats;
         private System.Windows.Forms.DataGridView dataGridViewFloats;
+        private System.Windows.Forms.TabPage tabPageItems;
+        private System.Windows.Forms.DataGridView dataGridViewItems;
     }
 }
 

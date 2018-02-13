@@ -131,14 +131,16 @@
 
 Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
 
-Flags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).
+Flags/Items: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple cells at once, select them and press Shift+T (True) of Shift+F (False).
+The "true" value in the items table indicates that the item is owned by Chloe, while "false" means it's owned by someone else or no one at all. 
 
 Newly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.</value>
   </data>
   <data name="EditModeHelpIconMessage" xml:space="preserve">
     <value>Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
 
-Flags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).
+Flags/Items: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple cells at once, select them and press Shift+T (True) of Shift+F (False).
+The "true" value in the items table indicates that the item is owned by Chloe, while "false" means it's owned by someone else or no one at all. 
 
 Newly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permitted.</value>
   </data>

@@ -92,7 +92,7 @@ namespace SaveGameEditor.Properties {
         ///
         ///Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
         ///
-        ///Flags: Simply check or uncheck the respective boxes in the table. You can use  [rest of string was truncated]&quot;;.
+        ///Flags/Items: Simply check or uncheck the respective boxes in the table. You ca [rest of string was truncated]&quot;;.
         /// </summary>
         public static string EditModeHelpFirst {
             get {
@@ -103,9 +103,8 @@ namespace SaveGameEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Variables/Floats: Select a cell (or a range of cells) using the mouse or the arrow keys, and type in the new value. If you accidentally selected the wrong cell(s), then press ESC to cancel the edit.
         ///
-        ///Flags: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple flags at once, select them and press Shift+T (True) of Shift+F (False).
-        ///
-        ///Newly edited but unsaved cells are marked with yellow. Editing of gray-colored cells is not permit [rest of string was truncated]&quot;;.
+        ///Flags/Items: Simply check or uncheck the respective boxes in the table. You can use the mouse or the arrow keys and Spacebar. To edit multiple cells at once, select them and press Shift+T (True) of Shift+F (False).
+        ///The &quot;true&quot; value in the items table indicates that the item is owned by Chloe, while &quot;false&quot; m [rest of string was truncated]&quot;;.
         /// </summary>
         public static string EditModeHelpIconMessage {
             get {
@@ -123,22 +122,28 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 0618b7e56989495b9196add8c4d9aa0b
-        ///132043c0013d4f9fb5f43f6f4fa5d2d3
-        ///25a31f6308ef4d0894bfe54888033f76
-        ///299b95eb1e12419f9d814ee65beed089
-        ///2b63b02392c04edfb2d2a83f9cb86d4e
-        ///2cb44bb95e4742ae85a7e4a9d3095729
-        ///371e9787bc0c47bcacf152ad60227465
-        ///3c0ffd68526f418e93141666d764f786
-        ///3dc3a39bc34e4bb9a9dcd511c1c221c2
-        ///4015612092e3417898097e5c6327b94a
-        ///47730ac35c6e4d8dad00ab4f74447cbf
-        ///55218e9784644c6ca277b73e35000dc6
-        ///5bae5f16a9004041a88de217f77167cc
-        ///68e6607764984ea282a97cf3f121ef3d
-        ///6c2d3340acc74414a748039f1f013304
-        ///6d [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to BTTUTORIAL_kBedtime
+        ///BTTUTORIAL_kBedtimeChoices
+        ///BTTUTORIAL_kCute
+        ///BTTUTORIAL_kCuteChoices
+        ///BTTUTORIAL_kDescription
+        ///BTTUTORIAL_kE2Reminder
+        ///BTTUTORIAL_kE3Reminder
+        ///BTTUTORIAL_kFailure
+        ///BTTUTORIAL_kPlayground
+        ///BTTUTORIAL_kStarted
+        ///Seen_BioChloe Price
+        ///Seen_BioDamon Merrick
+        ///Seen_BioDrew North
+        ///Seen_BioEliot Hampden
+        ///Seen_BioFrank Bowers
+        ///Seen_BioJames Amber + Rose Amber
+        ///Seen_BioJoyce Price + David Madsen
+        ///Seen_BioMax Caulfield
+        ///Seen_BioNathan Prescott
+        ///Seen_BioRachel Amber
+        ///Seen_BioSera Gearhardt
+        ///Seen_Bio [rest of string was truncated]&quot;;.
         /// </summary>
         public static string FlagList {
             get {
@@ -149,21 +154,21 @@ namespace SaveGameEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to BurnerSMSIndex
         ///BurnerSMSOrder_e3_s05_damon_1
-        ///BurnerSMSOrder_e3_s05_damon_12
-        ///BurnerSMSOrder_e3_s05_damon_14
-        ///BurnerSMSOrder_e3_s05_damon_15
-        ///BurnerSMSOrder_e3_s05_damon_16
-        ///BurnerSMSOrder_e3_s05_damon_17
-        ///BurnerSMSOrder_e3_s05_damon_18
-        ///BurnerSMSOrder_e3_s05_damon_19
         ///BurnerSMSOrder_e3_s05_damon_2
-        ///BurnerSMSOrder_e3_s05_damon_20
-        ///BurnerSMSOrder_e3_s05_damon_21
-        ///BurnerSMSOrder_e3_s05_damon_22
         ///BurnerSMSOrder_e3_s05_damon_3
         ///BurnerSMSOrder_e3_s05_damon_4
         ///BurnerSMSOrder_e3_s05_damon_5
-        ///BurnerSMSOrder_e3_s05 [rest of string was truncated]&quot;;.
+        ///BurnerSMSOrder_e3_s05_damon_6
+        ///BurnerSMSOrder_e3_s05_damon_7
+        ///BurnerSMSOrder_e3_s05_damon_8
+        ///BurnerSMSOrder_e3_s05_damon_9
+        ///BurnerSMSOrder_e3_s05_damon_10
+        ///BurnerSMSOrder_e3_s05_damon_11
+        ///BurnerSMSOrder_e3_s05_damon_12
+        ///BurnerSMSOrder_e3_s05_damon_13
+        ///BurnerSMSOrder_e3_s05_damon_14
+        ///BurnerSMSOrder_e3_s05_damon_15
+        ///BurnerSMSOrder_e3_s05_dam [rest of string was truncated]&quot;;.
         /// </summary>
         public static string FloatList {
             get {

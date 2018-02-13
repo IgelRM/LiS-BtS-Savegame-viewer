@@ -21,6 +21,13 @@ namespace SaveGameEditor
         public float? Value { get; set; }
     }
 
+    public class ItemState
+    {
+        public string Name { get; set; }
+
+        public string Owner { get; set; }
+    }
+
     public class Checkpoint
     {
         private readonly dynamic _checkpoint; // Checkpoint object. Possibly holding checkpoint name.
@@ -33,14 +40,17 @@ namespace SaveGameEditor
 
         public Dictionary<string, FloatState> Floats { get; }
 
+        public Dictionary<string, ItemState> Items { get; }
+
         public List<string> Flags { get; }
 
-        public Checkpoint(dynamic checkpoint, Dictionary<string, VariableState> variables, List<string> flags, Dictionary<string, FloatState> floats)
+        public Checkpoint(dynamic checkpoint, Dictionary<string, VariableState> variables, List<string> flags, Dictionary<string, FloatState> floats, Dictionary<string, ItemState> items)
         {
             _checkpoint = checkpoint;
             Variables = variables;
             Flags = flags;
             Floats = floats;
+            Items = items;
         }
     }
 
@@ -155,6 +165,7 @@ namespace SaveGameEditor
 
             Dictionary<string, VariableState> variables;
             Dictionary<string, FloatState> floats;
+            Dictionary<string, ItemState> items;
 
             // Add regular checkpoints
             foreach (var checkpoint in Data.checkpoints)
@@ -162,11 +173,12 @@ namespace SaveGameEditor
                 var cpFlags = new List<string>();
                 variables = GetCheckpointVariables(checkpoint);
                 floats = GetCheckpointFloats(checkpoint);
+                items = GetCheckpointItems(checkpoint);
                 foreach (var flag in checkpoint.flags)
                 {
                     cpFlags.Add(flag.Value);
                 }
-                Checkpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats));
+                Checkpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats, items));
             }
 
             // Add currentcheckpoint (seems to be identical to latest checkpoint...)
@@ -179,7 +191,8 @@ namespace SaveGameEditor
                 }
                 variables = GetCheckpointVariables(Data.currentCheckpoint.stateCheckpoint);
                 floats = GetCheckpointFloats(Data.currentCheckpoint.stateCheckpoint);
-                Checkpoints.Add(new Checkpoint(Data.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats));
+                items = GetCheckpointItems(Data.currentCheckpoint.stateCheckpoint);
+                Checkpoints.Add(new Checkpoint(Data.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
             }
             catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
@@ -199,7 +212,7 @@ namespace SaveGameEditor
             {
                 pointIdentifier = "Global Vars",
                 currentObjective = Data.currentObjective
-            }, variables, globalFlags, floats));
+            }, variables, globalFlags, floats, null));
 
             // Fill episodeState (?)
             foreach (var episode in Data.episodes)
@@ -305,6 +318,22 @@ namespace SaveGameEditor
             }
 
             return pointFloats;
+        }
+
+
+        private Dictionary<string, ItemState> GetCheckpointItems(dynamic checkpoint)
+        {
+            var pointItems = new Dictionary<string, ItemState>(); // Key is a variable name; Value is a name-value pair
+
+            foreach (var item in checkpoint.items)
+            {
+                string owner = item.currentOwnedBy;
+                string gameItemId = item.storyItem;
+                string name = _gameData.GetOrCreateItemNameById(gameItemId);
+                pointItems[name] = new ItemState { Name = name, Owner = owner };
+            }
+
+            return pointItems;
         }
 
         // Value gets updated inside JSON object (m_Data)
@@ -514,6 +543,81 @@ namespace SaveGameEditor
                         }
                     }
                     flagToDelete.Remove();
+                }
+
+                SaveChangesSaved = false;
+                return true;
+            }
+
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
+        }
+
+        public bool FindAndUpdateItemValue(string checkpointId, string itemName, bool origValue, VariableScope varScope)
+        {
+            dynamic editingPoint = null;
+            var itemId = _gameData.GetItemIdByName(itemName);
+            var pointFound = false;
+
+            switch (varScope)
+            {
+                case VariableScope.Global:
+                    MessageBox.Show("Error! Global scope!");
+                    break;
+                case VariableScope.CurrentCheckpoint:
+                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in Data.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            if (pointFound)
+            {
+                JArray items = editingPoint.items;
+                int? targetIndex = null;
+
+                for (int i=0; i<items.Count; i++)
+                {
+                    if (((JObject)items[i]).Property("storyItem").Value.ToString() == itemId)
+                    {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                if (origValue == false)
+                {
+                    if (targetIndex == null) // Add new item and make Chloe the owner
+                    {
+                        var freshItem = new Dictionary<string, object>()
+                        {
+                            { "uniqueId", Guid.NewGuid().ToString() },
+                            { "currentOwnedBy", Consts.ChloeUID },
+                            { "overridesDLC", false },
+                            { "storyItem", itemId },
+                            { "$type", "GameStateItemModel"}
+                        };
+                        items.Add(JToken.FromObject(freshItem));
+                    }
+                    else //change the owner of an existing item to Chloe
+                    {
+                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = Consts.ChloeUID;
+                    }
+                }
+                // Remove one of the existing items
+                else
+                {
+                    items[targetIndex].Remove();
                 }
 
                 SaveChangesSaved = false;
