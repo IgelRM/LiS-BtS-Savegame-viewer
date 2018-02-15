@@ -79,8 +79,7 @@ namespace SaveGameEditor
                 if (!resizeHelpShown)
                 {
                     ToolTip tt = new ToolTip();
-                    tt.IsBalloon = true;
-                    tt.Show("Drag here to resize", this, 140, 115, 2000);
+                    tt.Show("Drag here to resize", this, 150, 145, 2000);
                     resizeHelpShown = true;
                 }
 
