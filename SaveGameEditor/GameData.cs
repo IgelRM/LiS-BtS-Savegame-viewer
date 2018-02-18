@@ -18,6 +18,19 @@ namespace SaveGameEditor
         public string Name;
     }
 
+    public class GameItem
+    {
+        /// <summary>
+        /// Unique item ID
+        /// </summary>
+        public string Id;
+
+        /// <summary>
+        /// Item name, eg: e1_s01_beer
+        /// </summary>
+        public string Name;
+    }
+
     public class GameData
     {
         private const string UnknownVariableIdPrefix = "UNKNOWN-";
@@ -32,6 +45,16 @@ namespace SaveGameEditor
         /// </summary>
         private Dictionary<string, GameVariable> _varNames { get; } = new Dictionary<string, GameVariable>();
 
+        /// <summary>
+        /// Key is a Item ID
+        /// </summary>
+        private Dictionary<string, GameItem> _items { get; } = new Dictionary<string, GameItem>();
+
+        /// <summary>
+        /// Key is a Item Name
+        /// </summary>
+        private Dictionary<string, GameItem> _itemNames { get; } = new Dictionary<string, GameItem>();
+
         public string Raw { get; set; }
 
         public void ReadFromFile(string path)
@@ -40,13 +63,13 @@ namespace SaveGameEditor
             dynamic json = JsonConverter.DecodeFileContentToJson(fileContent);
             Raw = json.ToString();
 
-            dynamic variables = json.variables;
-            foreach (var variable in variables)
+            foreach (var variable in json.variables)
             {
-                if (variable["$type"] == "StoryVariable")
-                {
-                    AddVariable(variable.uniqueId.Value, variable.objectName.Value);
-                }
+                AddVariable(variable.uniqueId.Value, variable.objectName.Value);
+            }
+            foreach (var item in json.items)
+            {
+                AddItem(item.uniqueId.Value, item.objectName.Value);
             }
         }
 
@@ -78,9 +101,34 @@ namespace SaveGameEditor
             return newVariable;
         }
 
+        private GameItem AddItem(string id, string name = null)
+        {
+            name = name ?? id;
+            if (_items.ContainsKey(id))
+            {
+                return _items[id].Name == name ? _items[id] : null;
+            }
+
+            var newItem = new GameItem
+            {
+                Id = id,
+                Name = name
+            };
+
+            _items[id] = newItem;
+            _itemNames[name] = newItem;
+
+            return newItem;
+        }
+
         public Dictionary<string, GameVariable> GetVariables()
         {
             return _variables;
+        }
+
+        public Dictionary<string, GameItem> GetItems()
+        {
+            return _items;
         }
 
         /// <summary>
@@ -113,6 +161,38 @@ namespace SaveGameEditor
         public string GetVariableIdByName(string name)
         {
             return _varNames[name].Id;
+        }
+
+        /// <summary>
+        /// Get item name
+        /// </summary>
+        /// <param name="id">Item ID</param>
+        /// <returns>Item name</returns>
+        public string GetOrCreateItemNameById(string id)
+        {
+            // If an item with the given ID was NOT found in the initialdata, then create a new item. 
+            if (_items.ContainsKey(id))
+            {
+                return _items[id].Name;
+            }
+
+            var unknownItemId = UnknownVariableIdPrefix + id;
+            if (_items.ContainsKey(unknownItemId))
+            {
+                return _items[unknownItemId].Name;
+            }
+
+            return AddItem(unknownItemId)?.Name;
+        }
+
+        /// <summary>
+        /// Get item ID
+        /// </summary>
+        /// <param name="name">Item name</param>
+        /// <returns>Item ID</returns>
+        public string GetItemIdByName(string name)
+        {
+            return _itemNames[name].Id;
         }
     }
 }

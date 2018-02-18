@@ -150,5 +150,7 @@ namespace SaveGameEditor
             public const string SaveJustStarted = "GLOBAL_CODE_SAVEJUSTSTARTED";
         }
         #endregion
+
+        public const string ChloeUID = "{e6e15237-3209-455e-9d47-c7293b9dfa54}";
     }
 }

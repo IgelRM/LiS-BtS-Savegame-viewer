@@ -91,6 +91,7 @@ namespace SaveGameEditor
             if (radioButton1.Checked) tab_num = 0;
             else if (radioButton2.Checked) tab_num = 1;
             else if (radioButton3.Checked) tab_num = 2;
+            else if (radioButton4.Checked) tab_num = 3;
 
             ResetSearchState();
         }
@@ -100,6 +101,7 @@ namespace SaveGameEditor
             if (tab_num == 0) radioButton1.Checked = true;
             else if (tab_num == 1) radioButton2.Checked = true;
             else if (tab_num == 2) radioButton3.Checked = true;
+            else if (tab_num == 3) radioButton4.Checked = true;
         }
 
         private void FindForm_FormClosing(object sender, FormClosingEventArgs e)
