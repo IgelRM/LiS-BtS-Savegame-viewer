@@ -182,7 +182,7 @@ namespace SaveGameEditor
             _gameData = gameData; // This is the initialdata, NOT savefile
         }
 
-        public static bool IsFarewellCheckpoint (string pointID)
+        private bool IsFarewellCheckpoint (string pointID)
         {
             return pointID.StartsWith("E4_") || pointID.Equals("Episode4End");
         }
@@ -236,30 +236,23 @@ namespace SaveGameEditor
             }
 
             // Add currentcheckpoint (seems to be identical to latest checkpoint...)
-            //if (MainData.currentCheckpoint != null)
-            //{
-                try
+            try
+            {
+                var currentCpFlags = new List<string>();
+                foreach (var flag in MainData.currentCheckpoint.stateCheckpoint.flags)
                 {
-                    var currentCpFlags = new List<string>();
-                    foreach (var flag in MainData.currentCheckpoint.stateCheckpoint.flags)
-                    {
-                        currentCpFlags.Add(flag.Value);
-                    }
-                    variables = GetCheckpointVariables(MainData.currentCheckpoint.stateCheckpoint);
-                    floats = GetCheckpointFloats(MainData.currentCheckpoint.stateCheckpoint);
-                    items = GetCheckpointItems(MainData.currentCheckpoint.stateCheckpoint);
-                    MainCheckpoints.Add(new Checkpoint(MainData.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
+                    currentCpFlags.Add(flag.Value);
                 }
-                catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
-                {
-                    MainSaveIsEmpty = true;
-                    goto SkipMain;
-                }
-         //   }
-           // else
-          //  {
-                //MainCheckpoints.Add(new Checkpoint(new { pointIdentifier = "CurrentMain", currentObjective = "null" }, null, null, null, null));
-         //   }
+                variables = GetCheckpointVariables(MainData.currentCheckpoint.stateCheckpoint);
+                floats = GetCheckpointFloats(MainData.currentCheckpoint.stateCheckpoint);
+                items = GetCheckpointItems(MainData.currentCheckpoint.stateCheckpoint);
+                MainCheckpoints.Add(new Checkpoint(MainData.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                MainSaveIsEmpty = true;
+                goto SkipMain;
+            }
             
             // Add global variables as a last checkpoint.. // hack...
             variables = GetCheckpointVariables(MainData);
