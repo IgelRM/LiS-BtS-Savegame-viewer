@@ -385,7 +385,7 @@ namespace SaveGameEditor
             }
         }
 
-        public void WriteSaveToFile(string savePath, dynamic saveJsonObject, bool isFarewell = false)
+        public void WriteSaveToFile(string savePath, dynamic saveJsonObject, SaveType type)
         {
             var fileContent = JsonConverter.EncodeJsonToFileContent(saveJsonObject);
 
@@ -396,7 +396,7 @@ namespace SaveGameEditor
 
             File.WriteAllBytes(savePath, fileContent); // Write changes to Data.Save
 
-            if (isFarewell)
+            if (type == SaveType.Bonus)
             {
                 FarewellSaveChangesSaved = true;
             }
@@ -818,7 +818,7 @@ namespace SaveGameEditor
                     }
                 }
 
-                var newOwner = IsFarewellCheckpoint(checkpointId) ? Consts.MaxUID : Consts.ChloeUID;
+                var newOwner = IsFarewellCheckpoint(checkpointId) ? Consts.Uids.Maxine : Consts.Uids.Chloe;
 
                 if (origValue == false)
                 {
@@ -893,7 +893,7 @@ namespace SaveGameEditor
             string destPointId = destPoint.pointIdentifier;
             for (var i = 0; i < MainData.episodes.Count; i++)
             {
-                if (i == 3) //skip Farewell
+                if (i == (int)Episode.Bonus)
                 {
                     continue;
                 }
@@ -1213,7 +1213,7 @@ namespace SaveGameEditor
                         var freshItem = new Dictionary<string, object>()
                         {
                             { "uniqueId", Guid.NewGuid().ToString() },
-                            { "currentOwnedBy", Consts.MaxUID },
+                            { "currentOwnedBy", Consts.Uids.Maxine },
                             { "overridesDLC", false },
                             { "storyItem", itemId },
                             { "$type", "GameStateItemModel"}
@@ -1222,7 +1222,7 @@ namespace SaveGameEditor
                     }
                     else //change the owner of an existing item to Max
                     {
-                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = Consts.MaxUID;
+                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = Consts.Uids.Maxine;
                     }
                 }
                 // Remove one of the existing items
@@ -1277,10 +1277,10 @@ namespace SaveGameEditor
             if (destPoint.pointIdentifier.Value != "Epiode4End" && MainData.episodes[3].episodeState != Consts.EpisodeStates.Unavailable)
             {
                 FarewellData.ep4State = 1;
-                MainData.episodes[3].episodeState = Consts.EpisodeStates.InProgress;
+                MainData.episodes[(int)Episode.Bonus].episodeState = Consts.EpisodeStates.InProgress;
             }
 
-            SyncLastAndCurrentCheckpoints(destPoint, 3);
+            SyncLastAndCurrentCheckpoints(destPoint, (int)Episode.Bonus);
             MainData.uniqueId = Guid.NewGuid();
             MainData.currentObjective = destPoint.currentObjective;
 

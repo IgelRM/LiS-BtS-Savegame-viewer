@@ -24,4 +24,10 @@
         LastCheckpoint,
         RegularCheckpoint
     }
+
+    public enum SaveType
+    {
+        Regular,
+        Bonus
+    }
 }

@@ -745,7 +745,7 @@ namespace SaveGameEditor
                     bool found = checkpoint.Items.TryGetValue(kvp.Value.Name, out state);
                     if (found)
                     {
-                        row[_gameSave.MainCheckpoints.Count - i - 1] = (state.Owner == Consts.ChloeUID);
+                        row[_gameSave.MainCheckpoints.Count - i - 1] = (state.Owner == Consts.Uids.Chloe);
                     }
                     else
                     {
@@ -931,7 +931,7 @@ namespace SaveGameEditor
                     bool found = checkpoint.Items.TryGetValue(kvp.Value.Name, out state);
                     if (found)
                     {
-                        row[_gameSave.FarewellCheckpoints.Count - i] = (state.Owner == Consts.MaxUID);
+                        row[_gameSave.FarewellCheckpoints.Count - i] = (state.Owner == Consts.Uids.Maxine);
                     }
                     else
                     {
@@ -1364,11 +1364,11 @@ namespace SaveGameEditor
         {
             if (!_gameSave.MainSaveChangesSaved)
             {
-                _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.MainData);
+                _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.MainData, SaveType.Regular);
             }
             if (!_gameSave.FarewellSaveChangesSaved)
             {
-                _gameSave.WriteSaveToFile(textBoxSavePath.Text.Replace("SLOT_", "Bonus"), _gameSave.FarewellData, true);
+                _gameSave.WriteSaveToFile(textBoxSavePath.Text.Replace("SLOT_", "Bonus"), _gameSave.FarewellData, SaveType.Regular);
             }
            
             if (_gameSave.MainSaveChangesSaved && _gameSave.FarewellSaveChangesSaved)

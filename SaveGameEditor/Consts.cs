@@ -166,7 +166,13 @@ namespace SaveGameEditor
         }
         #endregion
 
-        public const string ChloeUID = "{e6e15237-3209-455e-9d47-c7293b9dfa54}";
-        public const string MaxUID = "{32dd0acb-057d-40e7-926e-683144ae1353}";
+        #region Character UIDs
+        public static class Uids
+        {
+            public const string Chloe = "{e6e15237-3209-455e-9d47-c7293b9dfa54}";
+            public const string Maxine = "{32dd0acb-057d-40e7-926e-683144ae1353}";
+        }
+        #endregion
+
     }
 }
