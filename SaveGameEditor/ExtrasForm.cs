@@ -47,7 +47,7 @@ namespace SaveGameEditor
             {
                 for (int i=0; i<m_GameSave.EpisodeStates.Count; i++)
                 {
-                    if (i == 3 ) //ignore Farewell
+                    if (i == (int)Episode.Bonus ) //ignore Farewell
                     {
                         break;
                     }
@@ -63,10 +63,10 @@ namespace SaveGameEditor
             //handles the "Just Started" state of Farewell save.
             if (!m_GameSave.FarewellSaveIsEmpty) 
             {
-                if (m_GameSave.EpisodeStates[3] == Consts.EpisodeStates.InProgress ||
-                       m_GameSave.EpisodeStates[3] == Consts.EpisodeStates.Finished)
+                if (m_GameSave.EpisodeStates[(int)Episode.Bonus] == Consts.EpisodeStates.InProgress ||
+                       m_GameSave.EpisodeStates[(int)Episode.Bonus] == Consts.EpisodeStates.Finished)
                 {
-                    comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[(Episode)3]);
+                    comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[Episode.Bonus]);
                 }
             }
 
@@ -206,7 +206,7 @@ namespace SaveGameEditor
 
                 dynamic dest_point = null; //the point that we ARE reverting to
 
-                if (dest_epNumber == 3) //Farewell selected
+                if (dest_epNumber == (int)Episode.Bonus)
                 {
                     foreach (var checkpoint in m_GameSave.FarewellData.checkpoints)
                     {
@@ -238,32 +238,32 @@ namespace SaveGameEditor
 
                 if (dateSelected && pointSelected)
                 {
-                    if (dest_epNumber == 3)
+                    if (dest_epNumber == (int)Episode.Bonus)
                     {
                         m_GameSave.RestartFromFarewellCheckpoint(variablePrefix, dest_point);
-                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, true);
-                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, SaveType.Bonus);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData, SaveType.Regular);
                     }
                     else
                     {
                         m_GameSave.RestartFromMainCheckpoint(variablePrefix, dest_point, dest_epNumber);
-                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData, SaveType.Regular);
                         
                     }
                     m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else if (!dateSelected && pointSelected)
                 {
-                    if (dest_epNumber == 3)
+                    if (dest_epNumber == (int)Episode.Bonus)
                     {
                         m_GameSave.RestartFromFarewellCheckpoint(variablePrefix, dest_point);
-                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, true);
-                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, SaveType.Bonus);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData, SaveType.Regular);
                     }
                     else
                     {
                         m_GameSave.RestartFromMainCheckpoint(variablePrefix, dest_point, dest_epNumber);
-                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData, SaveType.Regular);
 
                     }
                     m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);

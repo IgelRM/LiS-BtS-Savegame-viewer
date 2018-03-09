@@ -169,7 +169,7 @@ namespace SaveGameEditor
             lblStatus.ForeColor = SystemColors.ControlText;
             for (var i = 0; i < _gameSave.EpisodeStates.Count; i++)
             {
-                if (i == 3) //ignore Farewell
+                if (i == (int)Episode.Bonus) //ignore Farewell
                 {
                     break;
                 }
@@ -217,7 +217,7 @@ namespace SaveGameEditor
 
             if (_gameSave.EpisodeStates.Count != 0)
             {
-                switch (_gameSave.EpisodeStates[3])
+                switch (_gameSave.EpisodeStates[(int)Episode.Bonus])
                 {
                     case Consts.EpisodeStates.NotPlayed:
                         text.Append(Environment.NewLine);
