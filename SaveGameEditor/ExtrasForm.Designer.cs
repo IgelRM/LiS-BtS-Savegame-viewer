@@ -48,6 +48,7 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.buttonSaveDLL = new System.Windows.Forms.Button();
             this.buttonLoadDLL = new System.Windows.Forms.Button();
+            this.buttonManualBkpBonus = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -57,32 +58,33 @@
             // 
             // buttonManualBkpSave
             // 
-            this.buttonManualBkpSave.Location = new System.Drawing.Point(6, 22);
+            this.buttonManualBkpSave.Location = new System.Drawing.Point(6, 13);
             this.buttonManualBkpSave.Name = "buttonManualBkpSave";
-            this.buttonManualBkpSave.Size = new System.Drawing.Size(100, 25);
+            this.buttonManualBkpSave.Size = new System.Drawing.Size(104, 25);
             this.buttonManualBkpSave.TabIndex = 0;
-            this.buttonManualBkpSave.Text = "Save File";
+            this.buttonManualBkpSave.Text = "Main Save";
             this.buttonManualBkpSave.UseVisualStyleBackColor = true;
             this.buttonManualBkpSave.Click += new System.EventHandler(this.buttonManualBkpSave_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.buttonManualBkpBonus);
             this.groupBox1.Controls.Add(this.buttonManualBkpHeader);
             this.groupBox1.Controls.Add(this.buttonManualBkpSave);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(115, 87);
+            this.groupBox1.Size = new System.Drawing.Size(115, 82);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Manual Backup";
             // 
             // buttonManualBkpHeader
             // 
-            this.buttonManualBkpHeader.Location = new System.Drawing.Point(6, 50);
+            this.buttonManualBkpHeader.Location = new System.Drawing.Point(60, 44);
             this.buttonManualBkpHeader.Name = "buttonManualBkpHeader";
-            this.buttonManualBkpHeader.Size = new System.Drawing.Size(100, 25);
+            this.buttonManualBkpHeader.Size = new System.Drawing.Size(50, 25);
             this.buttonManualBkpHeader.TabIndex = 2;
-            this.buttonManualBkpHeader.Text = "Header File";
+            this.buttonManualBkpHeader.Text = "Header";
             this.buttonManualBkpHeader.UseVisualStyleBackColor = true;
             this.buttonManualBkpHeader.Click += new System.EventHandler(this.buttonManualBkpHeader_Click);
             // 
@@ -265,7 +267,17 @@
             this.buttonLoadDLL.UseVisualStyleBackColor = true;
             this.buttonLoadDLL.Click += new System.EventHandler(this.buttonLoadDLL_Click);
             // 
-            // FormExtras
+            // buttonManualBkpBonus
+            // 
+            this.buttonManualBkpBonus.Location = new System.Drawing.Point(5, 44);
+            this.buttonManualBkpBonus.Name = "buttonManualBkpBonus";
+            this.buttonManualBkpBonus.Size = new System.Drawing.Size(49, 25);
+            this.buttonManualBkpBonus.TabIndex = 3;
+            this.buttonManualBkpBonus.Text = "Bonus";
+            this.buttonManualBkpBonus.UseVisualStyleBackColor = true;
+            this.buttonManualBkpBonus.Click += new System.EventHandler(this.buttonManualBkpBonus_Click);
+            // 
+            // ExtrasForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -277,7 +289,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "FormExtras";
+            this.Name = "ExtrasForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Extras";
             this.Load += new System.EventHandler(this.FormExtras_Load);
@@ -319,5 +331,6 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button buttonSaveDLL;
         private System.Windows.Forms.Button buttonLoadDLL;
+        private System.Windows.Forms.Button buttonManualBkpBonus;
     }
 }

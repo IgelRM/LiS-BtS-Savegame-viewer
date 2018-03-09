@@ -29,22 +29,10 @@ namespace SaveGameEditor
         public GameSave m_GameSave;
         public AssFile m_assFile;
 
-        private void buttonManualBkpHeader_Click(object sender, EventArgs e)
-        {
-            saveFileDialog1.Title = "Backup the header file";
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                File.Copy(headerPath, saveFileDialog1.FileName);
-                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            saveFileDialog1.FileName = String.Empty;
-        }
+        
 
         private void buttonLoadHeader_Click(object sender, EventArgs e)
         {
-            comboBoxHeaderEp.Enabled = true;
-            comboBoxPoint.Enabled = true;
-            dateTimePicker1.Enabled = true;
             comboBoxHeaderEp.Items.Clear();
             comboBoxPoint.Items.Clear();
             
@@ -53,34 +41,46 @@ namespace SaveGameEditor
                 MessageBox.Show(Resources.RewindHelpFirstMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 _settingManager.Settings.RewindNotesShown = true;
             }
-            m_GameSave.ReadSaveFromFile(savePath);
+            m_GameSave.ReadMainSaveFromFile(savePath);
 
-            if (!m_GameSave.SaveIsEmpty) //handles the "Just Started" state.
+            if (!m_GameSave.MainSaveIsEmpty) //handles the "Just Started" state of main save.
             {
                 for (int i=0; i<m_GameSave.EpisodeStates.Count; i++)
                 {
+                    if (i == 3 ) //ignore Farewell
+                    {
+                        break;
+                    }
+
                     if (m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.InProgress || 
                         m_GameSave.EpisodeStates[i] == Consts.EpisodeStates.Finished)
                     {
                         comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[(Episode) i]);
                     }
                 }
+            }
+
+            //handles the "Just Started" state of Farewell save.
+            if (!m_GameSave.FarewellSaveIsEmpty) 
+            {
+                if (m_GameSave.EpisodeStates[3] == Consts.EpisodeStates.InProgress ||
+                       m_GameSave.EpisodeStates[3] == Consts.EpisodeStates.Finished)
+                {
+                    comboBoxHeaderEp.Items.Add(Consts.EpisodeNames[(Episode)3]);
+                }
+            }
+
+            if (comboBoxHeaderEp.Items.Count > 0)
+            {
                 comboBoxHeaderEp.SelectedIndex = comboBoxHeaderEp.Items.Count - 1; //autoselect the last item
                 autoChange = true;
                 dateTimePicker1.Value = new DateTime(m_GameSave.SaveDate[2], m_GameSave.SaveDate[1], m_GameSave.SaveDate[0]);
                 autoChange = false;
                 dateSelected = false; pointSelected = false;
-                if (m_GameSave.IsAtMidLevel)
-                {
-                    labelPointType.Text = "Type: Mid-level checkpoint";
-                    labelPointType.ForeColor = Color.Red;
-                }
-                else
-                {
-                    labelPointType.Text = "Type: Normal checkpoint";
-                    labelPointType.ForeColor = Color.Green;
-                }
-                labelPointType.Visible = true;
+
+                comboBoxHeaderEp.Enabled = true;
+                comboBoxPoint.Enabled = true;
+                dateTimePicker1.Enabled = true;
             }
         }
 
@@ -90,6 +90,28 @@ namespace SaveGameEditor
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 File.Copy(savePath, saveFileDialog1.FileName, true);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            saveFileDialog1.FileName = String.Empty;
+        }
+
+        private void buttonManualBkpBonus_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.Title = "Backup the bonus save file";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                File.Copy(savePath.Replace("SLOT_", "Bonus"), saveFileDialog1.FileName, true);
+                MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            saveFileDialog1.FileName = String.Empty;
+        }
+
+        private void buttonManualBkpHeader_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.Title = "Backup the header file";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                File.Copy(headerPath, saveFileDialog1.FileName);
                 MessageBox.Show(Resources.SuccessfulBackupMessage, "Savegame Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             saveFileDialog1.FileName = String.Empty;
@@ -143,6 +165,16 @@ namespace SaveGameEditor
                 buttonLoadHeader.Enabled = false;
                 labelHeaderNotFound.Visible = true;
             }
+
+            if (m_GameSave.MainSaveIsEmpty && !m_GameSave.MainSaveHasFarewellData)
+            {
+                buttonManualBkpSave.Enabled = false;
+            }
+
+            if (m_GameSave.FarewellSaveIsEmpty)
+            {
+                buttonManualBkpBonus.Enabled = false;
+            }
         }
 
         private void pictureBoxHelp_Click(object sender, EventArgs e)
@@ -157,7 +189,7 @@ namespace SaveGameEditor
             if (pointSelected)
             {
                 answer = MessageBox.Show(String.Format(Resources.RewindProgressLostMessage, 
-                    comboBoxPoint.SelectedItem.ToString(), dateTimePicker1.Value.ToShortDateString()), 
+                    comboBoxHeaderEp.SelectedItem.ToString(), comboBoxPoint.SelectedItem.ToString(), dateTimePicker1.Value.ToShortDateString()), 
                     "Savegame Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
             }
             else
@@ -168,16 +200,35 @@ namespace SaveGameEditor
             
             if (answer == DialogResult.Yes)
             {
-                int dest_epNumber = comboBoxHeaderEp.SelectedIndex;
-                int pointOffset = 0;
-                switch (dest_epNumber)
+                
+                var dest_PointDecriptor = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByName(comboBoxPoint.SelectedItem.ToString());
+                int dest_epNumber = (int)dest_PointDecriptor.Episode;
+
+                dynamic dest_point = null; //the point that we ARE reverting to
+
+                if (dest_epNumber == 3) //Farewell selected
                 {
-                    case 0: pointOffset = 0; break;
-                    case 1: pointOffset = 14; break;
-                    case 2: pointOffset = 27; break;
-                    case 3: break;
+                    foreach (var checkpoint in m_GameSave.FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == dest_PointDecriptor.Code)
+                        {
+                            dest_point = checkpoint;
+                            break;
+                        }
+                    }
                 }
-                dynamic dest_point = m_GameSave.Data.checkpoints[comboBoxPoint.SelectedIndex + pointOffset]; //the point that we ARE reverting to
+                else //Main game selected
+                {
+                    foreach (var checkpoint in m_GameSave.MainData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == dest_PointDecriptor.Code)
+                        {
+                            dest_point = checkpoint;
+                            break;
+                        }
+                    }
+                }
+                
                 var variablePrefix = "";
                 m_GameSave.PointVariablePrefixes.TryGetValue(dest_point.pointIdentifier.Value, out variablePrefix);
 
@@ -187,14 +238,34 @@ namespace SaveGameEditor
 
                 if (dateSelected && pointSelected)
                 {
-                    m_GameSave.RestartFromCheckpoint(variablePrefix, dest_point, dest_epNumber);
-                    m_GameSave.WriteSaveToFile(savePath, m_GameSave.Data);
+                    if (dest_epNumber == 3)
+                    {
+                        m_GameSave.RestartFromFarewellCheckpoint(variablePrefix, dest_point);
+                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, true);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                    }
+                    else
+                    {
+                        m_GameSave.RestartFromMainCheckpoint(variablePrefix, dest_point, dest_epNumber);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                        
+                    }
                     m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else if (!dateSelected && pointSelected)
                 {
-                    m_GameSave.RestartFromCheckpoint(variablePrefix, dest_point, dest_epNumber);
-                    m_GameSave.WriteSaveToFile(savePath, m_GameSave.Data);
+                    if (dest_epNumber == 3)
+                    {
+                        m_GameSave.RestartFromFarewellCheckpoint(variablePrefix, dest_point);
+                        m_GameSave.WriteSaveToFile(savePath.Replace("SLOT_", "Bonus"), m_GameSave.FarewellData, true);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+                    }
+                    else
+                    {
+                        m_GameSave.RestartFromMainCheckpoint(variablePrefix, dest_point, dest_epNumber);
+                        m_GameSave.WriteSaveToFile(savePath, m_GameSave.MainData);
+
+                    }
                     m_GameSave.WriteHeaderToFile(headerPath, m_GameSave.Header);
                 }
                 else if (dateSelected && !pointSelected)
@@ -224,22 +295,27 @@ namespace SaveGameEditor
         {
             comboBoxPoint.Items.Clear();
             Episode selectedEpisode = 0;
-            switch(comboBoxHeaderEp.SelectedIndex)
+            switch(comboBoxHeaderEp.SelectedItem.ToString()[8])
             {
-                case 0:
+                case '1':
                     selectedEpisode = Episode.First;
                     break;
-                case 1:
+                case '2':
                     selectedEpisode = Episode.Second;
                     break;
-                case 2:
+                case '3':
                     selectedEpisode = Episode.Third;
                     break;
+                case 'i':
+                    selectedEpisode = Episode.Bonus;
+                    break;
             }
+
             foreach (var checkpoint in Consts.CheckPointDescriptorCollection.GetCheckPointDescriptors(selectedEpisode))
             {
                 comboBoxPoint.Items.Add(checkpoint.Name);
-                if (checkpoint.Code == m_GameSave.Data.checkpoints.Last.pointIdentifier.Value)
+                if ((selectedEpisode != Episode.Bonus && checkpoint.Code == m_GameSave.MainData.currentCheckpoint.stateCheckpoint.pointIdentifier.Value) ||
+                    (selectedEpisode == Episode.Bonus && checkpoint.Code == m_GameSave.FarewellData.checkpoints.Last.pointIdentifier.Value))
                 {
                     break;
                 }
@@ -247,6 +323,19 @@ namespace SaveGameEditor
             autoChange = true;
             comboBoxPoint.SelectedIndex = comboBoxPoint.Items.Count - 1;
             autoChange = false;
+
+            if ((selectedEpisode != Episode.Bonus && m_GameSave.IsMainAtMidLevel) ||
+                (selectedEpisode == Episode.Bonus && m_GameSave.IsFarewellAtMidLevel))
+            {
+                labelPointType.Text = "Type: Mid-level checkpoint";
+                labelPointType.ForeColor = Color.Red;
+            }
+            else
+            {
+                labelPointType.Text = "Type: Normal checkpoint";
+                labelPointType.ForeColor = Color.Green;
+            }
+            labelPointType.Visible = true;
         }
 
         private void buttonLoadDLL_Click(object sender, EventArgs e)

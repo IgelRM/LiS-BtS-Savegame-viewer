@@ -19,7 +19,8 @@
     public enum VariableScope
     {
         Global,
-        CurrentCheckpoint,
+        CurrentMainCheckpoint,
+        CurrentFarewellCheckpoint,
         LastCheckpoint,
         RegularCheckpoint
     }

@@ -70,6 +70,15 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You opened the Farewell save file. The functionality of the program will be limited. For full functionality, please open the main save instead..
+        /// </summary>
+        public static string BonusSaveOpened {
+            get {
+                return ResourceManager.GetString("BonusSaveOpened", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save file is empty or corrupt! Please specify a different one..
         /// </summary>
         public static string CorruptSaveMessage {
@@ -122,6 +131,29 @@ namespace SaveGameEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 1bcda8ecf8544e8fbce4186aa12886b0
+        ///2f878cab63b44da4b71ea7fa4ecefd96
+        ///35275e5b04674178800a7df79bf25d98
+        ///627b81530d7e40efa57d955075e1420c
+        ///7ad914dca400434b90f0d622f585103f
+        ///bc724329929f4fdc8a217c337a6838f7
+        ///cd5e57aa26824abcb1363d80f49b234b
+        ///cdda15ec5774452c83ccac7cac81f611
+        ///cdfcfbd7a5c442a59fd6a232e53ece65
+        ///journal_foundmap
+        ///Journal_SeenMap
+        ///Show_Postere1/poster/posterplaceholder_Attic
+        ///Show_Postere1/poster/posterplaceholder_Backyard
+        ///Show_Postere1/poster/posterplaceholder_Downstairs
+        ///Show_Postere1/poster/post [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string FlagList_farewell {
+            get {
+                return ResourceManager.GetString("FlagList_farewell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BTTUTORIAL_kBedtime
         ///BTTUTORIAL_kBedtimeChoices
         ///BTTUTORIAL_kCute
@@ -145,9 +177,28 @@ namespace SaveGameEditor.Properties {
         ///Seen_BioSera Gearhardt
         ///Seen_Bio [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string FlagList {
+        public static string FlagList_main {
             get {
-                return ResourceManager.GetString("FlagList", resourceCulture);
+                return ResourceManager.GetString("FlagList_main", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to E4_S01_MIRRORPHOTO
+        ///E4_S02B_AMULETPHOTO
+        ///E4_S03A_PIRATEPHOTO
+        ///E4_S04_TOOKBASEBALLCAPPHOTO
+        ///E4_S04_TOOKPHOTO
+        ///Journal_LastMapLoc
+        ///f__progress
+        ///i32_Thints
+        ///i32_Tnpcs
+        ///i32_playthrough3
+        ///i32_playthrough4.
+        /// </summary>
+        public static string FloatList_farewell {
+            get {
+                return ResourceManager.GetString("FloatList_farewell", resourceCulture);
             }
         }
         
@@ -170,9 +221,9 @@ namespace SaveGameEditor.Properties {
         ///BurnerSMSOrder_e3_s05_damon_15
         ///BurnerSMSOrder_e3_s05_dam [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string FloatList {
+        public static string FloatList_main {
             get {
-                return ResourceManager.GetString("FloatList", resourceCulture);
+                return ResourceManager.GetString("FloatList_main", resourceCulture);
             }
         }
         
@@ -242,6 +293,7 @@ namespace SaveGameEditor.Properties {
         ///
         ///{0}
         ///{1}
+        ///{2}
         ///
         ///Are you sure you want to continue?.
         /// </summary>
