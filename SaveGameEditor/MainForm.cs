@@ -44,37 +44,64 @@ namespace SaveGameEditor
             ValidatePaths();
         }
 
-        bool resizeHelpShown = false;
+        bool resizeHelpShown = false, bonusWarningShown = false;
         private void buttonShowContent_Click(object sender, EventArgs e)
         {
             DeckNineXorEncoder.ReadKeyFromFile(PathHelper.GetCSharpAssemblyPath(textBoxLisPath.Text));
             _initialData.ReadFromFile(PathHelper.GetInitialDataFilePath(textBoxLisPath.Text));
             _gameSave = new GameSave(_initialData);
-            _gameSave.ReadSaveFromFile(textBoxSavePath.Text);
+            _gameSave.ReadMainSaveFromFile(textBoxSavePath.Text);
 #if DEBUG
             if (Form.ModifierKeys == Keys.Control)
             {
-                File.WriteAllText(textBoxSavePath.Text + @".txt", _gameSave.RawSave);
+                if (!_gameSave.MainSaveIsEmpty)
+                {
+                    File.WriteAllText(textBoxSavePath.Text + @".txt", _gameSave.RawMainSave);
+                }
                 File.WriteAllText(textBoxSavePath.Text + @"-initialdata.txt", _initialData.Raw);
                 if (_gameSave.Header != null)
                 {
                     File.WriteAllText(textBoxSavePath.Text + @"-header.txt", _gameSave.RawHeader);
                 }
+                if (!_gameSave.FarewellSaveIsEmpty)
+                {
+                    File.WriteAllText(textBoxSavePath.Text + @"-bonus.txt", _gameSave.RawFarewellSave);
+                }
             }
 #endif
-            if (!_gameSave.SaveIsEmpty) //handles the "Just Started" state.
+            if (!_gameSave.MainSaveIsEmpty || !_gameSave.FarewellSaveIsEmpty) //handles the "Just Started" state.
             {
-                UpdateEpsiodeBoxes();
+                rbMain.Enabled = !_gameSave.MainSaveIsEmpty;
+                rbBonus.Enabled = !_gameSave.FarewellSaveIsEmpty;
+
+                if (rbMain.Enabled) rbMain.Checked = true;
+                else if (rbBonus.Enabled) rbBonus.Checked = true;
+
+                UpdateEpisodeBoxes();
                 UpdateFlagGrid();
                 UpdateFloatGrid();
                 UpdateItemGrid();
                 UpdateDataGrid();
                 label4.Visible = false; //hide save file warning
-                buttonExport.Enabled = true; //allow exporting
-                buttonExtras.Enabled = true;
-                checkBoxEditMode.Enabled = true;
                 _settingManager.Settings.GamePath = textBoxLisPath.Text;
-                _settingManager.Settings.SavePath = textBoxSavePath.Text;
+
+                if (!_gameSave.MainSaveIsEmpty || _gameSave.MainSaveHasFarewellData)
+                {
+                    buttonExport.Enabled = true;
+                    buttonExtras.Enabled = true;
+                    checkBoxEditMode.Enabled = true;
+                    _settingManager.Settings.SavePath = textBoxSavePath.Text;
+                }
+                else
+                {
+                    if (!bonusWarningShown)
+                    {
+                        MessageBox.Show(Resources.BonusSaveOpened, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        bonusWarningShown = true;
+                    }
+                    buttonExport.Enabled = true;
+                    buttonExtras.Enabled = true;
+                }
 
                 if (!resizeHelpShown)
                 {
@@ -96,44 +123,49 @@ namespace SaveGameEditor
         }
 
         // only enable boxes for episodes the player has already finished or is currently playing
-        private void UpdateEpsiodeBoxes()
+        private void UpdateEpisodeBoxes()
         {
-            // E1
-            if(_gameSave.PlayedEpisodes["E1"])
+            if (rbMain.Checked)
             {
-                checkBoxE1.Enabled = true;
+
+                // E1
+                if (_gameSave.PlayedEpisodes["E1"])
+                {
+                    checkBoxE1.Enabled = true;
+                }
+                else
+                {
+                    checkBoxE1.Enabled = false;
+                }
+                // E2
+                if (_gameSave.PlayedEpisodes["E2"])
+                {
+                    checkBoxE2.Enabled = true;
+                }
+                else
+                {
+                    checkBoxE2.Enabled = false;
+                }
+                // E3
+                if (_gameSave.PlayedEpisodes["E3"])
+                {
+                    checkBoxE3.Enabled = true;
+                }
+                else
+                {
+                    checkBoxE3.Enabled = false;
+                }
             }
             else
             {
-                checkBoxE1.Enabled = false; 
-            }
-            // E2
-            if (_gameSave.PlayedEpisodes["E2"])
-            {
-                checkBoxE2.Enabled = true;
-            }
-            else
-            {
+                checkBoxE1.Enabled = false;
+                checkBoxE1.Checked = false;
                 checkBoxE2.Enabled = false;
-            }
-            // E3
-            if (_gameSave.PlayedEpisodes["E3"])
-            {
-                checkBoxE3.Enabled = true;
-            }
-            else
-            {
+                checkBoxE2.Checked = false;
                 checkBoxE3.Enabled = false;
+                checkBoxE3.Checked = false;
             }
-            // E4
-            if (_gameSave.PlayedEpisodes["E4"])
-            {
-                checkBoxE4.Enabled = true;
-            }
-            else
-            {
-                checkBoxE4.Enabled = false;
-            }
+
         }
 
         int visible_row = 2, visible_column = 1;
@@ -175,7 +207,7 @@ namespace SaveGameEditor
             }
 
             dataGridView1.Columns.Clear();
-            DataTable table = BuildDataTable();
+            DataTable table = BuildMainDataTable();
             dataGridView1.DataSource = table.DefaultView;
             dataGridView1.Columns["Key"].Frozen = true;
             dataGridView1.Columns["Key"].ReadOnly = true;
@@ -183,15 +215,15 @@ namespace SaveGameEditor
             dataGridView1.Rows[1].Frozen = true;
             dataGridView1.Rows[0].ReadOnly = true;
             dataGridView1.Rows[1].ReadOnly = true;
-            dataGridView1.Columns[2].HeaderText = "CurrentCheckpoint";
+            int current = rbBonus.Checked ? 1 : 2;
+            dataGridView1.Columns[current].HeaderText = "CurrentCheckpoint";
 
-
-            dataGridView1.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
-                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[3].Value.ToString())?.Name 
-                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[2].Value.ToString())?.Name;
-            for (int i = 3; i < dataGridView1.Rows[0].Cells.Count; i++)
+            dataGridView1.Rows[0].Cells[current].ToolTipText = (rbBonus.Checked && _gameSave.IsFarewellAtMidLevel) || (rbMain.Checked && _gameSave.IsMainAtMidLevel)
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridView1.Rows[0].Cells[current+1].Value.ToString())?.Name 
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridView1.Rows[0].Cells[current].Value.ToString())?.Name;
+            for (int i = current+1; i < dataGridView1.Rows[0].Cells.Count; i++)
             {
-                dataGridView1.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridView1.Rows[0].Cells[i].Value.ToString())?.Name;
+                dataGridView1.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridView1.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             if (editModeActive)
@@ -261,21 +293,22 @@ namespace SaveGameEditor
             }
 
             dataGridViewFloats.Columns.Clear();
-            DataTable table = BuildFloatTable();
+            DataTable table = BuildMainFloatTable();
             dataGridViewFloats.DataSource = table.DefaultView;
             dataGridViewFloats.Columns["Key"].Frozen = true;
             dataGridViewFloats.Columns["Key"].ReadOnly = true;
             dataGridViewFloats.Rows[0].Frozen = true;
             dataGridViewFloats.Rows[0].ReadOnly = true;
-            dataGridViewFloats.Columns[2].HeaderText = "CurrentCheckpoint";
+            int current = rbBonus.Checked ? 1 : 2;
+            dataGridViewFloats.Columns[current].HeaderText = "CurrentCheckpoint";
 
 
-            dataGridViewFloats.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
-                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[3].Value.ToString())?.Name
-                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[2].Value.ToString())?.Name;
-            for (int i = 3; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
+            dataGridViewFloats.Rows[0].Cells[current].ToolTipText = (rbBonus.Checked && _gameSave.IsFarewellAtMidLevel) || (rbMain.Checked && _gameSave.IsMainAtMidLevel)
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFloats.Rows[0].Cells[current + 1].Value.ToString())?.Name
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFloats.Rows[0].Cells[current].Value.ToString())?.Name;
+            for (int i = current+1; i < dataGridViewFloats.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFloats.Rows[0].Cells[i].Value.ToString())?.Name;
+                dataGridViewFloats.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFloats.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             if (editModeActive)
@@ -342,20 +375,21 @@ namespace SaveGameEditor
                 visible_column = dataGridViewFlags.FirstDisplayedScrollingColumnIndex;
             }
             dataGridViewFlags.Columns.Clear();
-            DataTable table = BuildFlagTable();
+            DataTable table = BuildMainFlagTable();
             dataGridViewFlags.DataSource = table.DefaultView;
             dataGridViewFlags.Columns["Key"].Frozen = true;
             dataGridViewFlags.Columns["Key"].ReadOnly = true;
             dataGridViewFlags.Rows[0].Frozen = true;
             dataGridViewFlags.Rows[0].ReadOnly = true;
-            dataGridViewFlags.Columns[2].HeaderText = "CurrentCheckpoint";
+            int current = rbBonus.Checked ? 1 : 2;
+            dataGridViewFlags.Columns[current].HeaderText = "CurrentCheckpoint";
 
-            dataGridViewFlags.Rows[0].Cells[2].ToolTipText = _gameSave.IsAtMidLevel 
-                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[3].Value.ToString())?.Name 
-                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[2].Value.ToString())?.Name;
-            for (int i = 3; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
+            dataGridViewFlags.Rows[0].Cells[current].ToolTipText = (rbBonus.Checked && _gameSave.IsFarewellAtMidLevel) || (rbMain.Checked && _gameSave.IsMainAtMidLevel)
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFlags.Rows[0].Cells[current + 1].Value.ToString())?.Name
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFlags.Rows[0].Cells[current].Value.ToString())?.Name;
+            for (int i = current+1; i < dataGridViewFlags.Rows[0].Cells.Count; i++)
             {
-                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewFlags.Rows[0].Cells[i].Value.ToString())?.Name;
+                dataGridViewFlags.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewFlags.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             if (editModeActive)
@@ -431,7 +465,7 @@ namespace SaveGameEditor
                 visible_column = dataGridViewItems.FirstDisplayedScrollingColumnIndex;
             }
             dataGridViewItems.Columns.Clear();
-            DataTable table = BuildItemTable();
+            DataTable table = BuildMainItemTable();
             dataGridViewItems.DataSource = table.DefaultView;
             dataGridViewItems.Columns["Key"].Frozen = true;
             dataGridViewItems.Columns["Key"].ReadOnly = true;
@@ -439,12 +473,12 @@ namespace SaveGameEditor
             dataGridViewItems.Rows[0].ReadOnly = true;
             dataGridViewItems.Columns[1].HeaderText = "CurrentCheckpoint";
 
-            dataGridViewItems.Rows[0].Cells[1].ToolTipText = _gameSave.IsAtMidLevel
-                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[2].Value.ToString())?.Name
-                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[1].Value.ToString())?.Name;
+            dataGridViewItems.Rows[0].Cells[1].ToolTipText = (rbBonus.Checked && _gameSave.IsFarewellAtMidLevel) || (rbMain.Checked && _gameSave.IsMainAtMidLevel)
+                ? "Middle of " + Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewItems.Rows[0].Cells[2].Value.ToString())?.Name
+                : Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewItems.Rows[0].Cells[1].Value.ToString())?.Name;
             for (int i = 2; i < dataGridViewItems.Rows[0].Cells.Count; i++)
             {
-                dataGridViewItems.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(dataGridViewItems.Rows[0].Cells[i].Value.ToString())?.Name;
+                dataGridViewItems.Rows[0].Cells[i].ToolTipText = Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(dataGridViewItems.Rows[0].Cells[i].Value.ToString())?.Name;
             }
 
             if (editModeActive)
@@ -484,12 +518,18 @@ namespace SaveGameEditor
             dataGridViewItems.Columns[0].Width = keyColWidth;
         }
 
-        private DataTable BuildDataTable()
+        #region Main table-building functions
+        private DataTable BuildMainDataTable()
         {
+            if (rbBonus.Checked)
+            {
+                return BuildFarewellDataTable();
+            }
+
             DataTable t = new DataTable();
             t.Columns.Add("Key");
             bool first = true;
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
                 if (first)
                 {
@@ -505,16 +545,16 @@ namespace SaveGameEditor
             // current point
             object[] row = new object[t.Columns.Count];
             row[0] = "PointIdentifier";
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i] = _gameSave.Checkpoints[i].PointIdentifier;
+                row[_gameSave.MainCheckpoints.Count - i] = _gameSave.MainCheckpoints[i].PointIdentifier;
             }
             t.Rows.Add(row);
             // current objective
             row[0] = "Objective";
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i] = _gameSave.Checkpoints[i].Objective;
+                row[_gameSave.MainCheckpoints.Count - i] = _gameSave.MainCheckpoints[i].Objective;
             }
             t.Rows.Add(row);
 
@@ -534,24 +574,24 @@ namespace SaveGameEditor
                 {
                     continue;
                 }
-                if (!checkBoxE4.Checked && varName.StartsWith("E4_") && editModeActive == false)
+                if (varName.StartsWith("E4_"))
                 {
                     continue;
                 }
 
                 row[0] = varType.Value.Name;
-                for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+                for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
                 {
-                    var checkpoint = _gameSave.Checkpoints[i];
+                    var checkpoint = _gameSave.MainCheckpoints[i];
                     VariableState state;
                     bool found = checkpoint.Variables.TryGetValue(varType.Value.Name, out state);
                     if (found)
                     {
-                        row[_gameSave.Checkpoints.Count - i] = state.Value;
+                        row[_gameSave.MainCheckpoints.Count - i] = state.Value;
                     }
                     else
                     {
-                        row[_gameSave.Checkpoints.Count - i] = null;
+                        row[_gameSave.MainCheckpoints.Count - i] = null;
                     }
                 }
                 t.Rows.Add(row);
@@ -560,12 +600,17 @@ namespace SaveGameEditor
             return t;
         }
 
-        private DataTable BuildFloatTable()
+        private DataTable BuildMainFloatTable()
         {
+            if (rbBonus.Checked)
+            {
+                return BuildFarewellFloatTable();
+            }
+
             DataTable t = new DataTable();
             t.Columns.Add("Key");
             bool first = true;
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
                 if (first)
                 {
@@ -581,28 +626,28 @@ namespace SaveGameEditor
             // current point
             object[] row = new object[t.Columns.Count];
             row[0] = "PointIdentifier";
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i] = _gameSave.Checkpoints[i].PointIdentifier;
+                row[_gameSave.MainCheckpoints.Count - i] = _gameSave.MainCheckpoints[i].PointIdentifier;
             }
             t.Rows.Add(row);
 
             // floats
-            foreach (var flt in Resources.FloatList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var flt in Resources.FloatList_main.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 row[0] = flt;
-                for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+                for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
                 {
-                    var checkpoint = _gameSave.Checkpoints[i];
+                    var checkpoint = _gameSave.MainCheckpoints[i];
                     FloatState state;
                     bool found = checkpoint.Floats.TryGetValue(flt, out state);
                     if (found)
                     {
-                        row[_gameSave.Checkpoints.Count - i] = state.Value;
+                        row[_gameSave.MainCheckpoints.Count - i] = state.Value;
                     }
                     else
                     {
-                        row[_gameSave.Checkpoints.Count - i] = null;
+                        row[_gameSave.MainCheckpoints.Count - i] = null;
                     }
                 }
                 t.Rows.Add(row);
@@ -611,13 +656,18 @@ namespace SaveGameEditor
             return t;
         }
 
-        private DataTable BuildFlagTable()
+        private DataTable BuildMainFlagTable()
         {
+            if (rbBonus.Checked)
+            {
+                return BuildFarewellFlagTable();
+            }
+            
             DataTable t = new DataTable();
             t.Columns.Add("Key");
 
             bool first = true;
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
                 if (first)
                 {
@@ -633,20 +683,20 @@ namespace SaveGameEditor
             // current point
             object[] row = new object[t.Columns.Count];
             row[0] = "PointIdentifier";
-            for (int i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i] = _gameSave.Checkpoints[i].PointIdentifier;
+                row[_gameSave.MainCheckpoints.Count - i] = _gameSave.MainCheckpoints[i].PointIdentifier;
             }
             t.Rows.Add(row);
 
             // flags
-            foreach (var flag in Resources.FlagList.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var flag in Resources.FlagList_main.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 row[0] = flag;
-                for (int i = _gameSave.Checkpoints.Count - 1; i >=0; i--)
+                for (int i = _gameSave.MainCheckpoints.Count - 1; i >=0; i--)
                 {
-                    int rownum = _gameSave.Checkpoints.Count - i;
-                    row[rownum] = _gameSave.Checkpoints[i].Flags.Contains(flag);
+                    int rownum = _gameSave.MainCheckpoints.Count - i;
+                    row[rownum] = _gameSave.MainCheckpoints[i].Flags.Contains(flag);
                 }
                 t.Rows.Add(row);
             }
@@ -654,12 +704,17 @@ namespace SaveGameEditor
             return t;
         }
 
-        private DataTable BuildItemTable()
+        private DataTable BuildMainItemTable()
         {
+            if (rbBonus.Checked)
+            {
+                return BuildFarewellItemTable();
+            }
+
             DataTable t = new DataTable();
             t.Columns.Add("Key");
 
-            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 2; i >= 0; i--)
             {
                 t.Columns.Add("Checkpoint " + (i + 1).ToString());
             }
@@ -667,9 +722,9 @@ namespace SaveGameEditor
             // current point
             object[] row = new object[t.Columns.Count];
             row[0] = "PointIdentifier";
-            for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+            for (int i = _gameSave.MainCheckpoints.Count - 2; i >= 0; i--)
             {
-                row[_gameSave.Checkpoints.Count - i-1] = _gameSave.Checkpoints[i].PointIdentifier;
+                row[_gameSave.MainCheckpoints.Count - i-1] = _gameSave.MainCheckpoints[i].PointIdentifier;
             }
             t.Rows.Add(row);
 
@@ -677,20 +732,24 @@ namespace SaveGameEditor
             foreach (var kvp in _initialData.GetItems().OrderBy((v) => v.Value.Name))
             {
                 string itemName = kvp.Value.Name.ToUpper();
+                if (itemName.StartsWith("E4_"))
+                {
+                    continue;
+                }
 
                 row[0] = kvp.Value.Name;
-                for (int i = _gameSave.Checkpoints.Count - 2; i >= 0; i--)
+                for (int i = _gameSave.MainCheckpoints.Count - 2; i >= 0; i--)
                 {
-                    var checkpoint = _gameSave.Checkpoints[i];
+                    var checkpoint = _gameSave.MainCheckpoints[i];
                     ItemState state;
                     bool found = checkpoint.Items.TryGetValue(kvp.Value.Name, out state);
                     if (found)
                     {
-                        row[_gameSave.Checkpoints.Count - i - 1] = (state.Owner == Consts.ChloeUID);
+                        row[_gameSave.MainCheckpoints.Count - i - 1] = (state.Owner == Consts.Uids.Chloe);
                     }
                     else
                     {
-                        row[_gameSave.Checkpoints.Count - i - 1] = false;
+                        row[_gameSave.MainCheckpoints.Count - i - 1] = false;
                     }
                     
                 }
@@ -699,6 +758,194 @@ namespace SaveGameEditor
 
             return t;
         }
+
+        #endregion
+
+        #region Farewell table-building functions
+
+        private DataTable BuildFarewellDataTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i + 1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                row[_gameSave.FarewellCheckpoints.Count - i] = _gameSave.FarewellCheckpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+            // current objective
+            row[0] = "Objective";
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                row[_gameSave.FarewellCheckpoints.Count - i] = _gameSave.FarewellCheckpoints[i].Objective;
+            }
+            t.Rows.Add(row);
+
+            // variables 
+            foreach (var varType in _initialData.GetVariables().OrderBy((v) => v.Value.Name))
+            {
+                string varName = varType.Value.Name.ToUpper();
+                if (!varName.StartsWith("E4_") && varName != "HINT_PROGRESS")
+                {
+                    continue;
+                }
+
+                row[0] = varType.Value.Name;
+                for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                {
+                    var checkpoint = _gameSave.FarewellCheckpoints[i];
+                    VariableState state;
+                    bool found = checkpoint.Variables.TryGetValue(varType.Value.Name, out state);
+                    if (found)
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = state.Value;
+                    }
+                    else
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = null;
+                    }
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        private DataTable BuildFarewellFlagTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i + 1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                row[_gameSave.FarewellCheckpoints.Count - i] = _gameSave.FarewellCheckpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // flags
+            foreach (var flag in Resources.FlagList_farewell.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                row[0] = flag;
+                for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                {
+                    int rownum = _gameSave.FarewellCheckpoints.Count - i;
+                    row[rownum] = _gameSave.FarewellCheckpoints[i].Flags.Contains(flag);
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        private DataTable BuildFarewellFloatTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i + 1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                row[_gameSave.FarewellCheckpoints.Count - i] = _gameSave.FarewellCheckpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // floats
+            foreach (var flt in Resources.FloatList_farewell.Trim().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                row[0] = flt;
+                for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                {
+                    var checkpoint = _gameSave.FarewellCheckpoints[i];
+                    FloatState state;
+                    bool found = checkpoint.Floats.TryGetValue(flt, out state);
+                    if (found)
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = state.Value;
+                    }
+                    else
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = null;
+                    }
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        private DataTable BuildFarewellItemTable()
+        {
+            DataTable t = new DataTable();
+            t.Columns.Add("Key");
+
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                t.Columns.Add("Checkpoint " + (i + 1).ToString());
+            }
+
+            // current point
+            object[] row = new object[t.Columns.Count];
+            row[0] = "PointIdentifier";
+            for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+            {
+                row[_gameSave.FarewellCheckpoints.Count - i] = _gameSave.FarewellCheckpoints[i].PointIdentifier;
+            }
+            t.Rows.Add(row);
+
+            // items
+            foreach (var kvp in _initialData.GetItems().OrderBy((v) => v.Value.Name))
+            {
+                string itemName = kvp.Value.Name.ToUpper();
+                if (!itemName.StartsWith("E4_"))
+                {
+                    continue;
+                }
+
+                row[0] = kvp.Value.Name;
+                for (int i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                {
+                    var checkpoint = _gameSave.FarewellCheckpoints[i];
+                    ItemState state;
+                    bool found = checkpoint.Items.TryGetValue(kvp.Value.Name, out state);
+                    if (found)
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = (state.Owner == Consts.Uids.Maxine);
+                    }
+                    else
+                    {
+                        row[_gameSave.FarewellCheckpoints.Count - i] = false;
+                    }
+
+                }
+                t.Rows.Add(row);
+            }
+
+            return t;
+        }
+
+        #endregion
 
         private void ValidatePaths()
         {
@@ -794,6 +1041,15 @@ namespace SaveGameEditor
             }
         }
 
+        private void EpisodeRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateEpisodeBoxes();
+            UpdateDataGrid();
+            UpdateFlagGrid();
+            UpdateFloatGrid();
+            UpdateItemGrid();
+        }
+
         private void textBoxSavePath_TextChanged(object sender, EventArgs e)
         {
             ValidatePaths();
@@ -809,27 +1065,49 @@ namespace SaveGameEditor
         {
             using (var file = new StreamWriter(PathHelper.ExportObjectivesFileName))
             {
-                for (var i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+                if (!_gameSave.MainSaveIsEmpty)
                 {
-                    file.WriteLine("\"{0}\"", _gameSave.Checkpoints[i].Objective);
+                    for (var i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
+                    {
+                        file.WriteLine("\"{0}\"", _gameSave.MainCheckpoints[i].Objective);
+                    }
+                }
+                if (!_gameSave.FarewellSaveIsEmpty)
+                {
+                    for (var i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                    {
+                        file.WriteLine("\"{0}\"", _gameSave.FarewellCheckpoints[i].Objective);
+                    }
                 }
             }
 
             using (var file = new StreamWriter(PathHelper.ExportCheckpointsFileName))
             {
-                for (var i = _gameSave.Checkpoints.Count - 1; i >= 0; i--)
+                if (!_gameSave.MainSaveIsEmpty)
                 {
-                    file.WriteLine("\"{0}\"", _gameSave.Checkpoints[i].PointIdentifier);
+                    for (var i = _gameSave.MainCheckpoints.Count - 1; i >= 0; i--)
+                    {
+                        file.WriteLine("\"{0}\"", _gameSave.MainCheckpoints[i].PointIdentifier);
+                    }
+                }
+                if (!_gameSave.FarewellSaveIsEmpty)
+                {
+                    for (var i = _gameSave.FarewellCheckpoints.Count - 1; i >= 0; i--)
+                    {
+                        file.WriteLine("\"{0}\"", _gameSave.FarewellCheckpoints[i].PointIdentifier);
+                    }
                 }
             }
 
             using (var file = new StreamWriter(PathHelper.ExportVariablesFileName))
             {
+                var mainPoint = _gameSave.MainSaveIsEmpty ? null : _gameSave.MainCheckpoints[_gameSave.MainCheckpoints.Count-2];
+                var  farewellPoint = _gameSave.FarewellSaveIsEmpty ? null : _gameSave.FarewellCheckpoints.Last();
                 foreach (var entry in _initialData.GetVariables().OrderBy(v => v.Value.Name))
                 {
-                    var checkpoint = _gameSave.Checkpoints[_gameSave.Checkpoints.Count - 1];
-                    VariableState state;
-                    if (checkpoint.Variables.TryGetValue(entry.Value.Name, out state))
+                    VariableState state = null;
+                    if ((mainPoint != null && mainPoint.Variables.TryGetValue(entry.Value.Name, out state)) ||
+                        (farewellPoint != null && farewellPoint.Variables.TryGetValue(entry.Value.Name, out state)))
                     {
                         file.WriteLine("\"{0}\", {1}", entry.Value.Name.ToUpper(), state.Value);
                     }
@@ -842,22 +1120,42 @@ namespace SaveGameEditor
 
             using (var file = new StreamWriter(PathHelper.ExportFlagsFileName))
             {
-                foreach (var flag in _gameSave.Data.flags)
+                if (!_gameSave.MainSaveIsEmpty)
                 {
-                    file.WriteLine("\"{0}\"", flag.Value);
+                    foreach (var flag in _gameSave.MainCheckpoints[_gameSave.MainCheckpoints.Count - 2].Flags)
+                    {
+                        file.WriteLine("\"{0}\"", flag);
+                    }
+                }
+                if (!_gameSave.FarewellSaveIsEmpty)
+                {
+                    foreach (var flag in _gameSave.FarewellData.checkpoints.Last.flags)
+                    {
+                        file.WriteLine("\"{0}\"", flag.Value);
+                    }
                 }
             }
 
             using (var file = new StreamWriter(PathHelper.ExportFloatsFileName))
             {
-                foreach (var floatValue in _gameSave.Data.floatValuesDict)
+                if (!_gameSave.MainSaveIsEmpty)
                 {
-                    if (floatValue.Name == "$type")
+                    foreach (var floatValue in _gameSave.MainCheckpoints[_gameSave.MainCheckpoints.Count - 2].Floats)
                     {
-                        continue;
+                        file.WriteLine("\"{0}\", {1}", floatValue.Key, floatValue.Value.Value);
                     }
+                }
+                if (!_gameSave.FarewellSaveIsEmpty)
+                {
+                    foreach (var floatValue in _gameSave.FarewellData.checkpoints.Last.floatValuesDict)
+                    {
+                        if (floatValue.Name == "$type")
+                        {
+                            continue;
+                        }
 
-                    file.WriteLine("\"{0}\", {1}", floatValue.Name, floatValue.Value);
+                        file.WriteLine("\"{0}\", {1}", floatValue.Name, floatValue.Value);
+                    }
                 }
             }
 
@@ -1064,33 +1362,40 @@ namespace SaveGameEditor
 
         private void buttonSaveEdits_Click(object sender, EventArgs e)
         {
-            _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.Data);
-            if (_gameSave.SaveChangesSaved)
+            if (!_gameSave.MainSaveChangesSaved)
+            {
+                _gameSave.WriteSaveToFile(textBoxSavePath.Text, _gameSave.MainData, SaveType.Regular);
+            }
+            if (!_gameSave.FarewellSaveChangesSaved)
+            {
+                _gameSave.WriteSaveToFile(textBoxSavePath.Text.Replace("SLOT_", "Bonus"), _gameSave.FarewellData, SaveType.Regular);
+            }
+           
+            if (_gameSave.MainSaveChangesSaved && _gameSave.FarewellSaveChangesSaved)
             {
                 MessageBox.Show(Resources.EditsSuccessfullySavedMessage, "Savegame Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            
-            label4.Visible = false;
+                label4.Visible = false;
 
-            //Reset the colors of all cells in all DataGrids
-            foreach (TabPage tab in tabControl1.Controls)
-            {
-                DataGridView grid = (DataGridView)tab.Controls[0];
-                for (int i = 0; i < grid.RowCount; i++)
+                //Reset the colors of all cells in all DataGrids
+                foreach (TabPage tab in tabControl1.Controls)
                 {
-                    for (int j = 0; j < grid.ColumnCount; j++)
+                    DataGridView grid = (DataGridView)tab.Controls[0];
+                    for (int i = 0; i < grid.RowCount; i++)
                     {
-                        if (grid.Rows[i].Cells[j].ReadOnly)
+                        for (int j = 0; j < grid.ColumnCount; j++)
                         {
-                            grid.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
-                        }
-                        else
-                        {
-                            grid.Rows[i].Cells[j].Style.BackColor = Color.White;
+                            if (grid.Rows[i].Cells[j].ReadOnly)
+                            {
+                                grid.Rows[i].Cells[j].Style.BackColor = Color.LightGray;
+                            }
+                            else
+                            {
+                                grid.Rows[i].Cells[j].Style.BackColor = Color.White;
+                            }
                         }
                     }
                 }
-            }
+            }  
         }
 
         public int? origCellValue, newCellValue;
@@ -1114,7 +1419,7 @@ namespace SaveGameEditor
             }
             else
             {
-                if (!_gameSave.SaveChangesSaved)
+                if (!_gameSave.MainSaveChangesSaved || !_gameSave.FarewellSaveChangesSaved)
                 {
                     DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage.Insert(34, " Edit Mode"), 
                         "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -1144,10 +1449,11 @@ namespace SaveGameEditor
             buttonSaveSelector.Enabled = false;
             textBoxLisPath.Enabled = false;
             textBoxSavePath.Enabled = false;
+            rbMain.Enabled = false;
             checkBoxE1.Enabled = false;
             checkBoxE2.Enabled = false;
             checkBoxE3.Enabled = false;
-            checkBoxE4.Enabled = false;
+            rbBonus.Enabled = false;
             buttonSaveEdits.Enabled = true;
             buttonExtras.Enabled = false;
             UpdateDataGrid();
@@ -1158,7 +1464,8 @@ namespace SaveGameEditor
         private void disableEditMode()
         {
             editModeActive = false;
-            _gameSave.SaveChangesSaved = true;
+            _gameSave.MainSaveChangesSaved = true;
+            _gameSave.FarewellSaveChangesSaved = true;
             dataGridView1.ReadOnly = true;
             dataGridViewFlags.ReadOnly = true;
             dataGridViewFloats.ReadOnly = true;
@@ -1169,15 +1476,19 @@ namespace SaveGameEditor
             buttonSaveSelector.Enabled = true;
             textBoxLisPath.Enabled = true;
             textBoxSavePath.Enabled = true;
-            UpdateEpsiodeBoxes();
-            if (checkBoxE1.Enabled) checkBoxE1.Checked = true;
-            if (checkBoxE2.Enabled) checkBoxE2.Checked = true;
-            if (checkBoxE3.Enabled) checkBoxE3.Checked = true;
-            if (checkBoxE4.Enabled) checkBoxE4.Checked = true;
+            UpdateEpisodeBoxes();
+            rbMain.Enabled = !_gameSave.MainSaveIsEmpty;
+            rbBonus.Enabled = !_gameSave.FarewellSaveIsEmpty;
+            if (rbMain.Checked)
+            {
+                if (checkBoxE1.Enabled) checkBoxE1.Checked = true;
+                if (checkBoxE2.Enabled) checkBoxE2.Checked = true;
+                if (checkBoxE3.Enabled) checkBoxE3.Checked = true;
+            }
             buttonSaveEdits.Enabled = false;
             buttonExtras.Enabled = true;
             label4.Visible = false;
-            _gameSave.ReadSaveFromFile(textBoxSavePath.Text);
+            _gameSave.ReadMainSaveFromFile(textBoxSavePath.Text);
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
@@ -1194,21 +1505,41 @@ namespace SaveGameEditor
             {
                 origCellValue = int.Parse(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
             }
-            switch (e.ColumnIndex)
+
+            if (rbMain.Checked)
             {
-                case 1:
-                    _editingVariableScope = VariableScope.Global;
-                    break;
-                case 2:
-                    _editingVariableScope = VariableScope.CurrentCheckpoint;
-                    break;
-                case 3:
-                    _editingVariableScope = VariableScope.LastCheckpoint;
-                    break;
-                default:
-                    _editingVariableScope = VariableScope.RegularCheckpoint;
-                    break;
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.Global;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.CurrentMainCheckpoint;
+                        break;
+                    case 3:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
             }
+            else if (rbBonus.Checked)
+            {
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.CurrentFarewellCheckpoint;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
+            }
+            
         }
 
         private void dataGridViewFloats_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1221,104 +1552,122 @@ namespace SaveGameEditor
             {
                 origFloatValue = float.Parse(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString().Replace('.', ','));
             }
-            switch (e.ColumnIndex)
-            {
-                case 1:
-                    _editingVariableScope = VariableScope.Global;
-                    break;
-                case 2:
-                    _editingVariableScope = VariableScope.CurrentCheckpoint;
-                    break;
-                case 3:
-                    _editingVariableScope = VariableScope.LastCheckpoint;
-                    break;
-                default:
-                    _editingVariableScope = VariableScope.RegularCheckpoint;
-                    break;
-            }
-        }
 
-        private void pictureBoxHelp_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show(Resources.EditModeHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
+            if (rbMain.Checked)
+            {
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.Global;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.CurrentMainCheckpoint;
+                        break;
+                    case 3:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
+            }
+            else if (rbBonus.Checked)
+            {
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.CurrentFarewellCheckpoint;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
+            }
         }
 
         private void dataGridViewFlags_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
             origFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-            switch (e.ColumnIndex)
-            {
-                case 1:
-                    _editingVariableScope = VariableScope.Global;
-                    break;
-                case 2:
-                    _editingVariableScope = VariableScope.CurrentCheckpoint;
-                    break;
-                case 3:
-                    _editingVariableScope = VariableScope.LastCheckpoint;
-                    break;
-                default:
-                    _editingVariableScope = VariableScope.RegularCheckpoint;
-                    break;
-            }
-        }
 
-        private void dataGridViewFlags_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-        {
-            newFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-
-            if (newFlagState != origFlagState)
+            if (rbMain.Checked)
             {
-                point_id = dataGridViewFlags.Rows[0].Cells[e.ColumnIndex].Value.ToString();
-                var_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
-                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (_gameSave.FindAndUpdateFlagValue(point_id, var_name, origFlagState, _editingVariableScope))
+                switch (e.ColumnIndex)
                 {
-                    dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
-                    label4.Text = "Press 'Save' to write changes to the save file.";
-                    label4.Visible = true;
+                    case 1:
+                        _editingVariableScope = VariableScope.Global;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.CurrentMainCheckpoint;
+                        break;
+                    case 3:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
                 }
-                else dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+            else if (rbBonus.Checked)
+            {
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.CurrentFarewellCheckpoint;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
             }
         }
 
         private void dataGridViewItems_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
             origFlagState = Convert.ToBoolean(dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-            switch (e.ColumnIndex)
-            {
-                case 1:
-                    _editingVariableScope = VariableScope.CurrentCheckpoint;
-                    break;
-                case 2:
-                    _editingVariableScope = VariableScope.LastCheckpoint;
-                    break;
-                default:
-                    _editingVariableScope = VariableScope.RegularCheckpoint;
-                    break;
-            }
-        }
 
-        private void dataGridViewItems_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-        {
-            newFlagState = Convert.ToBoolean(dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
-
-            if (newFlagState != origFlagState)
+            if (rbMain.Checked)
             {
-                point_id = dataGridViewItems.Rows[0].Cells[e.ColumnIndex].Value.ToString();
-                var_name = dataGridViewItems.Rows[e.RowIndex].Cells[0].Value.ToString();
-                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (_gameSave.FindAndUpdateItemValue(point_id, var_name, origFlagState, _editingVariableScope))
+                switch (e.ColumnIndex)
                 {
-                    dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
-                    label4.Text = "Press 'Save' to write changes to the save file.";
-                    label4.Visible = true;
+                    case 1:
+                        _editingVariableScope = VariableScope.Global;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.CurrentMainCheckpoint;
+                        break;
+                    case 3:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
                 }
-                else dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+            else if (rbBonus.Checked)
+            {
+                switch (e.ColumnIndex)
+                {
+                    case 1:
+                        _editingVariableScope = VariableScope.CurrentFarewellCheckpoint;
+                        break;
+                    case 2:
+                        _editingVariableScope = VariableScope.LastCheckpoint;
+                        break;
+                    default:
+                        _editingVariableScope = VariableScope.RegularCheckpoint;
+                        break;
+                }
             }
         }
+
+
+        #region Batch editing
 
         bool firstEdit = true;
         private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
@@ -1365,6 +1714,26 @@ namespace SaveGameEditor
             {
                 fillCellsWithValue(dataGridViewItems.SelectedCells, false);
             }
+        }
+
+        private void fillCellsWithValue(DataGridViewSelectedCellCollection selectedCells, object value)
+        {
+            foreach (DataGridViewCell cell in selectedCells)
+            {
+                if (!cell.ReadOnly)
+                {
+                    cell.DataGridView.CurrentCell = cell;
+                    cell.DataGridView.BeginEdit(false);
+                    cell.Value = value;
+                    cell.DataGridView.EndEdit();
+                }
+            }
+        }
+        #endregion
+
+        private void pictureBoxHelp_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(Resources.EditModeHelpIconMessage, "Help", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void buttonSaveSelector_Click(object sender, EventArgs e)
@@ -1423,7 +1792,8 @@ namespace SaveGameEditor
                 var_name = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newCellValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (_gameSave.FindAndUpdateVarValue(point_id, var_name, origCellValue, newCellValue, _editingVariableScope))
+                if ( (rbMain.Checked && _gameSave.FindAndUpdateMainVarValue(point_id, var_name, origCellValue, newCellValue, _editingVariableScope)) ||
+                     (rbBonus.Checked && _gameSave.FindAndUpdateFarewellVarValue(point_id, var_name, origCellValue, newCellValue, _editingVariableScope)) )
                 {
                     dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -1433,35 +1803,25 @@ namespace SaveGameEditor
             }
         }
 
-        private void fillCellsWithValue (DataGridViewSelectedCellCollection selectedCells, object value)
+        private void dataGridViewFlags_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            foreach (DataGridViewCell cell in selectedCells)
-            {
-                if (!cell.ReadOnly)
-                {
-                    cell.DataGridView.CurrentCell = cell;
-                    cell.DataGridView.BeginEdit(false);
-                    cell.Value = value;
-                    cell.DataGridView.EndEdit();
-                }
-            }
-        }
+            newFlagState = Convert.ToBoolean(dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
 
-        FindForm findForm;
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (dataGridView1.DataSource != null && ModifierKeys == Keys.Control && (int)e.KeyChar == 6)
+            if (newFlagState != origFlagState)
             {
-                if (findForm == null)
+                point_id = dataGridViewFlags.Rows[0].Cells[e.ColumnIndex].Value.ToString();
+                var_name = dataGridViewFlags.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if ( (rbMain.Checked && _gameSave.FindAndUpdateMainFlagValue(point_id, var_name, origFlagState, _editingVariableScope)) ||
+                     (rbBonus.Checked && _gameSave.FindAndUpdateFarewellFlagValue(point_id, var_name, origFlagState, _editingVariableScope)) )
                 {
-                    findForm = new FindForm();
-                    findForm.form1 = this;
+                    dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
+                    label4.Text = "Press 'Save' to write changes to the save file.";
+                    label4.Visible = true;
                 }
-                findForm.tab_num = tabControl1.SelectedIndex;
-                findForm.UpdateRadioChoice();
-                findForm.Show(this);
-                ((DataGridView)tabControl1.SelectedTab.Controls[0]).CancelEdit();
-            } 
+                else dataGridViewFlags.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
         }
 
         private void dataGridViewFloats_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -1491,7 +1851,8 @@ namespace SaveGameEditor
                 var_name = dataGridViewFloats.Rows[e.RowIndex].Cells[0].Value.ToString();
                 //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFloatValue.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the variable name is " + var_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                if (_gameSave.FindAndUpdateFloatValue(point_id, var_name, origFloatValue, newFloatValue, _editingVariableScope))
+                if ( (rbMain.Checked && _gameSave.FindAndUpdateMainFloatValue(point_id, var_name, origFloatValue, newFloatValue, _editingVariableScope)) ||
+                     (rbBonus.Checked && _gameSave.FindAndUpdateFarewellFloatValue(point_id, var_name, origFloatValue, newFloatValue, _editingVariableScope)) )
                 {
                     dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
                     label4.Text = "Press 'Save' to write changes to the save file.";
@@ -1501,11 +1862,32 @@ namespace SaveGameEditor
             }
         }
 
+        private void dataGridViewItems_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            newFlagState = Convert.ToBoolean(dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+
+            if (newFlagState != origFlagState)
+            {
+                point_id = dataGridViewItems.Rows[0].Cells[e.ColumnIndex].Value.ToString();
+                var_name = dataGridViewItems.Rows[e.RowIndex].Cells[0].Value.ToString();
+                //MessageBox.Show("Finished Editing of Cell on Column " + e.ColumnIndex.ToString() + " and Row " + e.RowIndex.ToString() + "\n Value of the cell is " + newFlagState.ToString(), "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("The Identifier of edited cell is " + point_id  + "\n and the flag name is " + flag_name, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if ( (rbMain.Checked && _gameSave.FindAndUpdateMainItemValue(point_id, var_name, origFlagState, _editingVariableScope)) ||
+                    (rbBonus.Checked && _gameSave.FindAndUpdateFarewellItemValue(point_id, var_name, origFlagState, _editingVariableScope)))
+                {
+                    dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightGoldenrodYellow;
+                    label4.Text = "Press 'Save' to write changes to the save file.";
+                    label4.Visible = true;
+                }
+                else dataGridViewItems.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = origFlagState;
+            }
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             _settingManager.SaveSettings();
 
-            if (_gameSave != null && !_gameSave.SaveChangesSaved)
+            if (_gameSave != null && !_gameSave.MainSaveChangesSaved)
             {
                 DialogResult answer = MessageBox.Show(Resources.UnsavedEditsWarningMessage, 
                     "Savegame Editor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -1521,7 +1903,36 @@ namespace SaveGameEditor
             else e.Cancel = false;
         }
 
+        #region Search functions
+        FindForm findForm;
+        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (dataGridView1.DataSource != null && ModifierKeys == Keys.Control && (int)e.KeyChar == 6)
+            {
+                if (findForm == null)
+                {
+                    findForm = new FindForm();
+                    findForm.form1 = this;
+                }
+                findForm.tab_num = tabControl1.SelectedIndex;
+                findForm.UpdateRadioChoice();
+                if (findForm.Visible)
+                {
+                    findForm.WindowState = FormWindowState.Normal;
+                    findForm.Activate();
+                }
+                else
+                {
+                    findForm.Show(this);
+                }
+                ((DataGridView)tabControl1.SelectedTab.Controls[0]).CancelEdit();
+            }
+        }
+
         public string find_Starts = "", find_Contains = "", find_Ends = "";
+
+        
+
         public List<DataGridViewCell> find_results = new List<DataGridViewCell>();
 
         public void ResetFindStrings()
@@ -1573,6 +1984,7 @@ namespace SaveGameEditor
             if (res_index == find_results.Count) res_index = 0;
             target_grid.CurrentCell = find_results[res_index];
         }
+        #endregion
     }
 }
 

@@ -169,6 +169,11 @@ namespace SaveGameEditor
             lblStatus.ForeColor = SystemColors.ControlText;
             for (var i = 0; i < _gameSave.EpisodeStates.Count; i++)
             {
+                if (i == (int)Episode.Bonus) //ignore Farewell
+                {
+                    break;
+                }
+
                 if (_gameSave.EpisodeStates[i] == Consts.EpisodeStates.InProgress ||
                     _gameSave.EpisodeStates[i] == Consts.EpisodeStates.Finished)
                 {
@@ -205,11 +210,30 @@ namespace SaveGameEditor
                 _gameSave.Header.currentScene != Consts.GlobalCodes.SaveJustStarted)
             {
                 string cpCode = _gameSave.Header.currentScene.Value.ToUpper();
-                text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptor(cpCode)?.Name ?? cpCode);
+                text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(cpCode)?.Name ?? cpCode);
             }
             text.Append(Environment.NewLine);
             text.Append($"{_gameSave.SaveDate[0]}/{_gameSave.SaveDate[1]}/{_gameSave.SaveDate[2]}");
 
+            if (_gameSave.EpisodeStates.Count != 0)
+            {
+                switch (_gameSave.EpisodeStates[(int)Episode.Bonus])
+                {
+                    case Consts.EpisodeStates.NotPlayed:
+                        text.Append(Environment.NewLine);
+                        text.Append("Farewell: Not played");
+                        break;
+                    case Consts.EpisodeStates.InProgress:
+                        text.Append(Environment.NewLine);
+                        text.Append("Farewell: In progress"); //todo: display exact checkpoint
+                        break;
+                    case Consts.EpisodeStates.Finished:
+                        text.Append(Environment.NewLine);
+                        text.Append("Farewell: Complete");
+                        break;
+                }
+            }
+            
             lblStatus.Text = text.ToString();
             lblStatus.Visible = true;
         }

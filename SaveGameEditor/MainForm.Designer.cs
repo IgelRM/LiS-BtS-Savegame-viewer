@@ -42,13 +42,14 @@
             this.textBoxSavePath = new System.Windows.Forms.TextBox();
             this.textBoxLisPath = new System.Windows.Forms.TextBox();
             this.tableLayoutPanelEpisodes = new System.Windows.Forms.TableLayoutPanel();
-            this.checkBoxE1 = new System.Windows.Forms.CheckBox();
             this.checkBoxE2 = new System.Windows.Forms.CheckBox();
             this.checkBoxE3 = new System.Windows.Forms.CheckBox();
-            this.checkBoxE4 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.checkBoxEditMode = new System.Windows.Forms.CheckBox();
+            this.checkBoxE1 = new System.Windows.Forms.CheckBox();
+            this.rbMain = new System.Windows.Forms.RadioButton();
+            this.rbBonus = new System.Windows.Forms.RadioButton();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.buttonManualBrowseBts = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -150,7 +151,7 @@
             this.buttonSaveEdits.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSaveEdits.Enabled = false;
-            this.buttonSaveEdits.Location = new System.Drawing.Point(986, 60);
+            this.buttonSaveEdits.Location = new System.Drawing.Point(795, 60);
             this.buttonSaveEdits.Margin = new System.Windows.Forms.Padding(2);
             this.buttonSaveEdits.Name = "buttonSaveEdits";
             this.buttonSaveEdits.Size = new System.Drawing.Size(90, 25);
@@ -164,7 +165,7 @@
             this.buttonExtras.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonExtras.Enabled = false;
-            this.buttonExtras.Location = new System.Drawing.Point(1080, 60);
+            this.buttonExtras.Location = new System.Drawing.Point(889, 60);
             this.buttonExtras.Margin = new System.Windows.Forms.Padding(2);
             this.buttonExtras.Name = "buttonExtras";
             this.buttonExtras.Size = new System.Drawing.Size(110, 25);
@@ -205,7 +206,7 @@
             this.textBoxSavePath.Location = new System.Drawing.Point(151, 4);
             this.textBoxSavePath.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSavePath.Name = "textBoxSavePath";
-            this.textBoxSavePath.Size = new System.Drawing.Size(765, 20);
+            this.textBoxSavePath.Size = new System.Drawing.Size(574, 20);
             this.textBoxSavePath.TabIndex = 0;
             this.textBoxSavePath.Text = "C: \\Users\\[UserName]\\AppData\\LocalLow\\Square Enix\\Life is Strange_ Before the Sto" +
     "rm\\Saves\\[id]\\SLOT_00\\Data.Save";
@@ -216,7 +217,7 @@
             this.textBoxLisPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxLisPath.Location = new System.Drawing.Point(152, 33);
             this.textBoxLisPath.Name = "textBoxLisPath";
-            this.textBoxLisPath.Size = new System.Drawing.Size(763, 20);
+            this.textBoxLisPath.Size = new System.Drawing.Size(572, 20);
             this.textBoxLisPath.TabIndex = 2;
             this.textBoxLisPath.Text = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Life is Strange - Before the Storm";
             this.textBoxLisPath.TextChanged += new System.EventHandler(this.textBoxLisPath_TextChanged);
@@ -226,41 +227,29 @@
             this.tableLayoutPanelEpisodes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanelEpisodes.ColumnCount = 7;
+            this.tableLayoutPanelEpisodes.ColumnCount = 8;
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 16F));
+            this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanelEpisodes.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE1, 0, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE2, 1, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE3, 2, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE4, 3, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.label4, 6, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.pictureBox1, 5, 0);
-            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxEditMode, 4, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE2, 2, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE3, 3, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.label4, 7, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.pictureBox1, 6, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxEditMode, 5, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.checkBoxE1, 1, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.rbMain, 0, 0);
+            this.tableLayoutPanelEpisodes.Controls.Add(this.rbBonus, 4, 0);
             this.tableLayoutPanelEpisodes.Location = new System.Drawing.Point(152, 61);
             this.tableLayoutPanelEpisodes.Name = "tableLayoutPanelEpisodes";
             this.tableLayoutPanelEpisodes.RowCount = 1;
             this.tableLayoutPanelEpisodes.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelEpisodes.Size = new System.Drawing.Size(763, 29);
+            this.tableLayoutPanelEpisodes.Size = new System.Drawing.Size(572, 29);
             this.tableLayoutPanelEpisodes.TabIndex = 1;
-            // 
-            // checkBoxE1
-            // 
-            this.checkBoxE1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxE1.Enabled = false;
-            this.checkBoxE1.Location = new System.Drawing.Point(3, 3);
-            this.checkBoxE1.Name = "checkBoxE1";
-            this.checkBoxE1.Size = new System.Drawing.Size(73, 23);
-            this.checkBoxE1.TabIndex = 1;
-            this.checkBoxE1.Text = "Episode 1";
-            this.checkBoxE1.UseVisualStyleBackColor = true;
-            this.checkBoxE1.CheckedChanged += new System.EventHandler(this.checkBoxEpisodes_CheckedChanged);
             // 
             // checkBoxE2
             // 
@@ -268,11 +257,11 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxE2.Enabled = false;
-            this.checkBoxE2.Location = new System.Drawing.Point(82, 3);
+            this.checkBoxE2.Location = new System.Drawing.Point(134, 3);
             this.checkBoxE2.Name = "checkBoxE2";
-            this.checkBoxE2.Size = new System.Drawing.Size(73, 23);
+            this.checkBoxE2.Size = new System.Drawing.Size(46, 23);
             this.checkBoxE2.TabIndex = 5;
-            this.checkBoxE2.Text = "Episode 2";
+            this.checkBoxE2.Text = "E2";
             this.checkBoxE2.UseVisualStyleBackColor = true;
             this.checkBoxE2.CheckedChanged += new System.EventHandler(this.checkBoxEpisodes_CheckedChanged);
             // 
@@ -282,36 +271,22 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxE3.Enabled = false;
-            this.checkBoxE3.Location = new System.Drawing.Point(161, 3);
+            this.checkBoxE3.Location = new System.Drawing.Point(186, 3);
             this.checkBoxE3.Name = "checkBoxE3";
-            this.checkBoxE3.Size = new System.Drawing.Size(73, 23);
+            this.checkBoxE3.Size = new System.Drawing.Size(42, 23);
             this.checkBoxE3.TabIndex = 6;
-            this.checkBoxE3.Text = "Episode 3";
+            this.checkBoxE3.Text = "E3";
             this.checkBoxE3.UseVisualStyleBackColor = true;
             this.checkBoxE3.CheckedChanged += new System.EventHandler(this.checkBoxEpisodes_CheckedChanged);
-            // 
-            // checkBoxE4
-            // 
-            this.checkBoxE4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxE4.Enabled = false;
-            this.checkBoxE4.Location = new System.Drawing.Point(240, 3);
-            this.checkBoxE4.Name = "checkBoxE4";
-            this.checkBoxE4.Size = new System.Drawing.Size(97, 23);
-            this.checkBoxE4.TabIndex = 7;
-            this.checkBoxE4.Text = "Bonus Episode";
-            this.checkBoxE4.UseVisualStyleBackColor = true;
-            this.checkBoxE4.CheckedChanged += new System.EventHandler(this.checkBoxEpisodes_CheckedChanged);
             // 
             // label4
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.Color.Red;
-            this.label4.Location = new System.Drawing.Point(436, 8);
+            this.label4.Location = new System.Drawing.Point(433, 1);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(324, 13);
+            this.label4.Size = new System.Drawing.Size(136, 26);
             this.label4.TabIndex = 8;
             this.label4.Text = "Save file changed! Press Show Content to update.";
             this.label4.Visible = false;
@@ -321,10 +296,10 @@
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Help;
             this.pictureBox1.Image = global::SaveGameEditor.Properties.Resources.Help;
-            this.pictureBox1.Location = new System.Drawing.Point(417, 6);
+            this.pictureBox1.Location = new System.Drawing.Point(410, 6);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox1.Size = new System.Drawing.Size(20, 16);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 10;
             this.pictureBox1.TabStop = false;
@@ -336,7 +311,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxEditMode.AutoSize = true;
-            this.checkBoxEditMode.Location = new System.Drawing.Point(343, 3);
+            this.checkBoxEditMode.Location = new System.Drawing.Point(336, 3);
             this.checkBoxEditMode.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.checkBoxEditMode.Name = "checkBoxEditMode";
             this.checkBoxEditMode.Size = new System.Drawing.Size(74, 23);
@@ -344,6 +319,52 @@
             this.checkBoxEditMode.Text = "Edit Mode";
             this.checkBoxEditMode.UseVisualStyleBackColor = true;
             this.checkBoxEditMode.MouseUp += new System.Windows.Forms.MouseEventHandler(this.checkBoxEditMode_MouseUp);
+            // 
+            // checkBoxE1
+            // 
+            this.checkBoxE1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxE1.Enabled = false;
+            this.checkBoxE1.Location = new System.Drawing.Point(88, 3);
+            this.checkBoxE1.Name = "checkBoxE1";
+            this.checkBoxE1.Size = new System.Drawing.Size(40, 23);
+            this.checkBoxE1.TabIndex = 1;
+            this.checkBoxE1.Text = "E1";
+            this.checkBoxE1.UseVisualStyleBackColor = true;
+            this.checkBoxE1.CheckedChanged += new System.EventHandler(this.checkBoxEpisodes_CheckedChanged);
+            // 
+            // rbMain
+            // 
+            this.rbMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.rbMain.AutoSize = true;
+            this.rbMain.Enabled = false;
+            this.rbMain.Location = new System.Drawing.Point(3, 3);
+            this.rbMain.Name = "rbMain";
+            this.rbMain.Size = new System.Drawing.Size(79, 23);
+            this.rbMain.TabIndex = 11;
+            this.rbMain.TabStop = true;
+            this.rbMain.Text = "Main Game";
+            this.rbMain.UseVisualStyleBackColor = true;
+            this.rbMain.CheckedChanged += new System.EventHandler(this.EpisodeRadio_CheckedChanged);
+            // 
+            // rbBonus
+            // 
+            this.rbBonus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.rbBonus.AutoSize = true;
+            this.rbBonus.Enabled = false;
+            this.rbBonus.Location = new System.Drawing.Point(234, 3);
+            this.rbBonus.Name = "rbBonus";
+            this.rbBonus.Size = new System.Drawing.Size(96, 23);
+            this.rbBonus.TabIndex = 12;
+            this.rbBonus.TabStop = true;
+            this.rbBonus.Text = "Bonus Episode";
+            this.rbBonus.UseVisualStyleBackColor = true;
+            this.rbBonus.CheckedChanged += new System.EventHandler(this.EpisodeRadio_CheckedChanged);
             // 
             // tableLayoutPanel1
             // 
@@ -358,7 +379,6 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 114F));
             this.tableLayoutPanel1.Controls.Add(this.buttonExtras, 4, 2);
             this.tableLayoutPanel1.Controls.Add(this.buttonManualBrowseBts, 2, 1);
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanelEpisodes, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.textBoxLisPath, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.textBoxSavePath, 1, 0);
@@ -371,6 +391,7 @@
             this.tableLayoutPanel1.Controls.Add(this.buttonSaveSelector, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.buttonManualBrowseSave, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.label2, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanelEpisodes, 1, 2);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
@@ -379,7 +400,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1192, 552);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1001, 552);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
             // buttonManualBrowseBts
@@ -387,7 +408,7 @@
             this.buttonManualBrowseBts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonManualBrowseBts.Location = new System.Drawing.Point(920, 31);
+            this.buttonManualBrowseBts.Location = new System.Drawing.Point(729, 31);
             this.buttonManualBrowseBts.Margin = new System.Windows.Forms.Padding(2);
             this.buttonManualBrowseBts.Name = "buttonManualBrowseBts";
             this.buttonManualBrowseBts.Size = new System.Drawing.Size(62, 25);
@@ -408,7 +429,7 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1189, 453);
+            this.tabControl1.Size = new System.Drawing.Size(998, 453);
             this.tabControl1.TabIndex = 4;
             // 
             // tabPageVars
@@ -418,7 +439,7 @@
             this.tabPageVars.Margin = new System.Windows.Forms.Padding(0);
             this.tabPageVars.Name = "tabPageVars";
             this.tabPageVars.Padding = new System.Windows.Forms.Padding(0, 0, 3, 3);
-            this.tabPageVars.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageVars.Size = new System.Drawing.Size(990, 427);
             this.tabPageVars.TabIndex = 0;
             this.tabPageVars.Text = "Variables";
             this.tabPageVars.UseVisualStyleBackColor = true;
@@ -438,7 +459,7 @@
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridView1.ShowEditingIcon = false;
-            this.dataGridView1.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridView1.Size = new System.Drawing.Size(986, 425);
             this.dataGridView1.TabIndex = 2;
             this.dataGridView1.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridView1_CellBeginEdit);
             this.dataGridView1.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellEndEdit);
@@ -450,7 +471,7 @@
             this.tabPageFlags.Location = new System.Drawing.Point(4, 22);
             this.tabPageFlags.Name = "tabPageFlags";
             this.tabPageFlags.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFlags.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageFlags.Size = new System.Drawing.Size(990, 427);
             this.tabPageFlags.TabIndex = 1;
             this.tabPageFlags.Text = "Flags";
             this.tabPageFlags.UseVisualStyleBackColor = true;
@@ -470,7 +491,7 @@
             this.dataGridViewFlags.ReadOnly = true;
             this.dataGridViewFlags.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridViewFlags.ShowEditingIcon = false;
-            this.dataGridViewFlags.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridViewFlags.Size = new System.Drawing.Size(990, 431);
             this.dataGridViewFlags.TabIndex = 2;
             this.dataGridViewFlags.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFlags_CellBeginEdit);
             this.dataGridViewFlags.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFlags_CellEndEdit);
@@ -482,7 +503,7 @@
             this.tabPageFloats.Location = new System.Drawing.Point(4, 22);
             this.tabPageFloats.Name = "tabPageFloats";
             this.tabPageFloats.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFloats.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageFloats.Size = new System.Drawing.Size(990, 427);
             this.tabPageFloats.TabIndex = 2;
             this.tabPageFloats.Text = "Floats";
             this.tabPageFloats.UseVisualStyleBackColor = true;
@@ -502,7 +523,7 @@
             this.dataGridViewFloats.ReadOnly = true;
             this.dataGridViewFloats.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridViewFloats.ShowEditingIcon = false;
-            this.dataGridViewFloats.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridViewFloats.Size = new System.Drawing.Size(986, 425);
             this.dataGridViewFloats.TabIndex = 3;
             this.dataGridViewFloats.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewFloats_CellBeginEdit);
             this.dataGridViewFloats.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFloats_CellEndEdit);
@@ -514,7 +535,7 @@
             this.tabPageItems.Location = new System.Drawing.Point(4, 22);
             this.tabPageItems.Name = "tabPageItems";
             this.tabPageItems.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageItems.Size = new System.Drawing.Size(1181, 427);
+            this.tabPageItems.Size = new System.Drawing.Size(990, 427);
             this.tabPageItems.TabIndex = 3;
             this.tabPageItems.Text = "Items";
             this.tabPageItems.UseVisualStyleBackColor = true;
@@ -534,7 +555,7 @@
             this.dataGridViewItems.ReadOnly = true;
             this.dataGridViewItems.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridViewItems.ShowEditingIcon = false;
-            this.dataGridViewItems.Size = new System.Drawing.Size(1178, 425);
+            this.dataGridViewItems.Size = new System.Drawing.Size(987, 425);
             this.dataGridViewItems.TabIndex = 3;
             this.dataGridViewItems.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewItems_CellBeginEdit);
             this.dataGridViewItems.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewItems_CellEndEdit);
@@ -544,7 +565,7 @@
             // 
             this.buttonAbout.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonAbout.Location = new System.Drawing.Point(920, 60);
+            this.buttonAbout.Location = new System.Drawing.Point(729, 60);
             this.buttonAbout.Margin = new System.Windows.Forms.Padding(2);
             this.buttonAbout.Name = "buttonAbout";
             this.buttonAbout.Size = new System.Drawing.Size(62, 25);
@@ -559,7 +580,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonExport.Enabled = false;
-            this.buttonExport.Location = new System.Drawing.Point(1080, 31);
+            this.buttonExport.Location = new System.Drawing.Point(889, 31);
             this.buttonExport.Margin = new System.Windows.Forms.Padding(2);
             this.buttonExport.Name = "buttonExport";
             this.buttonExport.Size = new System.Drawing.Size(110, 25);
@@ -573,7 +594,7 @@
             this.buttonShowContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonShowContent.Location = new System.Drawing.Point(986, 31);
+            this.buttonShowContent.Location = new System.Drawing.Point(795, 31);
             this.buttonShowContent.Margin = new System.Windows.Forms.Padding(2);
             this.buttonShowContent.MinimumSize = new System.Drawing.Size(90, 0);
             this.buttonShowContent.Name = "buttonShowContent";
@@ -588,7 +609,7 @@
             this.buttonSaveSelector.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSaveSelector.Location = new System.Drawing.Point(1080, 2);
+            this.buttonSaveSelector.Location = new System.Drawing.Point(889, 2);
             this.buttonSaveSelector.Margin = new System.Windows.Forms.Padding(2);
             this.buttonSaveSelector.Name = "buttonSaveSelector";
             this.buttonSaveSelector.Size = new System.Drawing.Size(110, 25);
@@ -603,7 +624,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.buttonManualBrowseSave, 2);
-            this.buttonManualBrowseSave.Location = new System.Drawing.Point(920, 2);
+            this.buttonManualBrowseSave.Location = new System.Drawing.Point(729, 2);
             this.buttonManualBrowseSave.Margin = new System.Windows.Forms.Padding(2);
             this.buttonManualBrowseSave.Name = "buttonManualBrowseSave";
             this.buttonManualBrowseSave.Size = new System.Drawing.Size(156, 25);
@@ -629,7 +650,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1195, 550);
+            this.ClientSize = new System.Drawing.Size(1004, 550);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
@@ -674,7 +695,6 @@
         private System.Windows.Forms.CheckBox checkBoxE1;
         private System.Windows.Forms.CheckBox checkBoxE2;
         private System.Windows.Forms.CheckBox checkBoxE3;
-        private System.Windows.Forms.CheckBox checkBoxE4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonExport;
         private System.Windows.Forms.Button buttonShowContent;
@@ -697,6 +717,8 @@
         private System.Windows.Forms.DataGridView dataGridViewFloats;
         private System.Windows.Forms.TabPage tabPageItems;
         private System.Windows.Forms.DataGridView dataGridViewItems;
+        private System.Windows.Forms.RadioButton rbMain;
+        private System.Windows.Forms.RadioButton rbBonus;
     }
 }
 

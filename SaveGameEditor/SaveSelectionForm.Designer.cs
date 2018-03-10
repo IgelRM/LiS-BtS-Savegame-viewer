@@ -85,7 +85,7 @@ namespace SaveGameEditor
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 60);
+            this.lblStatus.Location = new System.Drawing.Point(12, 49);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(47, 13);
             this.lblStatus.TabIndex = 4;

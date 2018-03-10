@@ -19,8 +19,15 @@
     public enum VariableScope
     {
         Global,
-        CurrentCheckpoint,
+        CurrentMainCheckpoint,
+        CurrentFarewellCheckpoint,
         LastCheckpoint,
         RegularCheckpoint
+    }
+
+    public enum SaveType
+    {
+        Regular,
+        Bonus
     }
 }

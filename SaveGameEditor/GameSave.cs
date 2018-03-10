@@ -64,31 +64,69 @@ namespace SaveGameEditor
         /// </summary>
         public Dictionary<string, bool> PlayedEpisodes { get; } = new Dictionary<string, bool>();
 
-        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
+        public List<Checkpoint> MainCheckpoints { get; } = new List<Checkpoint>();
 
-        public dynamic Data;
+        public List<Checkpoint> FarewellCheckpoints { get; } = new List<Checkpoint>();
+
+        public dynamic MainData;
+
+        public dynamic FarewellData;
 
         public dynamic Header;
 
-        public string RawSave { get; set; }
+        public string RawMainSave { get; set; }
+
+        public string RawFarewellSave { get; set; }
 
         public string RawHeader { get; set; }
 
-        public bool SaveChangesSaved { get; set; } = true;
+        public bool MainSaveChangesSaved { get; set; } = true;
+
+        public bool FarewellSaveChangesSaved { get; set; } = true;
 
         public bool HeaderChangesSaved { get; set; } = true;
 
-        public bool SaveIsEmpty { get; set; }
+        public bool MainSaveIsEmpty { get; set; }
 
-        public bool IsAtMidLevel
+        public bool MainSaveHasFarewellData
         {
             get
             {
-                return Data.currentCheckpoint.hasMidLevelData;
+                return MainData != null && MainData.e4Checkpoint != null;
+            }
+        }
+
+        public bool FarewellSaveIsEmpty { get; set; }
+
+        public bool IsMainAtMidLevel
+        {
+            get
+            {
+                if (MainData.currentCheckpoint == null)
+                {
+                    return false;
+                }
+                return MainData.currentCheckpoint.hasMidLevelData;
             }
             set
             {
-                Data.currentCheckpoint.hasMidLevelData = value;
+                MainData.currentCheckpoint.hasMidLevelData = value;
+            }
+        }
+
+        public bool IsFarewellAtMidLevel
+        {
+            get
+            {
+                if (FarewellData.currentCheckpoint == null)
+                {
+                    return false;
+                }
+                return FarewellData.currentCheckpoint.hasMidLevelData;
+            }
+            set
+            {
+                FarewellData.currentCheckpoint.hasMidLevelData = value;
             }
         }
 
@@ -144,22 +182,140 @@ namespace SaveGameEditor
             _gameData = gameData; // This is the initialdata, NOT savefile
         }
 
-        public void ReadSaveFromFile(string savePath)
+        private bool IsFarewellCheckpoint (string pointID)
         {
-            SaveIsEmpty = false;
-            Checkpoints.Clear();
+            return pointID.StartsWith("E4_") || pointID.Equals("Episode4End");
+        }
+
+        public void ReadMainSaveFromFile(string savePath)
+        {
+            MainSaveIsEmpty = false;
+            MainCheckpoints.Clear();
             PlayedEpisodes.Clear();
 
             // Read and decode Data
             var fileContent = File.ReadAllBytes(savePath);
             try
             {
-                Data = JsonConverter.DecodeFileContentToJson(fileContent);
-                RawSave = Data.ToString();
+                MainData = JsonConverter.DecodeFileContentToJson(fileContent);
+                RawMainSave = MainData.ToString();
             }
             catch
             {
-                SaveIsEmpty = true;
+                MainSaveIsEmpty = true;
+                goto SkipMain;
+            }
+
+            if (MainData["$type"] == "T_881EAB14") //opened a Bonus save instead of main
+            {
+                MainSaveIsEmpty = true;
+                MainData = null;
+                goto SkipMain;
+            }
+
+            Dictionary<string, VariableState> variables;
+            Dictionary<string, FloatState> floats;
+            Dictionary<string, ItemState> items;
+
+            // Add regular checkpoints
+            foreach (var checkpoint in MainData.checkpoints)
+            {
+                if (!IsFarewellCheckpoint (checkpoint.pointIdentifier.Value)) //ignore Farewell checkpoint data in main save
+                {
+                    var cpFlags = new List<string>();
+                    variables = GetCheckpointVariables(checkpoint);
+                    floats = GetCheckpointFloats(checkpoint);
+                    items = GetCheckpointItems(checkpoint);
+                    foreach (var flag in checkpoint.flags)
+                    {
+                        cpFlags.Add(flag.Value);
+                    }
+                    MainCheckpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats, items));
+                }
+                
+            }
+
+            // Add currentcheckpoint (seems to be identical to latest checkpoint...)
+            try
+            {
+                var currentCpFlags = new List<string>();
+                foreach (var flag in MainData.currentCheckpoint.stateCheckpoint.flags)
+                {
+                    currentCpFlags.Add(flag.Value);
+                }
+                variables = GetCheckpointVariables(MainData.currentCheckpoint.stateCheckpoint);
+                floats = GetCheckpointFloats(MainData.currentCheckpoint.stateCheckpoint);
+                items = GetCheckpointItems(MainData.currentCheckpoint.stateCheckpoint);
+                MainCheckpoints.Add(new Checkpoint(MainData.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                MainSaveIsEmpty = true;
+                goto SkipMain;
+            }
+            
+            // Add global variables as a last checkpoint.. // hack...
+            variables = GetCheckpointVariables(MainData);
+            floats = GetCheckpointFloats(MainData);
+            var globalFlags = new List<string>();
+            foreach (var flag in MainData.flags)
+                {
+                    globalFlags.Add(flag.Value);
+                }
+            MainCheckpoints.Add(new Checkpoint(new
+            {
+                pointIdentifier = "Global Vars",
+                currentObjective = MainData.currentObjective
+            }, variables, globalFlags, floats, null));
+
+            // Fill episodeState (?)
+            foreach (var episode in MainData.episodes)
+            {
+                string episodeName = episode.name;
+                string episodeState = episode.episodeState;
+                var isPlayed = episodeState == Consts.EpisodeStates.Finished ||
+                               episodeState == Consts.EpisodeStates.InProgress;
+                PlayedEpisodes[episodeName] = isPlayed;
+            }
+
+            SkipMain:
+
+            if (File.Exists(Path.GetDirectoryName(savePath) + @"\Header.Save"))
+            {
+                ReadHeaderFromFile(Path.GetDirectoryName(savePath) + @"\Header.Save");
+            }
+            else
+            {
+                Header = null;
+            }
+
+            if (File.Exists(savePath.Replace("SLOT_", "Bonus")))
+            {
+                ReadFarewellSaveFromFile(Path.GetDirectoryName(savePath).Replace("SLOT_", "Bonus") + @"\Data.Save");
+            }
+
+            else
+            {
+                FarewellData = null;
+                FarewellSaveIsEmpty = true;
+            }
+        }
+
+        public void ReadFarewellSaveFromFile(string savePath)
+        {
+            FarewellSaveIsEmpty = false;
+            FarewellCheckpoints.Clear();
+
+            // Read and decode Data
+            var fileContent = File.ReadAllBytes(savePath);
+            try
+            {
+                FarewellData = JsonConverter.DecodeFileContentToJson(fileContent);
+                RawFarewellSave = FarewellData.ToString();
+            }
+            catch
+            {
+                FarewellSaveIsEmpty = true;
                 return;
             }
 
@@ -168,7 +324,7 @@ namespace SaveGameEditor
             Dictionary<string, ItemState> items;
 
             // Add regular checkpoints
-            foreach (var checkpoint in Data.checkpoints)
+            foreach (var checkpoint in FarewellData.checkpoints)
             {
                 var cpFlags = new List<string>();
                 variables = GetCheckpointVariables(checkpoint);
@@ -178,58 +334,26 @@ namespace SaveGameEditor
                 {
                     cpFlags.Add(flag.Value);
                 }
-                Checkpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats, items));
+                FarewellCheckpoints.Add(new Checkpoint(checkpoint, variables, cpFlags, floats, items));
             }
 
             // Add currentcheckpoint (seems to be identical to latest checkpoint...)
             try
             {
                 var currentCpFlags = new List<string>();
-                foreach (var flag in Data.currentCheckpoint.stateCheckpoint.flags)
+                foreach (var flag in FarewellData.currentCheckpoint.stateCheckpoint.flags)
                 {
                     currentCpFlags.Add(flag.Value);
                 }
-                variables = GetCheckpointVariables(Data.currentCheckpoint.stateCheckpoint);
-                floats = GetCheckpointFloats(Data.currentCheckpoint.stateCheckpoint);
-                items = GetCheckpointItems(Data.currentCheckpoint.stateCheckpoint);
-                Checkpoints.Add(new Checkpoint(Data.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
+                variables = GetCheckpointVariables(FarewellData.currentCheckpoint.stateCheckpoint);
+                floats = GetCheckpointFloats(FarewellData.currentCheckpoint.stateCheckpoint);
+                items = GetCheckpointItems(FarewellData.currentCheckpoint.stateCheckpoint);
+                FarewellCheckpoints.Add(new Checkpoint(FarewellData.currentCheckpoint.stateCheckpoint, variables, currentCpFlags, floats, items));
             }
             catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
-                SaveIsEmpty = true;
+                FarewellSaveIsEmpty = true;
                 return;
-            }
-
-            // Add global variables as a last checkpoint.. // hack...
-            variables = GetCheckpointVariables(Data);
-            floats = GetCheckpointFloats(Data);
-            var globalFlags = new List<string>();
-            foreach (var flag in Data.flags)
-                {
-                    globalFlags.Add(flag.Value);
-                }
-            Checkpoints.Add(new Checkpoint(new
-            {
-                pointIdentifier = "Global Vars",
-                currentObjective = Data.currentObjective
-            }, variables, globalFlags, floats, null));
-
-            // Fill episodeState (?)
-            foreach (var episode in Data.episodes)
-            {
-                string episodeName = episode.name;
-                string episodeState = episode.episodeState;
-                var isPlayed = episodeState == Consts.EpisodeStates.Finished ||
-                               episodeState == Consts.EpisodeStates.InProgress;
-                PlayedEpisodes[episodeName] = isPlayed;
-            }
-            if (File.Exists(Path.GetDirectoryName(savePath) + @"\Header.Save"))
-            {
-                ReadHeaderFromFile(Path.GetDirectoryName(savePath) + @"\Header.Save");
-            }
-            else
-            {
-                Header = null;
             }
         }
 
@@ -244,7 +368,7 @@ namespace SaveGameEditor
             }
             catch
             {
-                SaveIsEmpty = true;
+                MainSaveIsEmpty = true;
             }
 
             // Fill episodestates
@@ -257,11 +381,11 @@ namespace SaveGameEditor
             // Read the date of the save
             for (var i = 0; i < Header.saveDate.Count; i++)
             {
-                SaveDate[i] = Header.saveDate[i]; // Need to test if it's possible to write to this dynamic array without an intermediate one
+                SaveDate[i] = Header.saveDate[i];
             }
         }
 
-        public void WriteSaveToFile(string savePath, dynamic saveJsonObject)
+        public void WriteSaveToFile(string savePath, dynamic saveJsonObject, SaveType type)
         {
             var fileContent = JsonConverter.EncodeJsonToFileContent(saveJsonObject);
 
@@ -271,7 +395,15 @@ namespace SaveGameEditor
             }
 
             File.WriteAllBytes(savePath, fileContent); // Write changes to Data.Save
-            SaveChangesSaved = true;
+
+            if (type == SaveType.Bonus)
+            {
+                FarewellSaveChangesSaved = true;
+            }
+            else
+            {
+                MainSaveChangesSaved = true;
+            }
         }
 
         public void WriteHeaderToFile(string headerPath, dynamic headerJsonObject)
@@ -336,9 +468,23 @@ namespace SaveGameEditor
             return pointItems;
         }
 
+        #region Main Save Edit Functions
         // Value gets updated inside JSON object (m_Data)
-        public bool FindAndUpdateVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
+        public bool FindAndUpdateMainVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
         {
+            if (IsFarewellCheckpoint(checkpointId))
+            {
+                if (!MainSaveHasFarewellData)
+                {
+                    return false;
+                }
+                
+            }
+            else if (MainSaveIsEmpty)
+            {
+                return false;
+            }
+
             dynamic editingPoint = null;
             var varId = _gameData.GetVariableIdByName(varName);
             var pointFound = false;
@@ -347,15 +493,19 @@ namespace SaveGameEditor
             switch (varScope)
             {
                 case VariableScope.Global:
-                    editingPoint = Data;
+                    editingPoint = MainData;
                     pointFound = true;
                     break;
-                case VariableScope.CurrentCheckpoint:
-                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                case VariableScope.CurrentMainCheckpoint:
+                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
                     pointFound = true;
                     break;
                 default:
-                    foreach (var checkpoint in Data.checkpoints)
+                    foreach (var checkpoint in MainData.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
                         {
@@ -373,20 +523,49 @@ namespace SaveGameEditor
                 if (origValue == null)
                 {
                     var guid = Guid.NewGuid().ToString();
-                    if (varScope == VariableScope.CurrentCheckpoint)
+                    if (varScope == VariableScope.CurrentMainCheckpoint)
                     {
-                        foreach (var variable in Data.checkpoints[Data.checkpoints.Count-1].variables)
+                        for (int i=MainData.checkpoints.Count-1; i==0; i--) 
                         {
-                            if (variable.storyVariable.Value == varId)
+                            if (!IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from main game
                             {
-                                guid = variable.uniqueId.Value;
+                                foreach (var variable in MainData.checkpoints[i].variables)
+                                {
+                                    if (variable.storyVariable.Value == varId)
+                                    {
+                                        guid = variable.uniqueId.Value;
+                                        break;
+                                    }
+                                }
+                                break;
                             }
                         }
+                        
+                    }
+                    else if (varScope == VariableScope.CurrentFarewellCheckpoint)
+                    {
+                        for (int i = MainData.checkpoints.Count - 1; i == 0; i--)
+                        {
+                            if (IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from Farewell data in main save
+                            {
+                                foreach (var variable in MainData.checkpoints[i].variables)
+                                {
+                                    if (variable.storyVariable.Value == varId)
+                                    {
+                                        guid = variable.uniqueId.Value;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+
                     }
                     var varBody = new Dictionary<string, object>
                     {
                         {"uniqueId", guid},
                         {"storyVariable", varId},
+                        {"overridesDLC", false },
                         {"currentValue", newValue},
                         {"$type", "GameStateVariableModel"}
                     };
@@ -434,31 +613,48 @@ namespace SaveGameEditor
             }
             else
             {
-                SaveChangesSaved = false;
+                MainSaveChangesSaved = false;
             }
 
             return success;
         }
 
         // Value gets updated inside JSON object (m_Data)
-        public bool FindAndUpdateFloatValue(string checkpointId, string floatName, float? origValue, float? newValue,
+        public bool FindAndUpdateMainFloatValue(string checkpointId, string floatName, float? origValue, float? newValue,
             VariableScope varScope)
         {
+            if (IsFarewellCheckpoint(checkpointId))
+            {
+                if (!MainSaveHasFarewellData)
+                {
+                    return false;
+                }
+
+            }
+            else if (MainSaveIsEmpty)
+            {
+                return false;
+            }
+
             dynamic editingPoint = null;
             var pointFound = false;
 
             switch (varScope)
             {
                 case VariableScope.Global:
-                    editingPoint = Data;
+                    editingPoint = MainData;
                     pointFound = true;
                     break;
-                case VariableScope.CurrentCheckpoint:
-                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                case VariableScope.CurrentMainCheckpoint:
+                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
                     pointFound = true;
                     break;
                 default:
-                    foreach (var checkpoint in Data.checkpoints)
+                    foreach (var checkpoint in MainData.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
                         {
@@ -488,7 +684,7 @@ namespace SaveGameEditor
                     editingPoint.floatValuesDict[floatName].Value = newValue;
                 }
 
-                SaveChangesSaved = false;
+                MainSaveChangesSaved = false;
                 return true;
             }
 
@@ -496,23 +692,33 @@ namespace SaveGameEditor
             return false;
         }
 
-        public bool FindAndUpdateFlagValue(string checkpointId, string flagName, bool origValue, VariableScope varScope)
+        public bool FindAndUpdateMainFlagValue(string checkpointId, string flagName, bool origValue, VariableScope varScope)
         {
+
+            if (MainSaveIsEmpty)
+            {
+                return false;
+            }
+
             dynamic editingPoint = null;
             var pointFound = false;
 
             switch (varScope)
             {
                 case VariableScope.Global:
-                    editingPoint = Data;
+                    editingPoint = MainData;
                     pointFound = true;
                     break;
-                case VariableScope.CurrentCheckpoint:
-                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                case VariableScope.CurrentMainCheckpoint:
+                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
                     pointFound = true;
                     break;
                 default:
-                    foreach (var checkpoint in Data.checkpoints)
+                    foreach (var checkpoint in MainData.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
                         {
@@ -545,7 +751,7 @@ namespace SaveGameEditor
                     flagToDelete.Remove();
                 }
 
-                SaveChangesSaved = false;
+                MainSaveChangesSaved = false;
                 return true;
             }
 
@@ -553,8 +759,21 @@ namespace SaveGameEditor
             return false;
         }
 
-        public bool FindAndUpdateItemValue(string checkpointId, string itemName, bool origValue, VariableScope varScope)
+        public bool FindAndUpdateMainItemValue(string checkpointId, string itemName, bool origValue, VariableScope varScope)
         {
+            if (IsFarewellCheckpoint(checkpointId))
+            {
+                if (!MainSaveHasFarewellData)
+                {
+                    return false;
+                }
+
+            }
+            else if (MainSaveIsEmpty)
+            {
+                return false;
+            }
+
             dynamic editingPoint = null;
             var itemId = _gameData.GetItemIdByName(itemName);
             var pointFound = false;
@@ -564,12 +783,16 @@ namespace SaveGameEditor
                 case VariableScope.Global:
                     MessageBox.Show("Error! Global scope!");
                     break;
-                case VariableScope.CurrentCheckpoint:
-                    editingPoint = Data.currentCheckpoint.stateCheckpoint;
+                case VariableScope.CurrentMainCheckpoint:
+                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
                     pointFound = true;
                     break;
                 default:
-                    foreach (var checkpoint in Data.checkpoints)
+                    foreach (var checkpoint in MainData.checkpoints)
                     {
                         if (checkpoint.pointIdentifier.Value == checkpointId)
                         {
@@ -595,23 +818,25 @@ namespace SaveGameEditor
                     }
                 }
 
+                var newOwner = IsFarewellCheckpoint(checkpointId) ? Consts.Uids.Maxine : Consts.Uids.Chloe;
+
                 if (origValue == false)
                 {
-                    if (targetIndex == null) // Add new item and make Chloe the owner
+                    if (targetIndex == null) // Add new item and make Chloe or Max the owner
                     {
                         var freshItem = new Dictionary<string, object>()
                         {
                             { "uniqueId", Guid.NewGuid().ToString() },
-                            { "currentOwnedBy", Consts.ChloeUID },
+                            { "currentOwnedBy", newOwner },
                             { "overridesDLC", false },
                             { "storyItem", itemId },
                             { "$type", "GameStateItemModel"}
                         };
                         items.Add(JToken.FromObject(freshItem));
                     }
-                    else //change the owner of an existing item to Chloe
+                    else //change the owner of an existing item to Chloe or Max
                     {
-                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = Consts.ChloeUID;
+                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = newOwner;
                     }
                 }
                 // Remove one of the existing items
@@ -620,7 +845,7 @@ namespace SaveGameEditor
                     items[targetIndex].Remove();
                 }
 
-                SaveChangesSaved = false;
+                MainSaveChangesSaved = false;
                 return true;
             }
 
@@ -628,48 +853,67 @@ namespace SaveGameEditor
             return false;
         }
 
-        public void RestartFromCheckpoint(string variablePrefix, dynamic destPoint, int epNumber)
+        public void RestartFromMainCheckpoint(string variablePrefix, dynamic destPoint, int epNumber)
         {
             // Remove variables of future scenes from the minor and major variable list
             FillMinorAndMajorVars(variablePrefix);
 
-            // Erase future checkpoints from the checkpoint list
+            // Erase future main checkpoints from the checkpoint list
             var checkpointsList = new List<JObject>();
-            foreach (var checkpoint in Data.checkpoints)
+            //Add all main checkpoints before the target to a list
+            foreach (var checkpoint in MainData.checkpoints)
             {
-                checkpointsList.Add(checkpoint);
-                if (checkpoint == destPoint)
+                if (!IsFarewellCheckpoint(checkpoint.pointIdentifier.Value))
                 {
-                    break;
+                    checkpointsList.Add(checkpoint);
+                    if (checkpoint == destPoint)
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            //Add all Farewell checkpoints to that same list
+            foreach (var checkpoint in MainData.checkpoints)
+            {
+                if (IsFarewellCheckpoint(checkpoint.pointIdentifier.Value))
+                {
+                    checkpointsList.Add(checkpoint);
                 }
             }
-            Data.checkpoints = JArray.FromObject(checkpointsList);
 
-            // Copy flags from last checkpoint to global flags
-            ((JToken) Data.flags).Replace(destPoint.flags);
+            MainData.checkpoints = JArray.FromObject(checkpointsList);
+
+            // Copy flags from last (i.e target) checkpoint to global flags
+            ((JToken) MainData.flags).Replace(destPoint.flags);
             // Copy float values from last checkpoint to global float values
-            ((JToken) Data.floatValuesDict).Replace(destPoint.floatValuesDict);
+            ((JToken) MainData.floatValuesDict).Replace(destPoint.floatValuesDict);
 
             // Set episode states
             string destPointId = destPoint.pointIdentifier;
-            for (var i = 0; i < Data.episodes.Count; i++)
+            for (var i = 0; i < MainData.episodes.Count; i++)
             {
+                if (i == (int)Episode.Bonus)
+                {
+                    continue;
+                }
+
                 if (i < epNumber)
                 {
-                    Data.episodes[i].episodeState = Consts.EpisodeStates.Finished;
+                    MainData.episodes[i].episodeState = Consts.EpisodeStates.Finished;
                 }
                 else if (i == epNumber && !destPointId.EndsWith("End"))
                 {
-                    Data.episodes[i].episodeState = Consts.EpisodeStates.InProgress;
+                    MainData.episodes[i].episodeState = Consts.EpisodeStates.InProgress;
                 }
-                else if (i > epNumber && Data.episodes[i].episodeState != Consts.EpisodeStates.Unavailable)
+                else if (i > epNumber && MainData.episodes[i].episodeState != Consts.EpisodeStates.Unavailable)
                 {
-                    Data.episodes[i].episodeState = Consts.EpisodeStates.NotPlayed;
+                    MainData.episodes[i].episodeState = Consts.EpisodeStates.NotPlayed;
                 }
             }
 
             // Syncronise last checkpoint and global variables
-            foreach (var globalVar in Data.variables)
+            foreach (var globalVar in MainData.variables)
             {
                 foreach (var variable in destPoint.variables)
                 {
@@ -687,41 +931,392 @@ namespace SaveGameEditor
             }
 
             SyncLastAndCurrentCheckpoints(destPoint, epNumber);
-            Data.uniqueId = Guid.NewGuid();
-            Data.currentObjective = destPoint.currentObjective;
+            MainData.uniqueId = Guid.NewGuid();
+            MainData.currentObjective = destPoint.currentObjective;
 
             RewindHeader();
         }
+        #endregion
+
+        #region Farewell Save Edit Functions
+        public bool FindAndUpdateFarewellVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
+        {
+            if (FarewellSaveIsEmpty)
+            {
+                return false;
+            }
+
+            dynamic editingPoint = null;
+            var varId = _gameData.GetVariableIdByName(varName);
+            var pointFound = false;
+            var success = false;
+
+            switch (varScope)
+            {
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            if (pointFound)
+            {
+                // Add new variable
+                if (origValue == null)
+                {
+                    var guid = Guid.NewGuid().ToString();
+                    if (varScope == VariableScope.CurrentFarewellCheckpoint)
+                    {
+                        foreach (var variable in FarewellData.checkpoints[FarewellData.checkpoints.Count - 1].variables)
+                        {
+                            if (variable.storyVariable.Value == varId)
+                            {
+                                guid = variable.uniqueId.Value;
+                            }
+                        }
+                    }
+                    
+                    var varBody = new Dictionary<string, object>
+                    {
+                        {"uniqueId", guid},
+                        {"storyVariable", varId},
+                        {"overridesDLC", false },
+                        {"currentValue", newValue},
+                        {"$type", "GameStateVariableModel"}
+                    };
+
+                    var freshVar = JObject.FromObject(varBody);
+                    ((JArray)editingPoint.variables).Add(freshVar);
+                    success = true;
+                }
+                // Remove variable
+                else if (newValue == null)
+                {
+                    foreach (var variable in editingPoint.variables)
+                    {
+                        if (variable.storyVariable.Value == varId)
+                        {
+                            ((JArray)editingPoint.variables).Remove(variable);
+                            success = true;
+                            break;
+                        }
+                    }
+                }
+                // Change variable value
+                else
+                {
+                    foreach (var variable in editingPoint.variables)
+                    {
+                        if (variable.storyVariable.Value == varId)
+                        {
+                            variable.currentValue.Value = newValue;
+                            success = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+                return false;
+            }
+
+            if (!success)
+            {
+                MessageBox.Show("Could not find and replace variable with ID " + varId + "!");
+            }
+            else
+            {
+                FarewellSaveChangesSaved = false;
+            }
+
+            return success && FindAndUpdateMainVarValue(checkpointId, varName, origValue, newValue, varScope);
+        }
+
+        public bool FindAndUpdateFarewellFloatValue(string checkpointId, string floatName, float? origValue, float? newValue,
+            VariableScope varScope)
+        {
+            if (FarewellSaveIsEmpty)
+            {
+                return false;
+            }
+
+            dynamic editingPoint = null;
+            var pointFound = false;
+
+            switch (varScope)
+            {
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            if (pointFound)
+            {
+                // Add new float value
+                if (origValue == null)
+                {
+                    ((JObject)editingPoint.floatValuesDict).Add(floatName, newValue);
+                }
+                // Remove float value
+                else if (newValue == null)
+                {
+                    ((JObject)editingPoint.floatValuesDict).Remove(floatName);
+                }
+                // Change float value
+                else
+                {
+                    editingPoint.floatValuesDict[floatName].Value = newValue;
+                }
+
+                FarewellSaveChangesSaved = false;
+                return true && FindAndUpdateMainFloatValue(checkpointId, floatName, origValue, newValue, varScope);
+            }
+
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
+        }
+
+        public bool FindAndUpdateFarewellFlagValue(string checkpointId, string flagName, bool origValue, VariableScope varScope)
+        {
+            if (FarewellSaveIsEmpty)
+            {
+                return false;
+            }
+
+            dynamic editingPoint = null;
+            var pointFound = false;
+
+            switch (varScope)
+            {
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            if (pointFound)
+            {
+                // Add new flag
+                if (origValue == false)
+                {
+                    ((JArray)editingPoint.flags).Add(flagName);
+                }
+                // Remove one of the existing flags
+                else
+                {
+                    JToken flagToDelete = null;
+                    foreach (var flag in editingPoint.flags)
+                    {
+                        if (flag.Value == flagName)
+                        {
+                            flagToDelete = flag;
+                        }
+                    }
+                    flagToDelete.Remove();
+                }
+
+                FarewellSaveChangesSaved = false;
+                return true && FindAndUpdateMainFlagValue(checkpointId, flagName, origValue, varScope);
+            }
+
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
+        }
+
+        public bool FindAndUpdateFarewellItemValue(string checkpointId, string itemName, bool origValue, VariableScope varScope)
+        {
+            if (FarewellSaveIsEmpty)
+            {
+                return false;
+            }
+
+            dynamic editingPoint = null;
+            var itemId = _gameData.GetItemIdByName(itemName);
+            var pointFound = false;
+
+            switch (varScope)
+            {
+                case VariableScope.Global:
+                    MessageBox.Show("Error! Global scope!");
+                    break;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
+                    pointFound = true;
+                    break;
+                default:
+                    foreach (var checkpoint in FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == checkpointId)
+                        {
+                            editingPoint = checkpoint;
+                            pointFound = true;
+                            break;
+                        }
+                    }
+                    break;
+            }
+
+            if (pointFound)
+            {
+                JArray items = editingPoint.items;
+                int? targetIndex = null;
+
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (((JObject)items[i]).Property("storyItem").Value.ToString() == itemId)
+                    {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                if (origValue == false)
+                {
+                    if (targetIndex == null) // Add new item and make Max the owner
+                    {
+                        var freshItem = new Dictionary<string, object>()
+                        {
+                            { "uniqueId", Guid.NewGuid().ToString() },
+                            { "currentOwnedBy", Consts.Uids.Maxine },
+                            { "overridesDLC", false },
+                            { "storyItem", itemId },
+                            { "$type", "GameStateItemModel"}
+                        };
+                        items.Add(JToken.FromObject(freshItem));
+                    }
+                    else //change the owner of an existing item to Max
+                    {
+                        ((JObject)items[targetIndex]).Property("currentOwnedBy").Value = Consts.Uids.Maxine;
+                    }
+                }
+                // Remove one of the existing items
+                else
+                {
+                    items[targetIndex].Remove();
+                }
+
+                FarewellSaveChangesSaved = false;
+                return true && FindAndUpdateMainItemValue(checkpointId, itemName, origValue, varScope);
+            }
+
+            MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
+            return false;
+        }
+
+        public void RestartFromFarewellCheckpoint(string variablePrefix, dynamic destPoint)
+        {
+            // Erase future checkpoints from the checkpoint list
+            var checkpointsList = new List<JObject>();
+            
+            foreach (var checkpoint in FarewellData.checkpoints)
+            {
+                checkpointsList.Add(checkpoint);
+                if (checkpoint == destPoint)
+                {
+                    break;
+                }
+            }
+
+            FarewellData.checkpoints = JArray.FromObject(checkpointsList);
+
+            //Remove all future Farewell checkpoints from main save
+            JArray MainCheckpoints = ((JArray)MainData.checkpoints).ToObject<JArray>();
+
+            foreach (var checkpoint in MainData.checkpoints)
+            {
+                if (IsFarewellCheckpoint(checkpoint.pointIdentifier.Value) && !checkpointsList.Contains(checkpoint))
+                {
+                    MainCheckpoints.Remove(checkpoint);
+                }
+            }
+
+            MainData.checkpoints = MainCheckpoints;
+
+            // Copy flags from last (i.e target) checkpoint to global main flags
+            ((JToken)MainData.flags).Replace(destPoint.flags);
+            // Copy float values from last checkpoint to global main float values
+            ((JToken)MainData.floatValuesDict).Replace(destPoint.floatValuesDict);
+
+            // Set EP4 episode state
+            if (destPoint.pointIdentifier.Value != "Epiode4End" && MainData.episodes[3].episodeState != Consts.EpisodeStates.Unavailable)
+            {
+                FarewellData.ep4State = 1;
+                MainData.episodes[(int)Episode.Bonus].episodeState = Consts.EpisodeStates.InProgress;
+            }
+
+            SyncLastAndCurrentCheckpoints(destPoint, (int)Episode.Bonus);
+            MainData.uniqueId = Guid.NewGuid();
+            MainData.currentObjective = destPoint.currentObjective;
+
+            RewindHeader();
+        }
+        #endregion
 
         public void RewindHeader()
         {
             Header.uniqueId.Value = Guid.NewGuid();
-            for (int i = 0; i < Data.episodes.Count; i++)
+            for (int i = 0; i < MainData.episodes.Count; i++)
             {
-                Header.cachedEpisodes[i] = Data.episodes[i].episodeState;
+                Header.cachedEpisodes[i] = MainData.episodes[i].episodeState;
             }
 
             Header.saveDate = JArray.FromObject(SaveDate);
 
-            if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || 
-                Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
+            if (MainData.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode1End" || 
+                MainData.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode2End")
             {
                 Header.currentScene = Consts.GlobalCodes.ReadyToStartEpisode;
                 Header.currentEpisode = Consts.GlobalCodes.ReadyToStartEpisode;
             }
-            else if (Data.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
+            else if (MainData.currentCheckpoint.stateCheckpoint.pointIdentifier == "Episode3End")
             {
                 Header.currentScene = Consts.GlobalCodes.StoryComplete;
                 Header.currentEpisode = Consts.GlobalCodes.StoryComplete;
             }
             else
             {
-                Header.currentScene = Data.currentCheckpoint.currentScene;
-                Header.currentEpisode = Data.currentCheckpoint.currentEpisode;
+                Header.currentScene = MainData.currentCheckpoint.currentScene;
+                Header.currentEpisode = MainData.currentCheckpoint.currentEpisode;
             }
         }
 
-        #region Sub-functions
+        #region Rewind sub-functions
         private void FillMinorAndMajorVars(string variablePrefix)
         {
             var minorVarList = new List<string>();
@@ -729,12 +1324,12 @@ namespace SaveGameEditor
 
             if (variablePrefix == "E1_")
             {
-                Data.minorChoiceVariables = new JArray();
-                Data.majorChoiceVariables = new JArray();
+                MainData.minorChoiceVariables = new JArray();
+                MainData.majorChoiceVariables = new JArray();
             }
             else
             {
-                foreach (string variable in Data.minorChoiceVariables)
+                foreach (string variable in MainData.minorChoiceVariables)
                 {
                     if (variable.StartsWith(variablePrefix))
                     {
@@ -743,7 +1338,7 @@ namespace SaveGameEditor
 
                     minorVarList.Add(variable);
                 }
-                foreach (string variable in Data.majorChoiceVariables)
+                foreach (string variable in MainData.majorChoiceVariables)
                 {
                     if (variable.StartsWith(variablePrefix))
                     {
@@ -752,38 +1347,57 @@ namespace SaveGameEditor
 
                     majorVarList.Add(variable);
                 }
-                Data.minorChoiceVariables = JArray.FromObject(minorVarList);
-                Data.majorChoiceVariables = JArray.FromObject(majorVarList);
+                MainData.minorChoiceVariables = JArray.FromObject(minorVarList);
+                MainData.majorChoiceVariables = JArray.FromObject(majorVarList);
             }
         }
 
         private void SyncLastAndCurrentCheckpoints(dynamic destPoint, int epNumber)
         {
-            Data.currentCheckpoint.stateCheckpoint = destPoint;
-            if (IsAtMidLevel)
+            if (!IsFarewellCheckpoint(destPoint.pointIdentifier.Value))
             {
-                IsAtMidLevel = false;
-                ((JArray) Data.currentCheckpoint.visitedNodes).Replace(new JArray());
+                MainData.currentCheckpoint.stateCheckpoint = destPoint;
+
+                if (IsMainAtMidLevel)
+                {
+                    IsMainAtMidLevel = false;
+                    ((JArray)MainData.currentCheckpoint.visitedNodes).Replace(new JArray());
+                }
+
+                if (destPoint.pointIdentifier == "Episode1End")
+                {
+                    MainData.currentCheckpoint.currentScene = "e1_s10_b";
+                }
+                else if (destPoint.pointIdentifier == "Episode2End")
+                {
+                    MainData.currentCheckpoint.currentScene = "e2_s07";
+                }
+                else if (destPoint.pointIdentifier == "Episode3End")
+                {
+                    MainData.currentCheckpoint.currentScene = "e3_s08";
+                }
+                else
+                {
+                    string id = destPoint.pointIdentifier;
+                    MainData.currentCheckpoint.currentScene = id.ToLowerInvariant();
+                }
+                MainData.currentCheckpoint.currentEpisode = "E" + (epNumber + 1);
             }
 
-            if (destPoint.pointIdentifier == "Episode1End")
-            {
-                Data.currentCheckpoint.currentScene = "e1_s10_b";
-            }
-            else if (destPoint.pointIdentifier == "Episode2End")
-            {
-                Data.currentCheckpoint.currentScene = "e2_s07";
-            }
-            else if (destPoint.pointIdentifier == "Episode3End")
-            {
-                Data.currentCheckpoint.currentScene = "e3_s08";
-            }
             else
             {
+                FarewellData.currentCheckpoint.stateCheckpoint = destPoint;
+
+                if (IsFarewellAtMidLevel)
+                {
+                    IsFarewellAtMidLevel = false;
+                    ((JArray)FarewellData.currentCheckpoint.visitedNodes).Replace(new JArray());
+                }
                 string id = destPoint.pointIdentifier;
-                Data.currentCheckpoint.currentScene = id.ToLowerInvariant();
+                FarewellData.currentCheckpoint.currentScene = id.ToLowerInvariant();
+
+                MainData.e4Checkpoint = FarewellData.currentCheckpoint;
             }
-            Data.currentCheckpoint.currentEpisode = "E" + (epNumber + 1);
         }
 
         // For graffiti variables
@@ -825,16 +1439,19 @@ namespace SaveGameEditor
             {"E3_S04_AEBC", "E3_S04_"},
             {"E3_S04_D",  "E3_S04A_"},
             {"E3_S05", "E3_S05_"},
-            {"E3_S06", "E3_S07_"},
-            {"E3_S07_B", "E4_ "},
-            {"E3_S08", " E4_"},
-            {"Episode3End", "E4_"}
+            {"E3_S06", "E3_S07_"}
         };
 
         private bool ShouldGlobalVarBeReseted(string storyVarId, string pointId)
         {
             var untouchableVars = new List<string>();
             string prefix;
+
+            if (IsFarewellCheckpoint(pointId))
+            {
+                return false;
+            }
+
             if (!_globalVarPrefixes.TryGetValue(pointId, out prefix))
             {
                 return false;

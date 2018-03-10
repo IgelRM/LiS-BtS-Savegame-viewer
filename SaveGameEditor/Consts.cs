@@ -7,9 +7,9 @@ namespace SaveGameEditor
     {
         public static readonly Dictionary<Episode, string> EpisodeNames = new Dictionary<Episode, string>
         {
-            {Episode.First, "Epsiode 1: Awake"},
+            {Episode.First, "Episode 1: Awake"},
             {Episode.Second, "Episode 2: Brave New World"},
-            {Episode.Third, "Epsiode 3: Hell is Empty"},
+            {Episode.Third, "Episode 3: Hell is Empty"},
             {Episode.Bonus, "Bonus Episode: Farewell"}
         };
 
@@ -118,6 +118,14 @@ namespace SaveGameEditor
                 new CheckPointDescriptor(Episode.Third, "E3_S08", "Hospital - Rachel's Room"),
                 new CheckPointDescriptor(Episode.Third, "Episode3End", "Episode 3 Ending"),
                 #endregion
+
+                #region Episode 4
+                new CheckPointDescriptor(Episode.Bonus, "E4_S01_02A", "Bedroom"),
+                new CheckPointDescriptor(Episode.Bonus, "E4_S02_B", "Attic"),
+                new CheckPointDescriptor(Episode.Bonus, "E4_S03", "Backyard"),
+                new CheckPointDescriptor(Episode.Bonus, "E4_S04", "Price House - Downstairs"),
+                new CheckPointDescriptor(Episode.Bonus, "Episode4End", "Bonus Episode Ending")
+                #endregion
             };
 
             public static List<CheckPointDescriptor> GetCheckPointDescriptors(Episode episode)
@@ -125,10 +133,17 @@ namespace SaveGameEditor
                 return CheckPointDescriptors.Where(cp => cp.Episode == episode).ToList();
             }
 
-            public static CheckPointDescriptor GetCheckPointDescriptor(string code)
+            public static CheckPointDescriptor GetCheckPointDescriptorByCode(string code)
             {
                 return CheckPointDescriptors.FirstOrDefault(cp => cp.Code == code);
             }
+
+            public static CheckPointDescriptor GetCheckPointDescriptorByName(string name)
+            {
+                return CheckPointDescriptors.FirstOrDefault(cp => cp.Name == name);
+            }
+
+
         }
         #endregion
 
@@ -151,6 +166,13 @@ namespace SaveGameEditor
         }
         #endregion
 
-        public const string ChloeUID = "{e6e15237-3209-455e-9d47-c7293b9dfa54}";
+        #region Character UIDs
+        public static class Uids
+        {
+            public const string Chloe = "{e6e15237-3209-455e-9d47-c7293b9dfa54}";
+            public const string Maxine = "{32dd0acb-057d-40e7-926e-683144ae1353}";
+        }
+        #endregion
+
     }
 }
