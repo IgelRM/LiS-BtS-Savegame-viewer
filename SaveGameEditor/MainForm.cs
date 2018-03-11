@@ -1368,7 +1368,7 @@ namespace SaveGameEditor
             }
             if (!_gameSave.FarewellSaveChangesSaved)
             {
-                _gameSave.WriteSaveToFile(textBoxSavePath.Text.Replace("SLOT_", "Bonus"), _gameSave.FarewellData, SaveType.Regular);
+                _gameSave.WriteSaveToFile(textBoxSavePath.Text.Replace("SLOT_", "Bonus"), _gameSave.FarewellData, SaveType.Bonus);
             }
            
             if (_gameSave.MainSaveChangesSaved && _gameSave.FarewellSaveChangesSaved)
