@@ -217,18 +217,23 @@ namespace SaveGameEditor
 
             if (_gameSave.EpisodeStates.Count != 0)
             {
+                text.Append(Environment.NewLine);
                 switch (_gameSave.EpisodeStates[(int)Episode.Bonus])
                 {
                     case Consts.EpisodeStates.NotPlayed:
-                        text.Append(Environment.NewLine);
                         text.Append("Farewell: Not played");
                         break;
                     case Consts.EpisodeStates.InProgress:
-                        text.Append(Environment.NewLine);
-                        text.Append("Farewell: In progress"); //todo: display exact checkpoint
+                        var bonusSavePath = PathHelper.GetSaveDataFilePath(cbSteamIds.SelectedItem.ToString(), SelectedSlot.Value).Replace("SLOT_", "Bonus");
+                        if (File.Exists(bonusSavePath))
+                        {
+                            _gameSave.ReadFarewellSaveFromFile(bonusSavePath);
+                            string cpCode = _gameSave.FarewellData?.currentCheckpoint.currentScene.Value.ToUpper();
+                            text.Append("Farewell: ");
+                            text.Append(Consts.CheckPointDescriptorCollection.GetCheckPointDescriptorByCode(cpCode)?.Name ?? cpCode);
+                        }
                         break;
                     case Consts.EpisodeStates.Finished:
-                        text.Append(Environment.NewLine);
                         text.Append("Farewell: Complete");
                         break;
                 }

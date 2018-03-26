@@ -485,39 +485,11 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
             var varId = _gameData.GetVariableIdByName(varName);
-            var pointFound = false;
             var success = false;
-             
-            switch (varScope)
-            {
-                case VariableScope.Global:
-                    editingPoint = MainData;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentMainCheckpoint:
-                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in MainData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-            
-            if (pointFound)
+            dynamic editingPoint = FindMainEditPoint(varScope, checkpointId);
+
+            if (editingPoint != null)
             {
                 // Add new variable
                 if (origValue == null)
@@ -636,37 +608,9 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
-            var pointFound = false;
+            dynamic editingPoint = FindMainEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.Global:
-                    editingPoint = MainData;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentMainCheckpoint:
-                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in MainData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 // Add new float value
                 if (origValue == null)
@@ -700,37 +644,9 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
-            var pointFound = false;
+            dynamic editingPoint = FindMainEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.Global:
-                    editingPoint = MainData;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentMainCheckpoint:
-                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in MainData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 // Add new flag
                 if (origValue == false)
@@ -774,37 +690,10 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
             var itemId = _gameData.GetItemIdByName(itemName);
-            var pointFound = false;
+            dynamic editingPoint = FindMainEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.Global:
-                    MessageBox.Show("Error! Global scope!");
-                    break;
-                case VariableScope.CurrentMainCheckpoint:
-                    editingPoint = MainData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = MainData.e4Checkpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in MainData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 JArray items = editingPoint.items;
                 int? targetIndex = null;
@@ -851,6 +740,29 @@ namespace SaveGameEditor
 
             MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
             return false;
+        }
+
+        public dynamic FindMainEditPoint(VariableScope varScope, string pointId)
+        {
+            switch (varScope)
+            {
+                case VariableScope.Global:
+                    return MainData;
+                case VariableScope.CurrentMainCheckpoint:
+                    return MainData.currentCheckpoint.stateCheckpoint;
+                case VariableScope.CurrentFarewellCheckpoint:
+                    return MainData.e4Checkpoint.stateCheckpoint;
+                default:
+                    foreach (var checkpoint in MainData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == pointId)
+                        {
+                            return checkpoint;
+                        }
+                    }
+                    break;
+            }
+            return null;
         }
 
         public void RestartFromMainCheckpoint(string variablePrefix, dynamic destPoint, int epNumber)
@@ -946,31 +858,11 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
             var varId = _gameData.GetVariableIdByName(varName);
-            var pointFound = false;
             var success = false;
+            dynamic editingPoint = FindFarewellEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in FarewellData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 // Add new variable
                 if (origValue == null)
@@ -1053,29 +945,9 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
-            var pointFound = false;
+            dynamic editingPoint = FindFarewellEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in FarewellData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 // Add new float value
                 if (origValue == null)
@@ -1108,29 +980,9 @@ namespace SaveGameEditor
                 return false;
             }
 
-            dynamic editingPoint = null;
-            var pointFound = false;
+            dynamic editingPoint = FindFarewellEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in FarewellData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 // Add new flag
                 if (origValue == false)
@@ -1165,34 +1017,10 @@ namespace SaveGameEditor
             {
                 return false;
             }
-
-            dynamic editingPoint = null;
             var itemId = _gameData.GetItemIdByName(itemName);
-            var pointFound = false;
+            dynamic editingPoint = FindFarewellEditPoint(varScope, checkpointId);
 
-            switch (varScope)
-            {
-                case VariableScope.Global:
-                    MessageBox.Show("Error! Global scope!");
-                    break;
-                case VariableScope.CurrentFarewellCheckpoint:
-                    editingPoint = FarewellData.currentCheckpoint.stateCheckpoint;
-                    pointFound = true;
-                    break;
-                default:
-                    foreach (var checkpoint in FarewellData.checkpoints)
-                    {
-                        if (checkpoint.pointIdentifier.Value == checkpointId)
-                        {
-                            editingPoint = checkpoint;
-                            pointFound = true;
-                            break;
-                        }
-                    }
-                    break;
-            }
-
-            if (pointFound)
+            if (editingPoint != null)
             {
                 JArray items = editingPoint.items;
                 int? targetIndex = null;
@@ -1237,6 +1065,25 @@ namespace SaveGameEditor
 
             MessageBox.Show("Could not find checkpoint with pointId " + checkpointId + "!");
             return false;
+        }
+
+        public dynamic FindFarewellEditPoint(VariableScope varScope, string pointId)
+        {
+            switch (varScope)
+            {
+                case VariableScope.CurrentFarewellCheckpoint:
+                    return FarewellData.currentCheckpoint.stateCheckpoint;
+                default:
+                    foreach (var checkpoint in FarewellData.checkpoints)
+                    {
+                        if (checkpoint.pointIdentifier.Value == pointId)
+                        {
+                            return checkpoint;
+                        }
+                    }
+                    break;
+            }
+            return null;
         }
 
         public void RestartFromFarewellCheckpoint(string variablePrefix, dynamic destPoint)

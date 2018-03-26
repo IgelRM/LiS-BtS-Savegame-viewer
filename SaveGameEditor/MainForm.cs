@@ -1636,12 +1636,9 @@ namespace SaveGameEditor
                 switch (e.ColumnIndex)
                 {
                     case 1:
-                        _editingVariableScope = VariableScope.Global;
-                        break;
-                    case 2:
                         _editingVariableScope = VariableScope.CurrentMainCheckpoint;
                         break;
-                    case 3:
+                    case 2:
                         _editingVariableScope = VariableScope.LastCheckpoint;
                         break;
                     default:
