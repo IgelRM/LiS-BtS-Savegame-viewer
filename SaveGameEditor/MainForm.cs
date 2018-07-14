@@ -1497,7 +1497,7 @@ namespace SaveGameEditor
 
         private void dataGridView1_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-            if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty) //if the cell was originally empty
+            if (string.IsNullOrWhiteSpace(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString())) //if the cell was originally empty
             {
                 origCellValue = null;
             }
@@ -1544,7 +1544,7 @@ namespace SaveGameEditor
 
         private void dataGridViewFloats_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-            if (dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == String.Empty) //if the cell was originally empty
+            if (string.IsNullOrWhiteSpace(dataGridViewFloats.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString())) //if the cell was originally empty
             {
                 origFloatValue = null;
             }
