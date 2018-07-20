@@ -116,7 +116,7 @@ namespace SaveGameEditor
             ResetSearchState();
         }
 
-        private void ResetSearchState ()
+        public void ResetSearchState ()
         {
             buttonFindPrev.Enabled = false;
             buttonFindNext.Enabled = false;

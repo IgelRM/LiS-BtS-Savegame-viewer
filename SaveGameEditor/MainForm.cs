@@ -77,6 +77,10 @@ namespace SaveGameEditor
                 if (rbMain.Enabled) rbMain.Checked = true;
                 else if (rbBonus.Enabled) rbBonus.Checked = true;
 
+                if (findForm != null)
+                {
+                    findForm.ResetSearchState();
+                }
                 UpdateEpisodeBoxes();
                 UpdateFlagGrid();
                 UpdateFloatGrid();
@@ -1037,12 +1041,20 @@ namespace SaveGameEditor
         {
             if (!editModeActive)
             {
+                if (findForm != null)
+                {
+                    findForm.ResetSearchState();
+                }
                 UpdateDataGrid();
             }
         }
 
         private void EpisodeRadio_CheckedChanged(object sender, EventArgs e)
         {
+            if (findForm != null)
+            {
+                findForm.ResetSearchState();
+            }
             UpdateEpisodeBoxes();
             UpdateDataGrid();
             UpdateFlagGrid();
@@ -1456,30 +1468,14 @@ namespace SaveGameEditor
             rbBonus.Enabled = false;
             buttonSaveEdits.Enabled = true;
             buttonExtras.Enabled = false;
-
-            DataGridView find_grid = null;
-            List<int> result_indexes = new List<int>();
-
-            if (find_results.Count > 0)
+            if (findForm != null)
             {
-                find_grid = find_results[0].DataGridView;
-                foreach (var res in find_results)
-                {
-                    result_indexes.Add(res.RowIndex);
-                }
+                findForm.ResetSearchState();
             }
-
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
             UpdateItemGrid();
-
-            List<DataGridViewCell> new_results = new List<DataGridViewCell>();
-            foreach (var ind in result_indexes)
-            {
-                new_results.Add(find_grid[0, ind]);
-            }
-            find_results = new_results;
         }
         private void disableEditMode()
         {
@@ -1500,18 +1496,6 @@ namespace SaveGameEditor
             rbMain.Enabled = !_gameSave.MainSaveIsEmpty;
             rbBonus.Enabled = !_gameSave.FarewellSaveIsEmpty;
 
-            DataGridView find_grid = null;
-            List<int> result_indexes = new List<int>();
-
-            if (find_results.Count > 0)
-            {
-                find_grid = find_results[0].DataGridView;
-                foreach (var res in find_results)
-                {
-                    result_indexes.Add(res.RowIndex);
-                }
-            }
-
             if (rbMain.Checked)
             {
                 if (checkBoxE1.Enabled) checkBoxE1.Checked = true;
@@ -1522,17 +1506,14 @@ namespace SaveGameEditor
             buttonExtras.Enabled = true;
             label4.Visible = false;
             _gameSave.ReadMainSaveFromFile(textBoxSavePath.Text);
+            if (findForm != null)
+            {
+                findForm.ResetSearchState();
+            }
             UpdateDataGrid();
             UpdateFlagGrid();
             UpdateFloatGrid();
             UpdateItemGrid();
-
-            List<DataGridViewCell> new_results = new List<DataGridViewCell>();
-            foreach (var ind in result_indexes)
-            {
-                new_results.Add(find_grid[0, ind]);
-            }
-            find_results = new_results;
         }
 
         private void dataGridView1_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
