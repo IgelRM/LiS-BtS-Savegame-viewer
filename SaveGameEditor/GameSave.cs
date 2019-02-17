@@ -492,14 +492,15 @@ namespace SaveGameEditor
 
             if (editingPoint != null)
             {
-                // Add new variable/objective
-                if (origValue == null)
+                if (varName == "Objective")
                 {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = newValue.ToString();
-                    }
-                    else
+                    editingPoint.currentObjective.Value = newValue?.ToString() ?? "";
+                    success = true;
+                }
+                else
+                {
+                    // Add new variable
+                    if (origValue == null)
                     {
                         var guid = Guid.NewGuid().ToString();
                         if (varScope == VariableScope.CurrentMainCheckpoint)
@@ -551,18 +552,10 @@ namespace SaveGameEditor
 
                         var freshVar = JObject.FromObject(varBody);
                         ((JArray)editingPoint.variables).Add(freshVar);
-                    }
-                    success = true;
-                }
-                // Remove variable/objective
-                else if (newValue == null)
-                {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = "";
                         success = true;
                     }
-                    else
+                    // Remove variable/objective
+                    else if (newValue == null)
                     {
                         foreach (var variable in editingPoint.variables)
                         {
@@ -574,15 +567,7 @@ namespace SaveGameEditor
                             }
                         }
                     }
-                }
-                // Change variable value
-                else
-                {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = newValue.ToString();
-                        success = true;
-                    }
+                    // Change variable value
                     else
                     {
                         foreach (var variable in editingPoint.variables)
@@ -888,14 +873,15 @@ namespace SaveGameEditor
 
             if (editingPoint != null)
             {
-                // Add new variable
-                if (origValue == null)
+                if (varName == "Objective")
                 {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = newValue.ToString();
-                    }
-                    else
+                    editingPoint.currentObjective.Value = newValue?.ToString() ?? "";
+                    success = true;
+                }
+                else
+                {
+                    // Add new variable
+                    if (origValue == null)
                     {
                         var guid = Guid.NewGuid().ToString();
                         if (varScope == VariableScope.CurrentFarewellCheckpoint)
@@ -910,28 +896,20 @@ namespace SaveGameEditor
                         }
 
                         var varBody = new Dictionary<string, object>
-                        {
-                            {"uniqueId", guid},
-                            {"storyVariable", varId},
-                            {"overridesDLC", false },
-                            {"currentValue", Convert.ToInt32(newValue)},
-                            {"$type", "GameStateVariableModel"}
-                        };
+                    {
+                        {"uniqueId", guid},
+                        {"storyVariable", varId},
+                        {"overridesDLC", false },
+                        {"currentValue", Convert.ToInt32(newValue)},
+                        {"$type", "GameStateVariableModel"}
+                    };
 
                         var freshVar = JObject.FromObject(varBody);
                         ((JArray)editingPoint.variables).Add(freshVar);
-                    }
-                    success = true;
-                }
-                // Remove variable
-                else if (newValue == null)
-                {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = "";
                         success = true;
                     }
-                    else
+                    // Remove variable
+                    else if (newValue == null)
                     {
                         foreach (var variable in editingPoint.variables)
                         {
@@ -942,16 +920,8 @@ namespace SaveGameEditor
                                 break;
                             }
                         }
-                    } 
-                }
-                // Change variable value
-                else
-                {
-                    if (varName == "Objective")
-                    {
-                        editingPoint.currentObjective.Value = newValue.ToString();
-                        success = true;
                     }
+                    // Change variable value
                     else
                     {
                         foreach (var variable in editingPoint.variables)
