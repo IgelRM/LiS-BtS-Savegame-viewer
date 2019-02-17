@@ -189,9 +189,9 @@ namespace SaveGameEditor
 
             }
 
-            if (dataGridView1.FirstDisplayedScrollingRowIndex <= 2)
+            if (dataGridView1.FirstDisplayedScrollingRowIndex <= 1)
             {
-                visible_row = 2;
+                visible_row = 1;
             }
             else
             {
@@ -216,9 +216,7 @@ namespace SaveGameEditor
             dataGridView1.Columns["Key"].Frozen = true;
             dataGridView1.Columns["Key"].ReadOnly = true;
             dataGridView1.Rows[0].Frozen = true;
-            dataGridView1.Rows[1].Frozen = true;
             dataGridView1.Rows[0].ReadOnly = true;
-            dataGridView1.Rows[1].ReadOnly = true;
             int current = rbBonus.Checked ? 1 : 2;
             dataGridView1.Columns[current].HeaderText = "CurrentCheckpoint";
 
@@ -234,13 +232,11 @@ namespace SaveGameEditor
             {
                 dataGridView1.Columns["Key"].DefaultCellStyle.BackColor = Color.LightGray;
                 dataGridView1.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
-                dataGridView1.Rows[1].DefaultCellStyle.BackColor = Color.LightGray;
             }
             else
             {
                 dataGridView1.Columns["Key"].DefaultCellStyle.BackColor = Color.White;
                 dataGridView1.Rows[0].DefaultCellStyle.BackColor = Color.White;
-                dataGridView1.Rows[1].DefaultCellStyle.BackColor = Color.White;
             }
 
             for (int i = 0; i < dataGridView1.ColumnCount; i++)
@@ -1410,7 +1406,7 @@ namespace SaveGameEditor
             }  
         }
 
-        public int? origCellValue, newCellValue;
+        public object origCellValue, newCellValue;
         public float? origFloatValue, newFloatValue;
         public bool origFlagState, newFlagState;
         private VariableScope _editingVariableScope;
@@ -1522,9 +1518,13 @@ namespace SaveGameEditor
             {
                 origCellValue = null;
             }
+            else if (e.RowIndex == 1)
+            {
+                origCellValue = dataGridView1[e.ColumnIndex, e.RowIndex].Value.ToString();
+            }
             else
             {
-                origCellValue = int.Parse(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
+                origCellValue = int.Parse(dataGridView1[e.ColumnIndex, e.RowIndex].Value.ToString());
             }
 
             if (rbMain.Checked)
@@ -1738,7 +1738,7 @@ namespace SaveGameEditor
         {
             foreach (DataGridViewCell cell in selectedCells)
             {
-                if (!cell.ReadOnly)
+                if (!cell.ReadOnly && cell.RowIndex != 1)
                 {
                     cell.DataGridView.CurrentCell = cell;
                     cell.DataGridView.BeginEdit(false);
@@ -1785,14 +1785,18 @@ namespace SaveGameEditor
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString()))
+            string value = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+            if (string.IsNullOrWhiteSpace(value))
             {
                 newCellValue = null;
             }
             else
             {
-                int result; //result of parsing
-                if (int.TryParse(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), out result))
+                if (e.RowIndex == 1)
+                {
+                    newCellValue = value;
+                }
+                else if (int.TryParse(value, out int result))
                 {
                     newCellValue = result;
                 }

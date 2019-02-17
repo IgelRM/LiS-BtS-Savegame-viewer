@@ -470,7 +470,7 @@ namespace SaveGameEditor
 
         #region Main Save Edit Functions
         // Value gets updated inside JSON object (m_Data)
-        public bool FindAndUpdateMainVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
+        public bool FindAndUpdateMainVarValue(string checkpointId, string varName, object origValue, object newValue, VariableScope varScope)
         {
             if (IsFarewellCheckpoint(checkpointId))
             {
@@ -485,90 +485,114 @@ namespace SaveGameEditor
                 return false;
             }
 
-            var varId = _gameData.GetVariableIdByName(varName);
             var success = false;
             dynamic editingPoint = FindMainEditPoint(varScope, checkpointId);
 
+            var varId = varName == "Objective" ? varName : _gameData.GetVariableIdByName(varName);
+
             if (editingPoint != null)
             {
-                // Add new variable
+                // Add new variable/objective
                 if (origValue == null)
                 {
-                    var guid = Guid.NewGuid().ToString();
-                    if (varScope == VariableScope.CurrentMainCheckpoint)
+                    if (varName == "Objective")
                     {
-                        for (int i=MainData.checkpoints.Count-1; i==0; i--) 
-                        {
-                            if (!IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from main game
-                            {
-                                foreach (var variable in MainData.checkpoints[i].variables)
-                                {
-                                    if (variable.storyVariable.Value == varId)
-                                    {
-                                        guid = variable.uniqueId.Value;
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        
+                        editingPoint.currentObjective.Value = newValue.ToString();
                     }
-                    else if (varScope == VariableScope.CurrentFarewellCheckpoint)
+                    else
                     {
-                        for (int i = MainData.checkpoints.Count - 1; i == 0; i--)
+                        var guid = Guid.NewGuid().ToString();
+                        if (varScope == VariableScope.CurrentMainCheckpoint)
                         {
-                            if (IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from Farewell data in main save
+                            for (int i = MainData.checkpoints.Count - 1; i == 0; i--)
                             {
-                                foreach (var variable in MainData.checkpoints[i].variables)
+                                if (!IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from main game
                                 {
-                                    if (variable.storyVariable.Value == varId)
+                                    foreach (var variable in MainData.checkpoints[i].variables)
                                     {
-                                        guid = variable.uniqueId.Value;
-                                        break;
+                                        if (variable.storyVariable.Value == varId)
+                                        {
+                                            guid = variable.uniqueId.Value;
+                                            break;
+                                        }
                                     }
+                                    break;
                                 }
-                                break;
                             }
+
                         }
+                        else if (varScope == VariableScope.CurrentFarewellCheckpoint)
+                        {
+                            for (int i = MainData.checkpoints.Count - 1; i == 0; i--)
+                            {
+                                if (IsFarewellCheckpoint(MainData.checkpoints[i].pointIdentifier.Value))//find last checkpoint from Farewell data in main save
+                                {
+                                    foreach (var variable in MainData.checkpoints[i].variables)
+                                    {
+                                        if (variable.storyVariable.Value == varId)
+                                        {
+                                            guid = variable.uniqueId.Value;
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
 
+                        }
+                        var varBody = new Dictionary<string, object>
+                        {
+                            {"uniqueId", guid},
+                            {"storyVariable", varId},
+                            {"overridesDLC", false },
+                            {"currentValue", Convert.ToInt32(newValue)},
+                            {"$type", "GameStateVariableModel"}
+                        };
+
+                        var freshVar = JObject.FromObject(varBody);
+                        ((JArray)editingPoint.variables).Add(freshVar);
                     }
-                    var varBody = new Dictionary<string, object>
-                    {
-                        {"uniqueId", guid},
-                        {"storyVariable", varId},
-                        {"overridesDLC", false },
-                        {"currentValue", newValue},
-                        {"$type", "GameStateVariableModel"}
-                    };
-
-                    var freshVar = JObject.FromObject(varBody);
-                    ((JArray) editingPoint.variables).Add(freshVar);
                     success = true;
                 }
-                // Remove variable
+                // Remove variable/objective
                 else if (newValue == null)
                 {
-                    foreach (var variable in editingPoint.variables)
+                    if (varName == "Objective")
                     {
-                        if (variable.storyVariable.Value == varId)
+                        editingPoint.currentObjective.Value = "";
+                        success = true;
+                    }
+                    else
+                    {
+                        foreach (var variable in editingPoint.variables)
                         {
-                            ((JArray) editingPoint.variables).Remove(variable);
-                            success = true;
-                            break;
+                            if (variable.storyVariable.Value == varId)
+                            {
+                                ((JArray)editingPoint.variables).Remove(variable);
+                                success = true;
+                                break;
+                            }
                         }
                     }
                 }
                 // Change variable value
                 else
                 {
-                    foreach (var variable in editingPoint.variables)
+                    if (varName == "Objective")
                     {
-                        if (variable.storyVariable.Value == varId)
+                        editingPoint.currentObjective.Value = newValue.ToString();
+                        success = true;
+                    }
+                    else
+                    {
+                        foreach (var variable in editingPoint.variables)
                         {
-                            variable.currentValue.Value = newValue;
-                            success = true;
-                            break;
+                            if (variable.storyVariable.Value == varId)
+                            {
+                                variable.currentValue.Value = Convert.ToInt32(newValue);
+                                success = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -851,14 +875,14 @@ namespace SaveGameEditor
         #endregion
 
         #region Farewell Save Edit Functions
-        public bool FindAndUpdateFarewellVarValue(string checkpointId, string varName, int? origValue, int? newValue, VariableScope varScope)
+        public bool FindAndUpdateFarewellVarValue(string checkpointId, string varName, object origValue, object newValue, VariableScope varScope)
         {
             if (FarewellSaveIsEmpty)
             {
                 return false;
             }
 
-            var varId = _gameData.GetVariableIdByName(varName);
+            var varId = varName == "Objective" ? varName : _gameData.GetVariableIdByName(varName);
             var success = false;
             dynamic editingPoint = FindFarewellEditPoint(varScope, checkpointId);
 
@@ -867,54 +891,77 @@ namespace SaveGameEditor
                 // Add new variable
                 if (origValue == null)
                 {
-                    var guid = Guid.NewGuid().ToString();
-                    if (varScope == VariableScope.CurrentFarewellCheckpoint)
+                    if (varName == "Objective")
                     {
-                        foreach (var variable in FarewellData.checkpoints[FarewellData.checkpoints.Count - 1].variables)
+                        editingPoint.currentObjective.Value = newValue.ToString();
+                    }
+                    else
+                    {
+                        var guid = Guid.NewGuid().ToString();
+                        if (varScope == VariableScope.CurrentFarewellCheckpoint)
                         {
-                            if (variable.storyVariable.Value == varId)
+                            foreach (var variable in FarewellData.checkpoints[FarewellData.checkpoints.Count - 1].variables)
                             {
-                                guid = variable.uniqueId.Value;
+                                if (variable.storyVariable.Value == varId)
+                                {
+                                    guid = variable.uniqueId.Value;
+                                }
                             }
                         }
-                    }
-                    
-                    var varBody = new Dictionary<string, object>
-                    {
-                        {"uniqueId", guid},
-                        {"storyVariable", varId},
-                        {"overridesDLC", false },
-                        {"currentValue", newValue},
-                        {"$type", "GameStateVariableModel"}
-                    };
 
-                    var freshVar = JObject.FromObject(varBody);
-                    ((JArray)editingPoint.variables).Add(freshVar);
+                        var varBody = new Dictionary<string, object>
+                        {
+                            {"uniqueId", guid},
+                            {"storyVariable", varId},
+                            {"overridesDLC", false },
+                            {"currentValue", Convert.ToInt32(newValue)},
+                            {"$type", "GameStateVariableModel"}
+                        };
+
+                        var freshVar = JObject.FromObject(varBody);
+                        ((JArray)editingPoint.variables).Add(freshVar);
+                    }
                     success = true;
                 }
                 // Remove variable
                 else if (newValue == null)
                 {
-                    foreach (var variable in editingPoint.variables)
+                    if (varName == "Objective")
                     {
-                        if (variable.storyVariable.Value == varId)
-                        {
-                            ((JArray)editingPoint.variables).Remove(variable);
-                            success = true;
-                            break;
-                        }
+                        editingPoint.currentObjective.Value = "";
+                        success = true;
                     }
+                    else
+                    {
+                        foreach (var variable in editingPoint.variables)
+                        {
+                            if (variable.storyVariable.Value == varId)
+                            {
+                                ((JArray)editingPoint.variables).Remove(variable);
+                                success = true;
+                                break;
+                            }
+                        }
+                    } 
                 }
                 // Change variable value
                 else
                 {
-                    foreach (var variable in editingPoint.variables)
+                    if (varName == "Objective")
                     {
-                        if (variable.storyVariable.Value == varId)
+                        editingPoint.currentObjective.Value = newValue.ToString();
+                        success = true;
+                    }
+                    else
+                    {
+                        foreach (var variable in editingPoint.variables)
                         {
-                            variable.currentValue.Value = newValue;
-                            success = true;
-                            break;
+                            if (variable.storyVariable.Value == varId)
+                            {
+                                variable.currentValue.Value = Convert.ToInt32(newValue);
+                                success = true;
+                                break;
+                            }
                         }
                     }
                 }
