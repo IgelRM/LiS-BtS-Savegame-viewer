@@ -1691,7 +1691,7 @@ namespace SaveGameEditor
         private void dataGridView1_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
             int number;
-            if (dataGridView1.SelectedCells.Count > 1 && firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || int.TryParse(e.Value.ToString(), out number)))
+            if (dataGridView1.SelectedCells.Count > 1 && firstEdit && (String.IsNullOrWhiteSpace(e.Value.ToString()) || int.TryParse(e.Value.ToString(), out number) || e.RowIndex == 1))
             {
                 firstEdit = false;
                 fillCellsWithValue(dataGridView1.SelectedCells, e.Value);
@@ -1738,7 +1738,7 @@ namespace SaveGameEditor
         {
             foreach (DataGridViewCell cell in selectedCells)
             {
-                if (!cell.ReadOnly && cell.RowIndex != 1)
+                if (!cell.ReadOnly)
                 {
                     cell.DataGridView.CurrentCell = cell;
                     cell.DataGridView.BeginEdit(false);
@@ -1808,7 +1808,7 @@ namespace SaveGameEditor
                 }
             }
 
-            if (newCellValue != origCellValue)
+            if (newCellValue?.ToString() != origCellValue?.ToString())
             {
                 point_id = dataGridView1.Rows[0].Cells[e.ColumnIndex].Value.ToString();
                 var_name = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
