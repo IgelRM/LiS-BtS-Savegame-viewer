@@ -9,8 +9,8 @@ Savegame editor for *Life is Strange: Before the Storm*, initially created by [/
 * [Variables for Chloe and Joyce relationship by /u/TheSerendipitist](https://www.reddit.com/r/lifeisstrange/comments/7k02tm/bts_e2_variable_for_chloe_and_joyce_relationship/)
 
 Also see:
-* [LiS S1 savegame editor](https://github.com/ladosha/lis2-save-editor)
-* [LiS2 and CS savegame editor](https://github.com/VakhtinAndrey/lis-save-editor)
+* [LiS2 and CS savegame editor](https://github.com/ladosha/lis2-save-editor)
+* [LiS S1 savegame editor](https://github.com/VakhtinAndrey/lis-save-editor)
 
 [![bts-save-editor-screen.png](https://i.postimg.cc/zB2mSNXG/bts-save-editor-screen.png)](https://postimg.cc/xJmFnWzw)
 
